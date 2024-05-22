@@ -1,4 +1,3 @@
-import {useNotificationsStore} from "src/stores/notificationsStore";
 import {openURL, uid} from "quasar";
 import {useTabsetService} from "src/tabsets/services/TabsetService2";
 import {useWindowsStore} from "src/windows/stores/windowsStore";
@@ -224,11 +223,6 @@ class NavigationService {
     } catch (err) {
       console.log("error clsosing chrome tab", err)
     }
-  }
-
-  updateAvailable(details: any) {
-    console.log("details: UpdateAvailableDetails", details)
-    useNotificationsStore().updateAvailable(true, details.version)
   }
 
   backOneTab() {
