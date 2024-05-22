@@ -7,7 +7,7 @@ import {useGroupsStore} from "stores/groupsStore";
 import {Suggestion, SuggestionType} from "src/suggestions/models/Suggestion";
 import {useSuggestionsStore} from "src/suggestions/stores/suggestionsStore";
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
-import {useNotificationHandler} from "src/services/ErrorHandler";
+import {useNotificationHandler} from "src/core/services/ErrorHandler";
 import {useTabsetsStore} from "src/tabsets/stores/tabsetsStore";
 import {useTabsStore2} from "src/tabsets/stores/tabsStore2";
 import {FeatureIdent} from "src/models/FeatureIdent";
