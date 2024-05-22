@@ -1,7 +1,6 @@
 import {Notify} from 'quasar'
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
 import {useUiStore} from "stores/uiStore";
-import {useLogger} from "src/services/Logger";
 
 export enum NotificationType {
   NOTIFY = "NOTIFY",
@@ -10,14 +9,12 @@ export enum NotificationType {
 
 export function useNotificationHandler() {
 
-  const {info, error} = useLogger()
-
   const handleError = (err: any, type: NotificationType = NotificationType.TOAST) => {
     const errorMsg = err ? err.toString() : 'unknown error'
     console.warn("showing error message: ", errorMsg)
     console.trace()
 
-    error(errorMsg /** todo pass actual error */)
+    //console.warn(errorMsg /** todo pass actual error */)
 
     switch (type) {
       case NotificationType.NOTIFY:
