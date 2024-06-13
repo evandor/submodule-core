@@ -1,6 +1,6 @@
 import {Notify} from 'quasar'
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
-import {useUiStore} from "stores/uiStore";
+import {useUiStore} from "src/ui/stores/uiStore";
 
 export enum NotificationType {
   NOTIFY = "NOTIFY",
