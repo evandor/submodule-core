@@ -38,12 +38,14 @@ export function useNotificationHandler() {
 
   const handleSuccess = (executionResult: ExecutionResult<any>, type: NotificationType = NotificationType.TOAST): ExecutionResult<any> => {
     const actions: any[] = []
-    if (executionResult.undoCommand) {
+
+    for (const key of executionResult.nextCommands.keys()) {
       actions.push(
         {
-          label: 'Undo', color: 'white',
+          label: key,
+          color: 'white',
           handler: () => {
-            executionResult.undoCommand?.execute()
+            executionResult.nextCommands.get(key)!.execute()
               .then((res: any) => handleWarning(res))
               .catch((err: any) => handleError(err))
           }
@@ -60,7 +62,7 @@ export function useNotificationHandler() {
         })
         break;
       default:
-        useUiStore().createSuccessToast(executionResult.message, actions[0])
+        useUiStore().createSuccessToast(executionResult.message, actions)
     }
     return executionResult
   }

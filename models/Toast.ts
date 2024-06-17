@@ -1,20 +1,23 @@
 import {uid} from "quasar";
+import Command from "src/core/domain/Command";
 
 export enum ToastType {
-    INFO = "INFO",
-    WARNING = "WARNING",
-    ERROR = "ERROR"
+  INFO = "INFO",
+  WARNING = "WARNING",
+  ERROR = "ERROR"
 }
 
 export class Toast {
 
-    public id: string
-    public created: number;
+  public id: string
+  public created: number;
 
-    constructor(
-        public msg: string, public type: ToastType, public action: any = undefined) {
-        this.id = uid()
-        this.created = new Date().getTime()
-    }
+  constructor(
+    public msg: string,
+    public type: ToastType,
+    public actions: any[] = []) {
+    this.id = uid()
+    this.created = new Date().getTime()
+  }
 
 }
