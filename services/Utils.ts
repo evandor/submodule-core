@@ -44,6 +44,13 @@ export function useUtils() {
     })
   }
 
+  const sanitizeAsHtml = (input: string): string => {
+    return sanitizeHtml(input,{
+      allowedTags: false, //sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script' ]),
+      allowedAttributes: false
+    })
+  }
+
   const sendMsg = (msgName: string, data: object = {}) => {
     if (inBexMode() && chrome) {
       console.debug(" >>> sending message", {name: msgName, data})
@@ -90,6 +97,79 @@ export function useUtils() {
     return theRealUrl ? "https://icons.duckduckgo.com/ip3/" + theRealUrl.hostname + ".ico" : ''
   }
 
+  // from https://www.npmjs.com/package/serialize-selection?activeTab=code
+  const restoreSelection = (state:any, referenceNode:any = undefined) => {
+    referenceNode = referenceNode || document.body
+
+    let i
+      , node
+      , nextNodeCharIndex
+      , currentNodeCharIndex = 0
+      , nodes = [referenceNode]
+      , sel = window.getSelection()
+      , range = document.createRange()
+
+    range.setStart(referenceNode, 0)
+    range.collapse(true)
+
+    while (node = nodes.pop()) {
+      if (node.nodeType === 3) { // TEXT_NODE
+        nextNodeCharIndex = currentNodeCharIndex + node.length
+
+        // if this node contains the character at the start index, set this as the
+        // starting node with the correct offset
+        if (state.start >= currentNodeCharIndex && state.start <= nextNodeCharIndex) {
+          range.setStart(node, state.start - currentNodeCharIndex)
+        }
+
+        // if this node contains the character at the end index, set this as the
+        // ending node with the correct offset and stop looking
+        if (state.end >= currentNodeCharIndex && state.end <= nextNodeCharIndex) {
+          range.setEnd(node, state.end - currentNodeCharIndex)
+          break
+        }
+
+        currentNodeCharIndex = nextNodeCharIndex
+      } else {
+
+        // get child nodes if the current node is not a text node
+        i = node.childNodes.length
+        while (i--) {
+          nodes.push(node.childNodes[i])
+        }
+      }
+    }
+
+    sel!.removeAllRanges()
+    sel!.addRange(range)
+    return sel
+  }
+
+  const serializeSelection = (referenceNode:any = undefined) => {
+    referenceNode = referenceNode || document.body
+
+    var sel = window.getSelection()
+      , range = sel!.rangeCount
+      ? sel!.getRangeAt(0).cloneRange()
+      : document.createRange()
+      , startContainer = range.startContainer
+      , startOffset = range.startOffset
+      , state:{[k: string]: any}  = { content: range.toString() }
+
+    // move the range to select the contents up to the selection
+    // so we can find its character offset from the reference node
+    range.selectNodeContents(referenceNode)
+    range.setEnd(startContainer, startOffset)
+
+    state.start = range.toString().length
+    state.end = state!.start + state.content.length
+
+    // add a shortcut method to restore this selection
+    state.restore = restoreSelection.bind(null, state, referenceNode)
+
+    return state
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -98,8 +178,11 @@ export function useUtils() {
     modeIs,
     sanitize,
     sanitizeAsText,
+    sanitizeAsHtml,
     sendMsg,
     calcHostList,
-    favIconFromUrl
+    favIconFromUrl,
+    restoreSelection,
+    serializeSelection
   }
 }
