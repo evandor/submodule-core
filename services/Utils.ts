@@ -46,7 +46,9 @@ export function useUtils() {
 
   const sanitizeAsHtml = (input: string): string => {
     return sanitizeHtml(input,{
-      allowedTags: false, //sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script' ]),
+      disallowedTagsMode: "escape",
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script','head','html', 'form','a','svg','iframe','meta','body',
+      'title','link','noscript','input','template','button','label']),
       allowedAttributes: false
     })
   }
