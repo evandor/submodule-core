@@ -46,9 +46,11 @@ export function useUtils() {
 
   const sanitizeAsHtml = (input: string): string => {
     return sanitizeHtml(input,{
-      disallowedTagsMode: "escape",
-      allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script','head','html', 'form','a','svg','iframe','meta','body',
-      'title','link','noscript','input','template','button','label']),
+      // disallowedTagsMode: "escape",
+      // allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script','head','html','body', 'form','a','svg','iframe','meta','body',
+      // 'title','link','noscript','input','template','button','label','fieldset','picture','source','select','details','dialog','path',
+      // 'option','circle','style','symbol','g','use','summary']),
+      allowedTags: false,
       allowedAttributes: false
     })
   }
@@ -142,7 +144,8 @@ export function useUtils() {
       }
     }
 
-    sel!.removeAllRanges()
+    //sel!.removeAllRanges()
+    console.log("adding range", range)
     sel!.addRange(range)
     return sel
   }
