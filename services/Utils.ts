@@ -144,8 +144,8 @@ export function useUtils() {
       }
     }
 
-    //sel!.removeAllRanges()
-    console.log("adding range", range)
+    sel!.removeAllRanges()
+   // console.log("adding range", range, range.getBoundingClientRect())
     sel!.addRange(range)
     return sel
   }
