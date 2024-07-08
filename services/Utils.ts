@@ -102,16 +102,19 @@ export function useUtils() {
   }
 
   // from https://www.npmjs.com/package/serialize-selection?activeTab=code
-  const restoreSelection = (state:any, referenceNode:any = undefined) => {
+  const restoreSelection = (state:any, referenceNode:any = undefined, rect: object, viewport: object, color: string = 'grey') => {
+
+    console.log("restoring", state, rect, viewport, color)
+
     referenceNode = referenceNode || document.body
 
     let i
       , node
       , nextNodeCharIndex
       , currentNodeCharIndex = 0
-      , nodes = [referenceNode]
-      , sel = window.getSelection()
-      , range = document.createRange()
+    let nodes = [referenceNode]
+    let sel = window.getSelection()
+    let range = document.createRange()
 
     range.setStart(referenceNode, 0)
     range.collapse(true)
@@ -134,6 +137,9 @@ export function useUtils() {
         }
 
         currentNodeCharIndex = nextNodeCharIndex
+
+        // range.surroundContents()
+        //sel?.removeAllRanges()
       } else {
 
         // get child nodes if the current node is not a text node
@@ -147,6 +153,15 @@ export function useUtils() {
     sel!.removeAllRanges()
    // console.log("adding range", range, range.getBoundingClientRect())
     sel!.addRange(range)
+
+    console.log("range", range)
+    try {
+      let newNode = document.createElement('span');
+      console.log("setting style to ", `background-color: ${color};`)
+      newNode.setAttribute("style", `background-color: ${color};`)
+      range.surroundContents(newNode);
+    } catch(e) { console.log(e) }
+
     return sel
   }
 
