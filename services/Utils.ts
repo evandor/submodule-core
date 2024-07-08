@@ -45,7 +45,7 @@ export function useUtils() {
   }
 
   const sanitizeAsHtml = (input: string): string => {
-    return sanitizeHtml(input,{
+    return sanitizeHtml(input, {
       // disallowedTagsMode: "escape",
       // allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script','head','html','body', 'form','a','svg','iframe','meta','body',
       // 'title','link','noscript','input','template','button','label','fieldset','picture','source','select','details','dialog','path',
@@ -81,7 +81,7 @@ export function useUtils() {
   }
 
   const calcHostList = (tabs: chrome.tabs.Tab[]): string[] => {
-    const stringArray = Array.from(new Set(_.map(tabs, (bwTabs:chrome.tabs.Tab) => urlToHost(bwTabs.url || ''))))
+    const stringArray = Array.from(new Set(_.map(tabs, (bwTabs: chrome.tabs.Tab) => urlToHost(bwTabs.url || ''))))
     return _.filter(stringArray, (e: string | undefined) => e !== null)
   }
 
@@ -102,7 +102,7 @@ export function useUtils() {
   }
 
   // from https://www.npmjs.com/package/serialize-selection?activeTab=code
-  const restoreSelection = (state:any, referenceNode:any = undefined, rect: object, viewport: object, color: string = 'grey') => {
+  const restoreSelection = (state: any, referenceNode: any = undefined, rect: object, viewport: object, color: string = 'grey') => {
 
     console.log("restoring", state, rect, viewport, color)
 
@@ -151,7 +151,7 @@ export function useUtils() {
     }
 
     sel!.removeAllRanges()
-   // console.log("adding range", range, range.getBoundingClientRect())
+    // console.log("adding range", range, range.getBoundingClientRect())
     sel!.addRange(range)
 
     console.log("range", range)
@@ -160,12 +160,26 @@ export function useUtils() {
       console.log("setting style to ", `background-color: ${color};`)
       newNode.setAttribute("style", `background-color: ${color};`)
       range.surroundContents(newNode);
-    } catch(e) { console.log(e) }
+    } catch (e) {
+      console.log(e)
+    }
+
+    // if (rect['top' as keyof object] && viewport['height' as keyof object]) {
+    //   const heightProportion = (document.body.scrollHeight / viewport['height' as keyof object])
+    //   const top = Math.max(0, -50 + Math.round(
+    //     heightProportion * rect['top' as keyof object]))
+    //   console.log("scrolling to", top, heightProportion)
+    //   window.scrollTo({top: top, behavior: "smooth"})
+    // }
+    //window.scrollBy(0,500)
+
+    const container = range.commonAncestorContainer
+    container.parentElement?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
 
     return sel
   }
 
-  const serializeSelection = (referenceNode:any = undefined) => {
+  const serializeSelection = (referenceNode: any = undefined) => {
     referenceNode = referenceNode || document.body
 
     var sel = window.getSelection()
@@ -174,7 +188,7 @@ export function useUtils() {
       : document.createRange()
       , startContainer = range.startContainer
       , startOffset = range.startOffset
-      , state:{[k: string]: any}  = { content: range.toString() }
+      , state: { [k: string]: any } = {content: range.toString()}
 
     // move the range to select the contents up to the selection
     // so we can find its character offset from the reference node
