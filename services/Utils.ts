@@ -174,7 +174,7 @@ export function useUtils() {
     //window.scrollBy(0,500)
 
     const container = range.commonAncestorContainer
-    container.parentElement?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" })
+    container.parentElement?.scrollIntoView({ behavior: "smooth", inline: "start" })
 
     return sel
   }
