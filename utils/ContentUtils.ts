@@ -85,7 +85,7 @@ class ContentUtils {
 
       for (const elem of $('script')) {
         const src = $(elem).attr("src")
-        if (src) { // && isRelative(src)) {
+        if (src && isRelative(src)) {
           const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
           try {
             const script = await fetch(absoluteUrl)
@@ -111,7 +111,7 @@ class ContentUtils {
         }
       }
 
-      console.log("------", $.html())
+     // console.log("------", $.html())
       return $.html() //html.replace("<head>", headWithBase)
     } catch (err) {
       console.log("err", err)
