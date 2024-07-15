@@ -47,7 +47,79 @@ class ContentUtils {
     });
   };
 
-  async setBaseHref(tabUrl: string, html: string) {
+  async processHtml(tabUrl: string, html: string) {
+    try {
+      let url = new URL(tabUrl)
+      const htmlWithBaseRef = await this.setBaseHref(url, html)
+      const $ = cheerio.load(htmlWithBaseRef);
+      await this.inlineImages(url, $)
+      await this.inlineScripts(url, $)
+      //await this.inlineCSS(url, $)
+      return $.html()
+    } catch (err) {
+      console.error(err);
+      return "could not process due to " + err
+    }
+  }
+
+  async inlineImages(url: URL, $: cheerio.CheerioAPI) {
+    for (const elem of $('img')) {
+      const src = $(elem).attr("src")
+      if (src) { // && isRelative(src)) {
+        const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
+        const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
+        $(elem).attr("src", base64rep);
+      }
+    }
+  }
+
+  async inlineScripts(url: URL, $: cheerio.CheerioAPI) {
+    for (const elem of $('script')) {
+      const src = $(elem).attr("src")
+      if (src) { // && isRelative(src)) {
+        const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
+        try {
+          const script = await fetch(absoluteUrl)
+          console.log("data", script.status)
+          if (script.status !== 404) {
+            const s = await script.text()
+            //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
+            $(elem).removeAttr("src")
+            $(elem).text(s)
+          }
+        } catch (err: any) {
+          console.log("err", err)
+        }
+      }
+    }
+  }
+
+  async inlineCSS(url: URL, $: cheerio.CheerioAPI) {
+    for (const elem of $('link')) {
+      const rel = $(elem).attr("rel")
+      if (!rel || rel !== "stylesheet") {
+        continue
+      }
+      const href = $(elem).attr("href")
+      if (href) { // && isRelative(src)) {
+        const absoluteUrl = `${url.protocol}//${url.hostname}/${href}`
+        try {
+          const script = await fetch(absoluteUrl)
+          console.log("data", script.status)
+          if (script.status !== 404) {
+            const s = await script.text()
+            //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
+            $(elem).removeAttr("src")
+            $(elem).text(s)
+          }
+        } catch (err: any) {
+          console.log("err", err)
+        }
+      }
+    }
+  }
+
+  async setBaseHref(url: URL, html: string) {
 
     function isRelative(href: string | undefined) {
       if (!href) {
@@ -56,67 +128,43 @@ class ContentUtils {
       return !(href.startsWith("http://") || href.startsWith("https://") || href.startsWith("chrome-extension://"))
     }
 
-    try {
-      let url = new URL(tabUrl)
       // TODO puppeteer seems to have issues with this approach
       const headWithBase = "<head><base href=\"" + url.protocol + "//" + url.hostname + "/\" />"
       //const headWithBase = "<head>"
 
       const $ = cheerio.load(html);
-      $("link").each(function () {
-        let href = $(this).attr("href");
-        if (href && isRelative(href)) {
-          // console.log("replaced", href, `${url.protocol}//${url.hostname}/${href}`)
-          $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
-        }
-      });
+      // $("link").each(function () {
+      //   let href = $(this).attr("href");
+      //   if (href && isRelative(href)) {
+      //     // console.log("replaced", href, `${url.protocol}//${url.hostname}/${href}`)
+      //     $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
+      //   }
+      // });
       // $("script").each(function () {
       //   let src = $(this).attr("src");
       //   if (src && isRelative(src)) {
       //     $(this).attr("src", `${url.protocol}//${url.hostname}/${src}`);
       //   }
       // });
-      $("a").each(function () {
-        let href = $(this).attr("href");
-        if (href && isRelative(href)) {
-          $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
-        }
-      });
+      // $("a").each(function () {
+      //   let href = $(this).attr("href");
+      //   if (href && isRelative(href)) {
+      //     $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
+      //   }
+      // });
 
-      for (const elem of $('script')) {
-        const src = $(elem).attr("src")
-        if (src && isRelative(src)) {
-          const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
-          try {
-            const script = await fetch(absoluteUrl)
-            console.log("data", script.status)
-            if (script.status !== 404) {
-              const s = await script.text()
-              //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
-              $(elem).removeAttr("src")
-              $(elem).text(s)
-            }
-          } catch (err: any) {
-            console.log("err", err)
-          }
-        }
-      }
+      //
+      // for (const elem of $('img')) {
+      //   const src = $(elem).attr("src")
+      //   if (src) { // && isRelative(src)) {
+      //     const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
+      //     const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
+      //     $(elem).attr("src", base64rep);
+      //   }
+      // }
 
-      for (const elem of $('img')) {
-        const src = $(elem).attr("src")
-        if (src) { // && isRelative(src)) {
-          const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
-          const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
-          $(elem).attr("src", base64rep);
-        }
-      }
-
-     // console.log("------", $.html())
-      return $.html() //html.replace("<head>", headWithBase)
-    } catch (err) {
-      console.log("err", err)
-      return ""
-    }
+      // console.log("------", $.html())
+      return html.replace("<head>", headWithBase)
   }
 }
 
