@@ -10,6 +10,8 @@ export class ExecutionResult<T> {
     public message: string,
     public nextCommands: Map<string, Command<any>> = new Map()) {
   }
+}
 
+export class ExecutionFailureResult extends ExecutionResult<any> {
 
 }

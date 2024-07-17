@@ -1,6 +1,6 @@
 import Command from "src/core/domain/Command";
 import {NotificationType, useNotificationHandler} from "src/core/services/ErrorHandler";
-import {ExecutionResult} from "src/core/domain/ExecutionResult";
+import {ExecutionFailureResult, ExecutionResult} from "src/core/domain/ExecutionResult";
 
 const {handleSuccess, handleError} = useNotificationHandler()
 
@@ -13,7 +13,7 @@ export function useCommandExecutor() {
             .catch(err => {
                 console.log("error in command", command)
                 handleError(err, type)
-                return new ExecutionResult(null, err)
+                return new ExecutionFailureResult(null, err)
             })
     }
 
@@ -23,7 +23,7 @@ export function useCommandExecutor() {
             .catch(err => {
                 console.log("error in command", command)
                 handleError(err)
-                return new ExecutionResult(null, err)
+                return new ExecutionFailureResult(null, err)
             })
     }
 
