@@ -204,6 +204,10 @@ export function useUtils() {
     return state
   }
 
+  const throwIdNotFound = (identifier: string, id: string) => {
+    throw new Error(`id for ${identifier} not found: ${id}`)
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -217,6 +221,7 @@ export function useUtils() {
     calcHostList,
     favIconFromUrl,
     restoreSelection,
-    serializeSelection
+    serializeSelection,
+    throwIdNotFound
   }
 }
