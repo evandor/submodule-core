@@ -4,6 +4,15 @@ import * as cheerio from 'cheerio';
 
 class ContentUtils {
 
+
+  private isRelative(href: string | undefined) {
+    if (!href) {
+      return true
+    }
+    return !(href.startsWith("http://") || href.startsWith("https://") || href.startsWith("chrome-extension://"))
+  }
+
+
   html2tokens(html: string): Set<any> {
     //console.log("got html", html)
     const text = convert(html, {
@@ -50,11 +59,30 @@ class ContentUtils {
   async processHtml(tabUrl: string, html: string) {
     try {
       let url = new URL(tabUrl)
-      const htmlWithBaseRef = await this.setBaseHref(url, html)
-      const $ = cheerio.load(htmlWithBaseRef);
+      // const htmlWithBaseRef = await this.setBaseHref(url, html)
+      const $ = cheerio.load(html);
       await this.inlineImages(url, $)
       await this.inlineScripts(url, $)
       //await this.inlineCSS(url, $)
+
+
+      // const overlayScript = converted.window.document.createElement('script')
+      // overlayScript.onload = function() {
+      //   alert("Script loaded and ready");
+      // };
+      // //overlayScript.src = "chrome-extension://pndffocijjfpmphlhkoijmpfckjafdpl/www/js/my-content-script.js";
+      //
+      // overlayScript.type = 'text/javascript';
+      // var code = 'console.log("script insert");';
+      // try { // doesn't work on ie...
+      //   overlayScript.appendChild(document.createTextNode(code));
+      // } catch(e) { // IE has funky script nodes
+      //   overlayScript.text = code;
+      // }
+
+      // $('<script>alert("done")</script>').appendTo('body');
+
+
       return $.html()
     } catch (err) {
       console.error(err);
@@ -65,8 +93,10 @@ class ContentUtils {
   async inlineImages(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('img')) {
       const src = $(elem).attr("src")
-      if (src) { // && isRelative(src)) {
+      if (src && !src.startsWith("chrome-extension://")) { // && isRelative(src)) {
+        console.log("checking1: ", src, this.isRelative(src))
         const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
+        console.log("checking2: ", absoluteUrl)
         const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
         $(elem).attr("src", base64rep);
       }
@@ -76,11 +106,13 @@ class ContentUtils {
   async inlineScripts(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('script')) {
       const src = $(elem).attr("src")
-      if (src) { // && isRelative(src)) {
+      if (src && !src.startsWith("chrome-extension://")) {  // && isRelative(src)) {
+        console.log("checking1: ", src, this.isRelative(src))
         const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
+        console.log("checking2: ", absoluteUrl)
         try {
           const script = await fetch(absoluteUrl)
-          console.log("data", script.status)
+          // console.log("data", script.status)
           if (script.status !== 404) {
             const s = await script.text()
             //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
@@ -121,50 +153,44 @@ class ContentUtils {
 
   async setBaseHref(url: URL, html: string) {
 
-    function isRelative(href: string | undefined) {
-      if (!href) {
-        return true
-      }
-      return !(href.startsWith("http://") || href.startsWith("https://") || href.startsWith("chrome-extension://"))
-    }
 
-      // TODO puppeteer seems to have issues with this approach
-      const headWithBase = "<head><base href=\"" + url.protocol + "//" + url.hostname + "/\" />"
-      //const headWithBase = "<head>"
+    // TODO puppeteer seems to have issues with this approach
+    const headWithBase = "<head><base href=\"" + url.protocol + "//" + url.hostname + "/\" />"
+    //const headWithBase = "<head>"
 
-      const $ = cheerio.load(html);
-      // $("link").each(function () {
-      //   let href = $(this).attr("href");
-      //   if (href && isRelative(href)) {
-      //     // console.log("replaced", href, `${url.protocol}//${url.hostname}/${href}`)
-      //     $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
-      //   }
-      // });
-      // $("script").each(function () {
-      //   let src = $(this).attr("src");
-      //   if (src && isRelative(src)) {
-      //     $(this).attr("src", `${url.protocol}//${url.hostname}/${src}`);
-      //   }
-      // });
-      // $("a").each(function () {
-      //   let href = $(this).attr("href");
-      //   if (href && isRelative(href)) {
-      //     $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
-      //   }
-      // });
+    const $ = cheerio.load(html);
+    // $("link").each(function () {
+    //   let href = $(this).attr("href");
+    //   if (href && isRelative(href)) {
+    //     // console.log("replaced", href, `${url.protocol}//${url.hostname}/${href}`)
+    //     $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
+    //   }
+    // });
+    // $("script").each(function () {
+    //   let src = $(this).attr("src");
+    //   if (src && isRelative(src)) {
+    //     $(this).attr("src", `${url.protocol}//${url.hostname}/${src}`);
+    //   }
+    // });
+    // $("a").each(function () {
+    //   let href = $(this).attr("href");
+    //   if (href && isRelative(href)) {
+    //     $(this).attr("href", `${url.protocol}//${url.hostname}/${href}`);
+    //   }
+    // });
 
-      //
-      // for (const elem of $('img')) {
-      //   const src = $(elem).attr("src")
-      //   if (src) { // && isRelative(src)) {
-      //     const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
-      //     const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
-      //     $(elem).attr("src", base64rep);
-      //   }
-      // }
+    //
+    // for (const elem of $('img')) {
+    //   const src = $(elem).attr("src")
+    //   if (src) { // && isRelative(src)) {
+    //     const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
+    //     const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
+    //     $(elem).attr("src", base64rep);
+    //   }
+    // }
 
-      // console.log("------", $.html())
-      return html.replace("<head>", headWithBase)
+    // console.log("------", $.html())
+    return html.replace("<head>", headWithBase)
   }
 }
 
