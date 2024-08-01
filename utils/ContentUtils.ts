@@ -12,6 +12,29 @@ class ContentUtils {
     return !(href.startsWith("http://") || href.startsWith("https://") || href.startsWith("chrome-extension://"))
   }
 
+  private getAbsoluteUrl(url: URL, path: string): string {
+    //console.log(`checking1: '${url.toString()}','${path}'`)
+    let absoluteUrl = url.toString()
+    if (path.startsWith("//")) {
+      absoluteUrl = `${url.protocol}${path}`
+    } else if (this.isRelative(path)) {
+      const pathWithoutDoubleSlashes = `/${path}`.replaceAll("//","/")
+      absoluteUrl = `${url.protocol}//${url.hostname}${pathWithoutDoubleSlashes}`
+      //console.log("checking2: ", absoluteUrl)
+    } else {
+      absoluteUrl = path
+      //console.log("checking3: ", absoluteUrl)
+    }
+    return absoluteUrl
+  }
+
+  private noLeadingSlash(href: string) {
+    if (!href || href.trim().length === 0) {
+      return ""
+    }
+    return href.trim().startsWith("/") ? href.trim().substring(1) : href
+  }
+
 
   html2tokens(html: string): Set<any> {
     //console.log("got html", html)
@@ -63,7 +86,7 @@ class ContentUtils {
       const $ = cheerio.load(html);
       await this.inlineImages(url, $)
       await this.inlineScripts(url, $)
-      //await this.inlineCSS(url, $)
+      await this.inlineCSS(url, $)
 
 
       // const overlayScript = converted.window.document.createElement('script')
@@ -93,11 +116,8 @@ class ContentUtils {
   async inlineImages(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('img')) {
       const src = $(elem).attr("src")
-      if (src && !src.startsWith("chrome-extension://")) { // && isRelative(src)) {
-        console.log("checking1: ", src, this.isRelative(src))
-        const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
-        console.log("checking2: ", absoluteUrl)
-        const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
+      if (src && !src.startsWith("chrome-extension://") && !src.startsWith("data:image")) { // && isRelative(src)) {
+        const base64rep = await this.imageUrlToBase64(this.getAbsoluteUrl(url, src)) as string
         $(elem).attr("src", base64rep);
       }
     }
@@ -107,15 +127,10 @@ class ContentUtils {
     for (const elem of $('script')) {
       const src = $(elem).attr("src")
       if (src && !src.startsWith("chrome-extension://")) {  // && isRelative(src)) {
-        console.log("checking1: ", src, this.isRelative(src))
-        const absoluteUrl = `${url.protocol}//${url.hostname}/${src}`
-        console.log("checking2: ", absoluteUrl)
         try {
-          const script = await fetch(absoluteUrl)
-          // console.log("data", script.status)
+          const script = await fetch(this.getAbsoluteUrl(url, src))
           if (script.status !== 404) {
             const s = await script.text()
-            //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
             $(elem).removeAttr("src")
             $(elem).text(s)
           }
@@ -134,15 +149,19 @@ class ContentUtils {
       }
       const href = $(elem).attr("href")
       if (href) { // && isRelative(src)) {
-        const absoluteUrl = `${url.protocol}//${url.hostname}/${href}`
+        console.log("checking1: ", href, this.isRelative(href))
+        const cssUrl = this.isRelative(href) ? `${url.protocol}//${url.hostname}/${this.noLeadingSlash(href)}` : href
         try {
-          const script = await fetch(absoluteUrl)
+          console.log("css:", cssUrl)
+          const script = await fetch(cssUrl)
           console.log("data", script.status)
           if (script.status !== 404) {
             const s = await script.text()
             //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
-            $(elem).removeAttr("src")
-            $(elem).text(s)
+            //$(elem).removeAttr("src")
+            //$(elem).text(s)
+            $(elem).before(`<style>${s}</style>`)
+            $(elem).remove()
           }
         } catch (err: any) {
           console.log("err", err)
