@@ -3,7 +3,7 @@ import {convert} from "html-to-text"
 import * as cheerio from 'cheerio';
 
 function dump(name: string, val: string | undefined) {
-  return val ? name + "=\"" +  val + "\" " : ""
+  return val ? name + "=\"" + val + "\" " : ""
 }
 
 class ContentUtils {
@@ -22,7 +22,7 @@ class ContentUtils {
     if (path.startsWith("//")) {
       absoluteUrl = `${url.protocol}${path}`
     } else if (this.isRelative(path)) {
-      const pathWithoutDoubleSlashes = `/${path}`.replaceAll("//","/")
+      const pathWithoutDoubleSlashes = `/${path}`.replaceAll("//", "/")
       absoluteUrl = `${url.protocol}//${url.hostname}${pathWithoutDoubleSlashes}`
       //console.log("checking2: ", absoluteUrl)
     } else {
@@ -156,6 +156,7 @@ class ContentUtils {
   }
 
   async inlineCSS(url: URL, $: cheerio.CheerioAPI) {
+    const regex = /url\(([^)]*)\)/gm;
     for (const elem of $('link')) {
       const rel = $(elem).attr("rel")
       if (!rel || rel !== "stylesheet") {
@@ -173,10 +174,22 @@ class ContentUtils {
           const script = await fetch(cssUrl)
           console.log("data", script.status)
           if (script.status !== 404) {
-            const s = await script.text()
-            //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
-            //$(elem).removeAttr("src")
-            //$(elem).text(s)
+            let s = await script.text()
+            console.log("===>s", s)
+            // s = s.replaceAll("/url\\(([^)]*)\\)/gm", function(a,b) {
+            s = s.replaceAll(regex, function (a, b) {
+              // return "***" + a + "***" + b + "***"
+              const normalizedGroup = b.trim().replace("\"", "").replace("'","")
+              if (normalizedGroup.startsWith("http://") || normalizedGroup.startsWith("https://") || normalizedGroup.startsWith("data:")) {
+                return a
+              }
+              const res = "url(" + `${url.protocol}//${url.hostname}/${b.trim()}` + ")";
+              console.log("replacing ", b.trim())
+              console.log("with      ", res)
+              return res
+            })
+//            s = s.replaceAll("url", "***")
+
             $(elem).before(`<style ${dump("title", title)}${dump("media", media)}>${s}</style>`)
             $(elem).remove()
           }
