@@ -2,6 +2,10 @@
 import {convert} from "html-to-text"
 import * as cheerio from 'cheerio';
 
+function dump(name: string, val: string | undefined) {
+  return val ? name + "=\"" +  val + "\" " : ""
+}
+
 class ContentUtils {
 
 
@@ -85,7 +89,8 @@ class ContentUtils {
       // const htmlWithBaseRef = await this.setBaseHref(url, html)
       const $ = cheerio.load(html);
       await this.inlineImages(url, $)
-      await this.inlineScripts(url, $)
+      // await this.inlineScripts(url, $)
+      await this.removeScripts(url, $)
       await this.inlineCSS(url, $)
 
 
@@ -141,6 +146,15 @@ class ContentUtils {
     }
   }
 
+  async removeScripts(url: URL, $: cheerio.CheerioAPI) {
+    for (const elem of $('script')) {
+      const src = $(elem).attr("src")
+      if (src) {  // && isRelative(src)) {
+        $(elem).remove()
+      }
+    }
+  }
+
   async inlineCSS(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('link')) {
       const rel = $(elem).attr("rel")
@@ -148,6 +162,9 @@ class ContentUtils {
         continue
       }
       const href = $(elem).attr("href")
+      const type = $(elem).attr("type")
+      const media = $(elem).attr("media")
+      const title = $(elem).attr("title")
       if (href) { // && isRelative(src)) {
         console.log("checking1: ", href, this.isRelative(href))
         const cssUrl = this.isRelative(href) ? `${url.protocol}//${url.hostname}/${this.noLeadingSlash(href)}` : href
@@ -160,7 +177,7 @@ class ContentUtils {
             //const base64rep = await this.imageUrlToBase64(absoluteUrl) as string
             //$(elem).removeAttr("src")
             //$(elem).text(s)
-            $(elem).before(`<style>${s}</style>`)
+            $(elem).before(`<style ${dump("title", title)}${dump("media", media)}>${s}</style>`)
             $(elem).remove()
           }
         } catch (err: any) {
