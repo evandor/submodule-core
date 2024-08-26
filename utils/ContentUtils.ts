@@ -3,7 +3,14 @@ import {convert} from "html-to-text"
 import * as cheerio from 'cheerio';
 
 function dump(name: string, val: string | undefined) {
-  return val ? name + "=\"" + val + "\" " : ""
+  if (val === "async") {
+    console.log(`dumping '${name}=${val}': async`)
+    return "async "
+  }
+  if (val === "defer") {
+    return "defer "
+  }
+  return val && val.trim().length > 0 ? name + "=\"" + val + "\" " : ""
 }
 
 class ContentUtils {
@@ -85,12 +92,15 @@ class ContentUtils {
 
   async processHtml(tabUrl: string, html: string) {
     try {
-      let url = new URL(tabUrl)
+      let normalized = tabUrl.endsWith("/") ? tabUrl.substring(0, tabUrl.length - 1) : tabUrl
+      console.log("normalized URL", normalized)
+      let url = new URL(normalized)
       // const htmlWithBaseRef = await this.setBaseHref(url, html)
       const $ = cheerio.load(html);
-      await this.inlineImages(url, $)
-      // await this.inlineScripts(url, $)
-      await this.removeScripts(url, $)
+      await this.inlineScripts(url, $)
+      //await this.removeScripts(url, $)
+      await this.inlineImgs(url, $)
+      await this.inlinePictures(url, $)
       await this.inlineCSS(url, $)
 
 
@@ -118,7 +128,7 @@ class ContentUtils {
     }
   }
 
-  async inlineImages(url: URL, $: cheerio.CheerioAPI) {
+  async inlineImgs(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('img')) {
       const src = $(elem).attr("src")
       if (src && !src.startsWith("chrome-extension://") && !src.startsWith("data:image")) { // && isRelative(src)) {
@@ -128,16 +138,53 @@ class ContentUtils {
     }
   }
 
+  async inlinePictures(url: URL, $: cheerio.CheerioAPI) {
+    for (const elem of $('picture')) {
+      // console.log("picture", elem)
+      const pictureChildren = $(elem).children();
+      for (const p of pictureChildren) {
+        if (p.name === 'source') {
+          const srcset = $(p).attr("srcset")
+          if (srcset) {
+            const src = srcset.startsWith("https://") || srcset.startsWith("http://") ?
+              srcset : `${url}/${srcset}`
+            // console.log("src:", src)
+            if (src && !src.startsWith("chrome-extension://") && !src.startsWith("data:image")) { // && isRelative(src)) {
+              const usingSrc = this.getAbsoluteUrl(url, src)
+              //console.log("this.getAbsoluteUrl(url, src)", usingSrc)
+              const base64rep = await this.imageUrlToBase64(usingSrc) as string
+              //$(elem).attr("src", base64rep);
+              $(elem).before(`\n<!-- ${src}-->\n\n<img src="${src}">`)
+              $(elem).remove()
+              break
+            }
+          }
+        }
+      }
+    }
+  }
+
   async inlineScripts(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('script')) {
       const src = $(elem).attr("src")
+      const async = $(elem).attr("async")
+      const charset = $(elem).attr("charset")
+      const defer = $(elem).attr("defer")
+
       if (src && !src.startsWith("chrome-extension://")) {  // && isRelative(src)) {
         try {
-          const script = await fetch(this.getAbsoluteUrl(url, src))
+          // console.log("checking2", src, async, defer)
+          const useSrc = src.startsWith("https://") || src.startsWith("http://") ?
+            src : `${url}/${src}`
+          const script = await fetch(this.getAbsoluteUrl(url, useSrc))
           if (script.status !== 404) {
             const s = await script.text()
-            $(elem).removeAttr("src")
-            $(elem).text(s)
+            // $(elem).removeAttr("src")
+            // $(elem).text(s)
+
+            // console.log("defer:", defer)
+            $(elem).before(`\n<!-- ${src}-->\n\n<script ${dump("charset", charset)}${dump("defer", defer)}>${s}</script>`)
+            $(elem).remove()
           }
         } catch (err: any) {
           console.log("err", err)
@@ -167,19 +214,22 @@ class ContentUtils {
       const media = $(elem).attr("media")
       const title = $(elem).attr("title")
       if (href) { // && isRelative(src)) {
-        console.log("checking1: ", href, this.isRelative(href))
-        const cssUrl = this.isRelative(href) ? `${url.protocol}//${url.hostname}/${this.noLeadingSlash(href)}` : href
+        //console.log("checking1: ", href, this.isRelative(href))
+        const cssUrl = this.isRelative(href) ?
+          (href.startsWith("/") ?
+            `${url.protocol}//${url.hostname}/${this.noLeadingSlash(href)}` : `${url}/${this.noLeadingSlash(href)}`) :
+          href
         try {
           console.log("css:", cssUrl)
           const script = await fetch(cssUrl)
           console.log("data", script.status)
           if (script.status !== 404) {
             let s = await script.text()
-            console.log("===>s", s)
+            //console.log("===>s", s)
             // s = s.replaceAll("/url\\(([^)]*)\\)/gm", function(a,b) {
             s = s.replaceAll(regex, function (a, b) {
               // return "***" + a + "***" + b + "***"
-              const normalizedGroup = b.trim().replace("\"", "").replace("'","")
+              const normalizedGroup = b.trim().replace("\"", "").replace("'", "")
               if (normalizedGroup.startsWith("http://") || normalizedGroup.startsWith("https://") || normalizedGroup.startsWith("data:")) {
                 return a
               }
@@ -190,7 +240,7 @@ class ContentUtils {
             })
 //            s = s.replaceAll("url", "***")
 
-            $(elem).before(`<style ${dump("title", title)}${dump("media", media)}>${s}</style>`)
+            $(elem).before(`\n<!-- ${href}-->\n\n<style ${dump("title", title)}${dump("media", media)}>${s}</style>`)
             $(elem).remove()
           }
         } catch (err: any) {
