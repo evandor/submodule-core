@@ -72,12 +72,13 @@ export function useUtils() {
   }
 
   function urlToHost(url: string): string {
-    try {
-      const theURL = new URL(url)
-      return theURL.host
-    } catch (err) {
-      return null as unknown as string
-    }
+    return url // new approach, needed to restore window
+    // try {
+    //   const theURL = new URL(url)
+    //   return theURL.host
+    // } catch (err) {
+    //   return null as unknown as string
+    // }
   }
 
   const calcHostList = (tabs: chrome.tabs.Tab[]): string[] => {
