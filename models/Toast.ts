@@ -1,5 +1,4 @@
 import {uid} from "quasar";
-import Command from "src/core/domain/Command";
 
 export enum ToastType {
   INFO = "INFO",

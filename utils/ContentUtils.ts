@@ -150,10 +150,6 @@ class ContentUtils {
               srcset : `${url}/${srcset}`
             // console.log("src:", src)
             if (src && !src.startsWith("chrome-extension://") && !src.startsWith("data:image")) { // && isRelative(src)) {
-              const usingSrc = this.getAbsoluteUrl(url, src)
-              //console.log("this.getAbsoluteUrl(url, src)", usingSrc)
-              const base64rep = await this.imageUrlToBase64(usingSrc) as string
-              //$(elem).attr("src", base64rep);
               $(elem).before(`\n<!-- ${src}-->\n\n<img src="${src}">`)
               $(elem).remove()
               break
@@ -167,7 +163,6 @@ class ContentUtils {
   async inlineScripts(url: URL, $: cheerio.CheerioAPI) {
     for (const elem of $('script')) {
       const src = $(elem).attr("src")
-      const async = $(elem).attr("async")
       const charset = $(elem).attr("charset")
       const defer = $(elem).attr("defer")
 
@@ -210,7 +205,6 @@ class ContentUtils {
         continue
       }
       const href = $(elem).attr("href")
-      const type = $(elem).attr("type")
       const media = $(elem).attr("media")
       const title = $(elem).attr("title")
       if (href) { // && isRelative(src)) {
@@ -257,7 +251,7 @@ class ContentUtils {
     const headWithBase = "<head><base href=\"" + url.protocol + "//" + url.hostname + "/\" />"
     //const headWithBase = "<head>"
 
-    const $ = cheerio.load(html);
+    // const $ = cheerio.load(html);
     // $("link").each(function () {
     //   let href = $(this).attr("href");
     //   if (href && isRelative(href)) {
