@@ -1,6 +1,7 @@
 import {Notify} from 'quasar'
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
 import {useUiStore} from "src/ui/stores/uiStore";
+import {BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope} from "@sentry/browser";
 
 export enum NotificationType {
   NOTIFY = "NOTIFY",
@@ -11,6 +12,29 @@ export function useNotificationHandler() {
 
   const handleError = (err: any, type: NotificationType = NotificationType.TOAST) => {
     const errorMsg = err ? err.toString() : 'unknown error'
+
+    const integrations = getDefaultIntegrations({}).filter(
+      (defaultIntegration) => {
+        return !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(
+          defaultIntegration.name,
+        );
+      },
+    );
+
+    const client = new BrowserClient({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.TABSETS_STAGE,
+      transport: makeFetchTransport,
+      stackParser: defaultStackParser,
+      integrations: integrations,
+    });
+
+    const scope = new Scope();
+    scope.setClient(client);
+    client.init();
+
+    scope.captureException(new Error(errorMsg));
+
     console.warn("showing error message: ", errorMsg)
     console.trace()
 
