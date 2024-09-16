@@ -24,6 +24,7 @@ export function useNotificationHandler() {
     const client = new BrowserClient({
       dsn: process.env.SENTRY_DSN,
       environment: process.env.TABSETS_STAGE,
+      release: "bibbly@" + import.meta.env.PACKAGE_VERSION,
       transport: makeFetchTransport,
       stackParser: defaultStackParser,
       integrations: integrations,
