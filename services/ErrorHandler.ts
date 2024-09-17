@@ -1,7 +1,8 @@
 import {Notify} from 'quasar'
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
 import {useUiStore} from "src/ui/stores/uiStore";
-import {BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope} from "@sentry/browser";
+import {BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope, feedbackIntegration} from "@sentry/browser";
+import {useErrorHandlingConfig} from "src/core/config/errorHandlingConfig";
 
 export enum NotificationType {
   NOTIFY = "NOTIFY",
@@ -11,28 +12,10 @@ export enum NotificationType {
 export function useNotificationHandler() {
 
   const handleError = (err: any, type: NotificationType = NotificationType.TOAST) => {
+
     const errorMsg = err ? err.toString() : 'unknown error'
-
-    const integrations = getDefaultIntegrations({}).filter(
-      (defaultIntegration) => {
-        return !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(
-          defaultIntegration.name,
-        );
-      },
-    );
-
-    const client = new BrowserClient({
-      dsn: process.env.SENTRY_DSN,
-      environment: process.env.TABSETS_STAGE,
-      release: "bibbly@" + import.meta.env.PACKAGE_VERSION,
-      transport: makeFetchTransport,
-      stackParser: defaultStackParser,
-      integrations: integrations,
-    });
-
-    const scope = new Scope();
-    scope.setClient(client);
-    client.init();
+    const {setupErrorHandling} = useErrorHandlingConfig()
+    var scope = setupErrorHandling()
 
     scope.captureException(new Error(errorMsg));
 
