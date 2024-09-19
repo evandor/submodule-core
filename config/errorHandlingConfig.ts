@@ -1,11 +1,4 @@
-import {
-  BrowserClient,
-  defaultStackParser,
-  feedbackIntegration,
-  getDefaultIntegrations,
-  makeFetchTransport,
-  Scope
-} from "@sentry/browser";
+import {BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope} from "@sentry/browser";
 
 export function useErrorHandlingConfig() {
 

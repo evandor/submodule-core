@@ -1,7 +1,6 @@
 import {Notify} from 'quasar'
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
 import {useUiStore} from "src/ui/stores/uiStore";
-import {BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope, feedbackIntegration} from "@sentry/browser";
 import {useErrorHandlingConfig} from "src/core/config/errorHandlingConfig";
 
 export enum NotificationType {
