@@ -2,11 +2,14 @@ import {Notify} from 'quasar'
 import {ExecutionResult} from "src/core/domain/ExecutionResult";
 import {useUiStore} from "src/ui/stores/uiStore";
 import {useErrorHandlingConfig} from "src/core/config/errorHandlingConfig";
+import {useLogger} from "src/services/Logger";
 
 export enum NotificationType {
   NOTIFY = "NOTIFY",
   TOAST = "TOAST"
 }
+
+const {error} = useLogger()
 
 export function useNotificationHandler() {
 
@@ -17,6 +20,8 @@ export function useNotificationHandler() {
     var scope = setupErrorHandling()
 
     scope.captureException(new Error(errorMsg));
+
+    error(errorMsg)
 
     console.warn("showing error message: ", errorMsg)
     console.trace()
