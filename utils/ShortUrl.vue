@@ -1,5 +1,5 @@
 <template>
-  <span class="brightBlueInDarkMode darkBlueInBrightMode">{{ props.label ? props.label : shortenUrl() }}
+  <span class="darkColors lightColors blueish">{{ props.label ? props.label : shortenUrl() }}
     <q-tooltip v-if="props.hostnameOnly" class="tooltip">{{ url }}</q-tooltip>
   </span>
 </template>
@@ -22,6 +22,18 @@ const shortenUrl = () => {
     }
   }
   return props.url
-  //return props.url.split('?')[0].replace("https://", "")
 }
 </script>
+
+
+<style scoped lang="scss">
+
+.body--dark .darkColors .blueish {
+  color: $blue-8;
+}
+
+.body--light .lightColors .bluish {
+  color: $blue-2;
+}
+
+</style>
