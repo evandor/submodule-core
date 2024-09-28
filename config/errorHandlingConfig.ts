@@ -16,8 +16,6 @@ export function useErrorHandlingConfig() {
     //   colorScheme: "system",
     // }))
 
-    console.log("integrations", integrations)
-
     const client = new BrowserClient({
       dsn: process.env.SENTRY_DSN,
       environment: process.env.TABSETS_STAGE,

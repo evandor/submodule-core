@@ -1,5 +1,6 @@
 <template>
-  <span class="darkColors lightColors blueish">{{ props.label ? props.label : shortenUrl() }}
+  <span class="darkColors lightColors blueish">
+    {{ props.label ? props.label : shortenUrl() }}
     <q-tooltip v-if="props.hostnameOnly" class="tooltip">{{ url }}</q-tooltip>
   </span>
 </template>
@@ -28,12 +29,12 @@ const shortenUrl = () => {
 
 <style scoped lang="scss">
 
-.body--dark .darkColors .blueish {
-  color: $blue-8;
+.body--dark .darkColors.blueish {
+  color: $blue-2;
 }
 
-.body--light .lightColors .bluish {
-  color: $blue-2;
+.body--light .lightColors.blueish {
+  color: $blue-8;
 }
 
 </style>
