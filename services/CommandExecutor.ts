@@ -25,10 +25,10 @@ export function useCommandExecutor() {
   }
 
   const execute = async (command: Command<any>): Promise<ExecutionResult<any>> => {
-    console.log(" * executing command", command)
+    console.log(" * executing command", command.toString())
     return command.execute()
       .catch(err => {
-        console.log("error in command", command)
+        console.log("error in command", command.toString())
         handleError(err)
         return new ExecutionFailureResult(null, err)
       })
