@@ -44,6 +44,15 @@ export function useUtils() {
     })
   }
 
+  const sanitizeAsPlainText = (input: string): string => {
+    return sanitizeHtml(input, {
+      allowedTags: [],
+      allowedAttributes: undefined
+    })
+  }
+
+
+
   const sanitizeAsHtml = (input: string): string => {
     return sanitizeHtml(input, {
       // disallowedTagsMode: "escape",
@@ -218,6 +227,7 @@ export function useUtils() {
     sanitize,
     sanitizeAsText,
     sanitizeAsHtml,
+    sanitizeAsPlainText,
     sendMsg,
     calcHostList,
     favIconFromUrl,
