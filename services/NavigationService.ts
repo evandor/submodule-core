@@ -1,5 +1,3 @@
-import {useUrlHandlers} from "src/tabsets/specialHandling/SpecialUrls";
-
 export function useNavigationService() {
 
   const placeholderPattern = /\${[^}]*}/gm
