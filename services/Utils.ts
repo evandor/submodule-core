@@ -59,7 +59,7 @@ export function useUtils() {
       // allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'base','img', 'style','script','head','html','body', 'form','a','svg','iframe','meta','body',
       // 'title','link','noscript','input','template','button','label','fieldset','picture','source','select','details','dialog','path',
       // 'option','circle','style','symbol','g','use','summary']),
-      allowedTags: false,
+      allowedTags: [],
       allowedAttributes: false
     })
   }
