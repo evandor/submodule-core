@@ -22,37 +22,10 @@ export function useNavigationService() {
       })
       return Promise.resolve(createdTab)
     }
+    if (tabs.length > 1) {
+      console.log("found multiple tabs: ", tabs)
+    }
     return Promise.resolve(tabs[0])
-    // tabs
-    //   .map(r => {
-    //     let matchCondition = url === r.url
-    //     // console.log("===>", matchCondition, url, r.url)
-    //     // if (matchCondition) {
-    //     //   if (!found) { // highlight only first hit
-    //     //     found = true
-    //     //     // console.debug("found something", r)
-    //     //     //
-    //     //     // const tabsForUrl = useTabsetsStore().tabsForUrl(url)
-    //     //     // console.log("tabsForUrl", tabsForUrl)
-    //     //     // const lastActive = _.min(_.map(tabsForUrl, tfu => tfu.tab.lastActive))
-    //     //     // const {handleSuccess} = useNotificationHandler()
-    //     //     // if (r.active) {
-    //     //     //   console.log(`lastActive ${lastActive}, now: ${new Date().getTime()}, diff: ${new Date().getTime() - (lastActive || new Date().getTime())}`)
-    //     //     //   if (lastActive && new Date().getTime() - lastActive > 1000 * 60) {
-    //     //     //     handleSuccess(new ExecutionResult("", "already opened,...", new Map([["Refresh", new RefreshTabCommand(r.id!, url)]])))
-    //     //     //   } else {
-    //     //     //     handleSuccess(new ExecutionResult("", "already opened..."))
-    //     //     //   }
-    //     //     // } else {
-    //     //     //   if (lastActive && new Date().getTime() - lastActive > 1000 * 60) {
-    //     //     //     handleSuccess(new ExecutionResult("", "maybe outdated...", new Map([["Refresh?", new RefreshTabCommand(r.id!, url)]])))
-    //     //     //   }
-    //     //     // }
-    //     //     // chrome.tabs.highlight({tabs: r.index});
-    //     //     return Promise.resolve(r)
-    //     //   }
-    //     // }
-    //   })
   }
 
   return {
