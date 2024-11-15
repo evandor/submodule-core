@@ -8,7 +8,7 @@ const {handleSuccess, handleError} = useNotificationHandler()
 export function useCommandExecutor() {
 
   const executeFromUi = async (command: Command<any>, type: NotificationType = NotificationType.TOAST): Promise<ExecutionResult<any>> => {
-    console.log(" * executing command", command)
+    console.log(" * executing command", command.toString())
     useUiStore().commandExecuting = true
     return command.execute()
       .then((res: ExecutionResult<any>) => {
