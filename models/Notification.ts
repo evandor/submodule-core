@@ -8,7 +8,7 @@ export enum NotificationStatus {
 export class Notification {
 
   _id: string;
-  private created: number;
+  created: number;
   updated: number | undefined;
   status: NotificationStatus;
 
