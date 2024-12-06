@@ -1,6 +1,7 @@
 <template>
   <q-item
     clickable
+    :dense="dense"
     :disable="props.disable"
     @click.stop="emits('wasClicked')">
     <q-item-section  style="padding-right:0;min-width:25px;max-width: 25px;">
@@ -22,7 +23,8 @@ const props = defineProps({
   icon: {type: String, required: true},
   label: {type: String, required: true},
   color: {type: String, default: 'info'},
-  disable: {type: Boolean, default: false}
+  disable: {type: Boolean, default: false},
+  dense: {type: Boolean, default: false}
 })
 
 </script>
