@@ -100,7 +100,7 @@ export function useUtils() {
     try {
       theRealUrl = new URL(url)
     } catch (err) {
-      if (!url.startsWith('http')) {
+      if (url && !url.startsWith('http')) {
         url = 'https://' + url
         try {
           theRealUrl = new URL(url)
