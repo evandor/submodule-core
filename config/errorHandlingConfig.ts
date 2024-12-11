@@ -17,8 +17,8 @@ export function useErrorHandlingConfig() {
     // }))
 
     const client = new BrowserClient({
-      dsn: process.env.SENTRY_DSN,
-      environment: process.env.TABSETS_STAGE,
+      dsn: process.env.SENTRY_DSN!,
+      environment: process.env.TABSETS_STAGE!,
       release: process.env.SENTRY_PROJECT_NAME + "@" + import.meta.env.PACKAGE_VERSION,
       transport: makeFetchTransport,
       stackParser: defaultStackParser,

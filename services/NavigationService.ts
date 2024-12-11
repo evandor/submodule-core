@@ -27,7 +27,7 @@ export function useNavigationService() {
       console.log("tabsFromBrowser", tabsFromBrowser)
     }
     //console.log("found one tab:", tabs[0])
-    return Promise.resolve(tabs[0])
+    return Promise.resolve(tabs[0]!)
   }
 
   return {
