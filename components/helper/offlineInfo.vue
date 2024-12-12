@@ -1,7 +1,7 @@
 <template>
   <div v-if="!useUiStore().networkOnline"
        class="q-ma-md q-pa-sm justify text-body1" style="border:1px dotted red;border-radius: 3px">
-    Sorry, you seem to be offline... try to <a href="#" @click="reload()" class="cursor-pointer text-blue-10">reload</a> in some minutes
+    Sorry, you seem to be offline... try to <a href="#" @click="reload()" class="cursor-pointer text-accent">reload</a> in some minutes
   </div>
 
   <div v-else-if="networkSlow()"
