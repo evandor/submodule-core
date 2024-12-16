@@ -18,7 +18,7 @@ export const usePermissionsStore = defineStore('permissions', () => {
       return
     }
     if (chrome) { // issues in vitest where chrome is not defined
-      // @ts-ignore
+      // @ts-expect-error
       permissions.value = await chrome.permissions.getAll()
       if (permissions.value) {
         grantedOptionalPermissions.value = permissions.value.permissions ? permissions.value.permissions : []
@@ -29,7 +29,7 @@ export const usePermissionsStore = defineStore('permissions', () => {
 
   async function grantPermission(permission: string): Promise<boolean> {
     console.log("about to grant permission", permission)
-    // @ts-ignore
+    // @ts-expect-error
     const granted: boolean = await chrome.permissions.request({permissions: [permission]})
     console.log("permission granted: ", granted)
     return load()
@@ -37,7 +37,7 @@ export const usePermissionsStore = defineStore('permissions', () => {
   }
 
   async function revokePermission(permission: string): Promise<void> {
-    // @ts-ignore
+    // @ts-expect-error
     await chrome.permissions.remove({permissions: [permission]})
     await load()
     return Promise.resolve()

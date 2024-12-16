@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error
 import {convert} from "html-to-text"
 import * as cheerio from 'cheerio';
 
