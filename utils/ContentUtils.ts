@@ -122,9 +122,9 @@ class ContentUtils {
 
 
       return $.html()
-    } catch (err) {
+    } catch (err:any) {
       console.error(err);
-      return "could not process due to " + err
+      return "could not process due to " + err.toString()
     }
   }
 
