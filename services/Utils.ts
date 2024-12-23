@@ -1,14 +1,13 @@
-import {formatDistance} from "date-fns";
-import sanitizeHtml from "sanitize-html";
-import _ from "lodash";
+import { formatDistance } from 'date-fns'
+import sanitizeHtml from 'sanitize-html'
+import _ from 'lodash'
 
 export function useUtils() {
-
   const formatDate = (timestamp: number | undefined) =>
-    timestamp ? formatDistance(timestamp, new Date(), {addSuffix: true}) : ""
+    timestamp ? formatDistance(timestamp, new Date(), { addSuffix: true }) : ''
 
   const createDataTestIdentifier = (prefix: string, url: string) =>
-    prefix + "_" + url.replace("https://", "").replaceAll('.', '').replaceAll("/", "")
+    prefix + '_' + url.replace('https://', '').replaceAll('.', '').replaceAll('/', '')
 
   const inBexMode = () => process.env.MODE === 'bex'
   const modeIs = (ident: string) => process.env.MODE === ident
@@ -18,40 +17,38 @@ export function useUtils() {
       new URL(url)
       return url
     } catch (err) {
-      return "https://" + url
+      return 'https://' + url
     }
   }
 
   const sanitize = (input: string): string => {
     return sanitizeHtml(input, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
-      allowedAttributes: sanitizeHtml.defaults.allowedAttributes = {
+      allowedAttributes: (sanitizeHtml.defaults.allowedAttributes = {
         a: ['href', 'name', 'target'],
-        img: ['src', 'srcset', 'alt', 'title', 'width', 'height', 'loading']
-      },
+        img: ['src', 'srcset', 'alt', 'title', 'width', 'height', 'loading'],
+      }),
       allowedSchemesByTag: {
-        img: ['data']
-      }
+        img: ['data'],
+      },
     })
   }
 
   const sanitizeAsText = (input: string): string => {
     return sanitizeHtml(input, {
-      allowedTags: sanitizeHtml.defaults.allowedTags,//.concat(['img']),
-      allowedAttributes: sanitizeHtml.defaults.allowedAttributes = {
-        a: ['href', 'name', 'target']
-      }
+      allowedTags: sanitizeHtml.defaults.allowedTags, //.concat(['img']),
+      allowedAttributes: (sanitizeHtml.defaults.allowedAttributes = {
+        a: ['href', 'name', 'target'],
+      }),
     })
   }
 
   const sanitizeAsPlainText = (input: string): string => {
     return sanitizeHtml(input, {
       allowedTags: [],
-      allowedAttributes: undefined
+      allowedAttributes: undefined,
     })
   }
-
-
 
   const sanitizeAsHtml = (input: string): string => {
     return sanitizeHtml(input, {
@@ -60,23 +57,28 @@ export function useUtils() {
       // 'title','link','noscript','input','template','button','label','fieldset','picture','source','select','details','dialog','path',
       // 'option','circle','style','symbol','g','use','summary']),
       allowedTags: [],
-      allowedAttributes: false
+      allowedAttributes: false,
     })
   }
 
   const sendMsg = (msgName: string, data: object = {}) => {
     if (inBexMode() && chrome) {
-      console.debug(" >>> sending message", {name: msgName, data})
-      chrome.runtime.sendMessage({
-        name: msgName, data: data
-      }, (callback: any) => {
-        if (callback) {
-          console.log("got callback", callback)
-        }
-        if (chrome.runtime.lastError) { /* ignore */
-          console.debug("Logging error after sendMsg", msgName, chrome.runtime.lastError)
-        }
-      });
+      console.debug(' >>> sending message', { name: msgName, data })
+      chrome.runtime.sendMessage(
+        {
+          name: msgName,
+          data: data,
+        },
+        (callback: any) => {
+          if (callback) {
+            console.log('got callback', callback)
+          }
+          if (chrome.runtime.lastError) {
+            /* ignore */
+            console.debug('Logging error after sendMsg', msgName, chrome.runtime.lastError)
+          }
+        },
+      )
     }
   }
 
@@ -91,7 +93,9 @@ export function useUtils() {
   }
 
   const calcHostList = (tabs: chrome.tabs.Tab[]): string[] => {
-    const stringArray = Array.from(new Set(_.map(tabs, (bwTabs: chrome.tabs.Tab) => urlToHost(bwTabs.url || ''))))
+    const stringArray = Array.from(
+      new Set(_.map(tabs, (bwTabs: chrome.tabs.Tab) => urlToHost(bwTabs.url || ''))),
+    )
     return _.filter(stringArray, (e: string | undefined) => e !== null)
   }
 
@@ -104,24 +108,28 @@ export function useUtils() {
         url = 'https://' + url
         try {
           theRealUrl = new URL(url)
-        } catch (err) {
-        }
+        } catch (err) {}
       }
     }
-    return theRealUrl ? "https://icons.duckduckgo.com/ip3/" + theRealUrl.hostname + ".ico" : ''
+    return theRealUrl ? 'https://icons.duckduckgo.com/ip3/' + theRealUrl.hostname + '.ico' : ''
   }
 
   // from https://www.npmjs.com/package/serialize-selection?activeTab=code
-  const restoreSelection = (state: any, referenceNode: any = undefined, rect: object, viewport: object, color: string = 'grey') => {
-
-    console.log("restoring", state, rect, viewport, color)
+  const restoreSelection = (
+    state: any,
+    referenceNode: any = undefined,
+    rect: object,
+    viewport: object,
+    color: string = 'grey',
+  ) => {
+    console.log('restoring', state, rect, viewport, color)
 
     referenceNode = referenceNode || document.body
 
-    let i
-      , node
-      , nextNodeCharIndex
-      , currentNodeCharIndex = 0
+    let i,
+      node,
+      nextNodeCharIndex,
+      currentNodeCharIndex = 0
     let nodes = [referenceNode]
     let sel = window.getSelection()
     let range = document.createRange()
@@ -129,8 +137,9 @@ export function useUtils() {
     range.setStart(referenceNode, 0)
     range.collapse(true)
 
-    while (node = nodes.pop()) {
-      if (node.nodeType === 3) { // TEXT_NODE
+    while ((node = nodes.pop())) {
+      if (node.nodeType === 3) {
+        // TEXT_NODE
         nextNodeCharIndex = currentNodeCharIndex + node.length
 
         // if this node contains the character at the start index, set this as the
@@ -151,7 +160,6 @@ export function useUtils() {
         // range.surroundContents()
         //sel?.removeAllRanges()
       } else {
-
         // get child nodes if the current node is not a text node
         i = node.childNodes.length
         while (i--) {
@@ -164,12 +172,12 @@ export function useUtils() {
     // console.log("adding range", range, range.getBoundingClientRect())
     sel!.addRange(range)
 
-    console.log("range", range)
+    console.log('range', range)
     try {
-      let newNode = document.createElement('span');
-      console.log("setting style to ", `background-color: ${color};`)
-      newNode.setAttribute("style", `background-color: ${color};`)
-      range.surroundContents(newNode);
+      let newNode = document.createElement('span')
+      console.log('setting style to ', `background-color: ${color};`)
+      newNode.setAttribute('style', `background-color: ${color};`)
+      range.surroundContents(newNode)
     } catch (e) {
       console.log(e)
     }
@@ -184,7 +192,7 @@ export function useUtils() {
     //window.scrollBy(0,500)
 
     const container = range.commonAncestorContainer
-    container.parentElement?.scrollIntoView({ behavior: "smooth", inline: "start" })
+    container.parentElement?.scrollIntoView({ behavior: 'smooth', inline: 'start' })
 
     return sel
   }
@@ -192,13 +200,11 @@ export function useUtils() {
   const serializeSelection = (referenceNode: any = undefined) => {
     referenceNode = referenceNode || document.body
 
-    var sel = window.getSelection()
-      , range = sel!.rangeCount
-      ? sel!.getRangeAt(0).cloneRange()
-      : document.createRange()
-      , startContainer = range.startContainer
-      , startOffset = range.startOffset
-      , state: { [k: string]: any } = {content: range.toString()}
+    var sel = window.getSelection(),
+      range = sel!.rangeCount ? sel!.getRangeAt(0).cloneRange() : document.createRange(),
+      startContainer = range.startContainer,
+      startOffset = range.startOffset,
+      state: { [k: string]: any } = { content: range.toString() }
 
     // move the range to select the contents up to the selection
     // so we can find its character offset from the reference node
@@ -233,6 +239,6 @@ export function useUtils() {
     favIconFromUrl,
     restoreSelection,
     serializeSelection,
-    throwIdNotFound
+    throwIdNotFound,
   }
 }

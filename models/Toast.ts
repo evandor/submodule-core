@@ -1,22 +1,21 @@
-import {uid} from "quasar";
+import { uid } from 'quasar'
 
 export enum ToastType {
-  INFO = "INFO",
-  WARNING = "WARNING",
-  ERROR = "ERROR"
+  INFO = 'INFO',
+  WARNING = 'WARNING',
+  ERROR = 'ERROR',
 }
 
 export class Toast {
-
   public id: string
-  public created: number;
+  public created: number
 
   constructor(
     public msg: string,
     public type: ToastType,
-    public actions: any[] = []) {
+    public actions: any[] = [],
+  ) {
     this.id = uid()
     this.created = new Date().getTime()
   }
-
 }

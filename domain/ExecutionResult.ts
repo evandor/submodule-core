@@ -1,4 +1,4 @@
-import Command from "src/core/domain/Command";
+import Command from 'src/core/domain/Command'
 
 /**
  * the nextCommands parameter can be constructed like this:
@@ -8,10 +8,8 @@ export class ExecutionResult<T> {
   constructor(
     public result: T,
     public message: string,
-    public nextCommands: Map<string, Command<any>> = new Map()) {
-  }
+    public nextCommands: Map<string, Command<any>> = new Map(),
+  ) {}
 }
 
-export class ExecutionFailureResult extends ExecutionResult<any> {
-
-}
+export class ExecutionFailureResult extends ExecutionResult<any> {}

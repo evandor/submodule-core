@@ -1,5 +1,4 @@
 <template>
-
   <q-item clickable v-ripple>
     <q-item-section class="q-mb-md">
       <q-item-label overline>{{ props.title }}</q-item-label>
@@ -9,10 +8,8 @@
 </template>
 
 <script lang="ts" setup>
-
 const props = defineProps({
-  title: {type: String, default: ""},
-  value: {type: String, default: ""}
+  title: { type: String, default: '' },
+  value: { type: String, default: '' },
 })
-
 </script>

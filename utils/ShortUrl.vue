@@ -6,11 +6,10 @@
 </template>
 
 <script lang="ts" setup>
-
 const props = defineProps({
-  url: {type: String, required: true},
-  label: {type: String, required: false},
-  hostnameOnly: {type: Boolean, default: false}
+  url: { type: String, required: true },
+  label: { type: String, required: false },
+  hostnameOnly: { type: Boolean, default: false },
 })
 
 const shortenUrl = () => {
@@ -19,16 +18,14 @@ const shortenUrl = () => {
       const theURL = new URL(props.url)
       return theURL.hostname
     } catch (e) {
-      return "-"
+      return '-'
     }
   }
   return props.url
 }
 </script>
 
-
 <style scoped lang="scss">
-
 .body--dark .darkColors.blueish {
   color: $blue-2;
 }
@@ -36,5 +33,4 @@ const shortenUrl = () => {
 .body--light .lightColors.blueish {
   color: $blue-8;
 }
-
 </style>
