@@ -17,8 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watchEffect } from 'vue'
 import { useUiStore } from 'src/ui/stores/uiStore'
+import { ref, watchEffect } from 'vue'
 
 const search = ref('')
 

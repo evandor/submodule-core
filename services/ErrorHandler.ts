@@ -1,8 +1,8 @@
 import { Notify } from 'quasar'
-import { ExecutionResult } from 'src/core/domain/ExecutionResult'
-import { useUiStore } from 'src/ui/stores/uiStore'
 import { useErrorHandlingConfig } from 'src/core/config/errorHandlingConfig'
+import { ExecutionResult } from 'src/core/domain/ExecutionResult'
 import { useLogger } from 'src/services/Logger'
+import { useUiStore } from 'src/ui/stores/uiStore'
 
 export enum NotificationType {
   NOTIFY = 'NOTIFY',

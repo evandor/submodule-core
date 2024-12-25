@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { TabsetInfo } from 'src/core/models/TabsetInfo'
 import { SpaceInfo } from 'src/core/models/SpaceInfo'
+import { TabsetInfo } from 'src/core/models/TabsetInfo'
+import { ref } from 'vue'
 
 /**
  * a pinia store for a quick-access-registry of available entities (type, name and id).

@@ -1,6 +1,6 @@
 import { formatDistance } from 'date-fns'
-import sanitizeHtml from 'sanitize-html'
 import _ from 'lodash'
+import sanitizeHtml from 'sanitize-html'
 
 export function useUtils() {
   const formatDate = (timestamp: number | undefined) =>

@@ -1,6 +1,6 @@
-import { useContentStore } from 'src/content/stores/contentStore'
 import { ContentItem } from 'src/content/models/ContentItem'
 import { useContentService } from 'src/content/services/ContentService'
+import { useContentStore } from 'src/content/stores/contentStore'
 import ContentUtils from 'src/core/utils/ContentUtils'
 
 class BexFunctions {

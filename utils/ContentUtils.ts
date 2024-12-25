@@ -1,6 +1,6 @@
+import * as cheerio from 'cheerio'
 // @ts-expect-error TODO
 import { convert } from 'html-to-text'
-import * as cheerio from 'cheerio'
 
 function dump(name: string, val: string | undefined) {
   if (val === 'async') {
