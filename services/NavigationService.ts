@@ -24,6 +24,7 @@ export function useNavigationService() {
       console.log('tabsFromBrowser', tabsFromBrowser)
     }
     //console.log("found one tab:", tabs[0])
+    await chrome.tabs.update(tabs[0]!.id!, { active: true })
     return Promise.resolve(tabs[0]!)
   }
 
