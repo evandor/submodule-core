@@ -148,10 +148,7 @@ class ContentUtils {
         if (p.name === 'source') {
           const srcset = $(p).attr('srcset')
           if (srcset) {
-            const src =
-              srcset.startsWith('https://') || srcset.startsWith('http://')
-                ? srcset
-                : `${url}/${srcset}`
+            const src = srcset.startsWith('https://') || srcset.startsWith('http://') ? srcset : `${url}/${srcset}`
             // console.log("src:", src)
             if (src && !src.startsWith('chrome-extension://') && !src.startsWith('data:image')) {
               // && isRelative(src)) {
