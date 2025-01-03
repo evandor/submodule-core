@@ -18,11 +18,7 @@ class ContentUtils {
     if (!href) {
       return true
     }
-    return !(
-      href.startsWith('http://') ||
-      href.startsWith('https://') ||
-      href.startsWith('chrome-extension://')
-    )
+    return !(href.startsWith('http://') || href.startsWith('https://') || href.startsWith('chrome-extension://'))
   }
 
   private getAbsoluteUrl(url: URL, path: string): string {
@@ -58,10 +54,7 @@ class ContentUtils {
     //console.log("got text2", text2)
     const tokens = text2
       .replaceAll('\\n', ' ')
-      .replaceAll(
-        '[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}',
-        ' ',
-      )
+      .replaceAll('[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}', ' ')
       .replaceAll('[\u00AD\u002D\u2011]', ' ')
       .replaceAll('\n', ' ')
       .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>»«{}\[\]\\\/]/gi, ' ')
@@ -172,8 +165,7 @@ class ContentUtils {
         // && isRelative(src)) {
         try {
           // console.log("checking2", src, async, defer)
-          const useSrc =
-            src.startsWith('https://') || src.startsWith('http://') ? src : `${url}/${src}`
+          const useSrc = src.startsWith('https://') || src.startsWith('http://') ? src : `${url}/${src}`
           const script = await fetch(this.getAbsoluteUrl(url, useSrc))
           if (script.status !== 404) {
             const s = await script.text()
@@ -246,9 +238,7 @@ class ContentUtils {
             })
             //            s = s.replaceAll("url", "***")
 
-            $(elem).before(
-              `\n<!-- ${href}-->\n\n<style ${dump('title', title)}${dump('media', media)}>${s}</style>`,
-            )
+            $(elem).before(`\n<!-- ${href}-->\n\n<style ${dump('title', title)}${dump('media', media)}>${s}</style>`)
             $(elem).remove()
           }
         } catch (err: any) {

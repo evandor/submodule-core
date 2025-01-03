@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="col cursor-pointer"
-    v-for="c in colors"
-    :style="colorStyle(c.ident)"
-    @click="setColor(c.ident)"
-  >
+  <div class="col cursor-pointer" v-for="c in colors" :style="colorStyle(c.ident)" @click="setColor(c.ident)">
     &nbsp;
     <template>
       <q-icon class="q-pl-xs" color="white" name="done"></q-icon>
@@ -13,8 +8,7 @@
   <div
     class="col cursor-pointer"
     @click="setColor(undefined)"
-    style="border: 1px solid grey; max-height: 22px; max-width: 12px"
-  >
+    style="border: 1px solid grey; max-height: 22px; max-width: 12px">
     <template>
       <q-icon class="q-pl-xs" color="white" name="done"></q-icon>
     </template>
@@ -53,10 +47,6 @@ const setColor = (color: string | undefined) => {
 
 const colorStyle = (c: string) =>
   theColor.value === c
-    ? 'background-color: ' +
-      c +
-      ';max-height:32px;max-width:14px;border:2px solid grey;border-radius: 2px'
-    : 'background-color: ' +
-      c +
-      ';max-height:22px;max-width:12px;border:1px solid grey;border-radius: 2px'
+    ? 'background-color: ' + c + ';max-height:32px;max-width:14px;border:2px solid grey;border-radius: 2px'
+    : 'background-color: ' + c + ';max-height:22px;max-width:12px;border:1px solid grey;border-radius: 2px'
 </script>

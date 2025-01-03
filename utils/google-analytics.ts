@@ -99,9 +99,7 @@ class Analytics {
       }
       //console.log("ga: fireEvent", payload)
       const response = await fetch(
-        `${
-          this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT
-        }?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
+        `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
         {
           method: 'POST',
           body: JSON.stringify(payload),

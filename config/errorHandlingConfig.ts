@@ -1,17 +1,9 @@
-import {
-  BrowserClient,
-  defaultStackParser,
-  getDefaultIntegrations,
-  makeFetchTransport,
-  Scope,
-} from '@sentry/browser'
+import { BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope } from '@sentry/browser'
 
 export function useErrorHandlingConfig() {
   const setupErrorHandling = () => {
     const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
-      return !['BrowserApiErrors', 'Breadcrumbs', 'GlobalHandlers'].includes(
-        defaultIntegration.name,
-      )
+      return !['BrowserApiErrors', 'Breadcrumbs', 'GlobalHandlers'].includes(defaultIntegration.name)
     })
 
     // integrations.push(feedbackIntegration({

@@ -8,8 +8,7 @@
     size="0.9rem"
     data-testid="addTabsetSubmitBtn"
     :color="props.color"
-    :label="props.label"
-  />
+    :label="props.label" />
 </template>
 
 <script lang="ts" setup>

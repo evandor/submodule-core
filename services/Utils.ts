@@ -93,9 +93,7 @@ export function useUtils() {
   }
 
   const calcHostList = (tabs: chrome.tabs.Tab[]): string[] => {
-    const stringArray = Array.from(
-      new Set(_.map(tabs, (bwTabs: chrome.tabs.Tab) => urlToHost(bwTabs.url || ''))),
-    )
+    const stringArray = Array.from(new Set(_.map(tabs, (bwTabs: chrome.tabs.Tab) => urlToHost(bwTabs.url || ''))))
     return _.filter(stringArray, (e: string | undefined) => e !== null)
   }
 

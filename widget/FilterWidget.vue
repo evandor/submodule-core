@@ -10,8 +10,7 @@
       color="primary"
       bg-color="white"
       label-color="primary"
-      v-model="search"
-    >
+      v-model="search">
     </q-input>
   </div>
 </template>
