@@ -26,7 +26,7 @@ const networkSlow = () => {
     return false
   }
   var type = networkState['type' as keyof object]
-  console.log('chekcing network type', type)
+  //console.log('checking network type', type)
   if (['slow-2g', '2g', '3g'].indexOf(type) >= 0) {
     return true
   }
