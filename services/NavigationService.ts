@@ -1,3 +1,5 @@
+import { useWindowsStore } from 'src/windows/stores/windowsStore'
+
 export function useNavigationService() {
   const placeholderPattern = /\${[^}]*}/gm
 
@@ -28,8 +30,38 @@ export function useNavigationService() {
     return Promise.resolve(tabs[0]!)
   }
 
+  const openTabsInNewWindow = async (withUrls: string[], windowName: string) => {
+    console.log(` > opening #url ${withUrls.length} in window: '${windowName}'`)
+
+    const windowFromDb = await useWindowsStore().windowFor(windowName)
+    const existingWindow = await useWindowsStore().currentWindowFor(windowName)
+
+    console.log('existingWindow:', windowFromDb, existingWindow)
+    if (!existingWindow) {
+      const createData: chrome.windows.CreateData = { url: withUrls }
+      if (windowFromDb) {
+        const w = windowFromDb.browserWindow
+        createData.left = w?.left || 50
+        createData.top = w?.top || 50 //(w.top || 0) < 0 ? 0 : w.top
+        createData.width = w?.width || 1200 //(w.width || -1) < 0 ? 600 : w.width
+        createData.height = w?.height || 800 //(w.top || -1) < 0 ? 400 : w.height
+        // window does not exist anymore, remove from 'allWindows'
+        await useWindowsStore().removeWindow(windowFromDb.id)
+      }
+
+      return await createNewWindow(createData, windowName, withUrls)
+    }
+    return Promise.reject('not implemented')
+  }
+
+  const createNewWindow = async (createData: chrome.windows.CreateData, useWindowIdent: string, withUrls: string[]) => {
+    console.log('opening new window with', createData)
+    return await chrome.windows.create(createData)
+  }
+
   return {
     init,
     browserTabFor,
+    openTabsInNewWindow,
   }
 }
