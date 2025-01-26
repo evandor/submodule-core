@@ -10,6 +10,7 @@ export function useCommandExecutor() {
     command: Command<any>,
     type: NotificationType = NotificationType.TOAST,
   ): Promise<ExecutionResult<any>> => {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     console.log(' * executing command', command.toString())
     useUiStore().commandExecuting = true
     return command
@@ -28,8 +29,10 @@ export function useCommandExecutor() {
   }
 
   const execute = async (command: Command<any>): Promise<ExecutionResult<any>> => {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     console.log(' * executing command', command.toString())
     return command.execute().catch((err) => {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       console.log('error in command', command.toString())
       handleError(err)
       return new ExecutionFailureResult(null, err)
