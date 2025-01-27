@@ -29,7 +29,7 @@ export class GrantPermissionCommand implements Command<boolean> {
           //     .then(() => {
           //       ChromeBookmarkListeners.initListeners()
           //     })
-          //   useSuggestionsStore().removeSuggestion(StaticSuggestionIdent.TRY_BOOKMARKS_FEATURE)
+          //   useSuggestionsStore().removeSuggestion('TRY_BOOKMARKS_FEATURE')
           // } else if ("notifications" === this.permission) {
           //   useFeaturesStore().activateFeature('notifications')
           // }
