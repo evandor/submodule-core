@@ -18,9 +18,7 @@ class BexFunctions {
     event: string
     payload: object
   }) => {
-    console.log(
-      `[BEX-APP] ${event} <<< ${from}, ${to}, html#:${((payload['html' as keyof object] as string) || '').length}`,
-    )
+    console.log(`[BEX-APP] ${event} <<< html#:${((payload['html' as keyof object] as string) || '').length}`)
 
     const theUrl = payload['url' as keyof object]
 

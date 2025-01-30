@@ -222,6 +222,12 @@ export function useUtils() {
     throw new Error(`id for ${identifier} not found: ${id}`)
   }
 
+  const addListenerOnce = <T extends Function>(browserEvent: chrome.events.Event<T>, listener: T) => {
+    if (!browserEvent.hasListener(listener)) {
+      browserEvent.addListener(listener)
+    }
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -238,5 +244,6 @@ export function useUtils() {
     restoreSelection,
     serializeSelection,
     throwIdNotFound,
+    addListenerOnce,
   }
 }
