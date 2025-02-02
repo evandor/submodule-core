@@ -1,5 +1,7 @@
 import { useUtils } from 'src/core/services/Utils'
 
+// see https://developer.chrome.com/docs/extensions/how-to/integrate/google-analytics-4
+
 const { inBexMode } = useUtils()
 
 const GA_ENDPOINT = 'https://www.google-analytics.com/mp/collect'
@@ -97,7 +99,7 @@ class Analytics {
           },
         ],
       }
-      //console.log("ga: fireEvent", payload)
+      //console.log('ga: fireEvent', payload)
       const response = await fetch(
         `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
         {
@@ -137,4 +139,4 @@ class Analytics {
   }
 }
 
-export default new Analytics()
+export default new Analytics(process.env.TABSETS_STAGE === 'DEV')
