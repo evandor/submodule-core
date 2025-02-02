@@ -90,21 +90,19 @@ class Analytics {
     }
 
     try {
-      const payload = {
-        client_id: await this.getOrCreateClientId(),
-        events: [
-          {
-            name,
-            params,
-          },
-        ],
-      }
-      //console.log('ga: fireEvent', payload)
       const response = await fetch(
         `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
         {
           method: 'POST',
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            client_id: await this.getOrCreateClientId(),
+            events: [
+              {
+                name,
+                params,
+              },
+            ],
+          }),
         },
       )
       if (!this.debug) {
@@ -119,13 +117,11 @@ class Analytics {
   // Fire a page view event.
   async firePageViewEvent(pageTitle: string, pageLocation: string, additionalParams = {}) {
     const location = pageLocation.indexOf('#') >= 0 ? pageLocation.split('#')[1] : pageLocation
-    const params = {
+    return this.fireEvent('page_view', {
       page_title: pageTitle,
       page_location: location,
       ...additionalParams,
-    }
-    //console.log("ga: firePageViewEvent with params", params)
-    return this.fireEvent('page_view', params)
+    })
   }
 
   // Fire an error event.
@@ -139,4 +135,5 @@ class Analytics {
   }
 }
 
-export default new Analytics(process.env.TABSETS_STAGE === 'DEV')
+// export default new Analytics(process.env.TABSETS_STAGE === 'DEV')
+export default new Analytics()
