@@ -3,9 +3,9 @@ import { ExecutionFailureResult, ExecutionResult } from 'src/core/domain/Executi
 import { NotificationType, useNotificationHandler } from 'src/core/services/ErrorHandler'
 import { useUiStore } from 'src/ui/stores/uiStore'
 
-const { handleSuccess, handleError } = useNotificationHandler()
-
 export function useCommandExecutor() {
+  const { handleSuccess, handleError } = useNotificationHandler()
+
   const executeFromUi = async (
     command: Command<any>,
     type: NotificationType = NotificationType.TOAST,
