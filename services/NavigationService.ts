@@ -5,7 +5,7 @@ export function useNavigationService() {
 
   const init = async () => {}
 
-  const browserTabFor = async (url: string): Promise<chrome.tabs.Tab> => {
+  const browserTabFor = async (url: string, forceReload: boolean = false): Promise<chrome.tabs.Tab> => {
     url = url.replace(placeholderPattern, '')
     console.log(` > opening url '${url}' in current window`)
 
@@ -21,12 +21,16 @@ export function useNavigationService() {
       })
       return Promise.resolve(createdTab)
     }
-    if (tabs.length > 1) {
-      console.log('found multiple tabs: ', tabs)
-      console.log('tabsFromBrowser', tabsFromBrowser)
-    }
+    // if (tabs.length > 1) {
+    //   console.log('found multiple tabs: ', tabs)
+    //   console.log('tabsFromBrowser', tabsFromBrowser)
+    // }
     //console.log("found one tab:", tabs[0])
-    await chrome.tabs.update(tabs[0]!.id!, { active: true })
+    await chrome.tabs.update(tabs[0]!.id!, { active: true }).then((chromeTab: chrome.tabs.Tab) => {
+      if (forceReload) {
+        chrome.tabs.reload(chromeTab.id!, { bypassCache: true })
+      }
+    })
     return Promise.resolve(tabs[0]!)
   }
 

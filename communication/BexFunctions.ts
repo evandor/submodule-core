@@ -20,7 +20,7 @@ class BexFunctions {
   }) => {
     console.log(`[BEX-APP] ${event} <<< html#:${((payload['html' as keyof object] as string) || '').length}`)
 
-    const theUrl = payload['url' as keyof object]
+    const theUrl = payload['url' as keyof object] as string
 
     // updating (transient) content in contentStore
     useContentStore().setCurrentTabUrl(theUrl)
