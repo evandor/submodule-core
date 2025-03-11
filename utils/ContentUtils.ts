@@ -99,22 +99,6 @@ class ContentUtils {
       await this.inlinePictures(url, $)
       await this.inlineCSS(url, $)
 
-      // const overlayScript = converted.window.document.createElement('script')
-      // overlayScript.onload = function() {
-      //   alert("Script loaded and ready");
-      // };
-      // //overlayScript.src = "chrome-extension://pndffocijjfpmphlhkoijmpfckjafdpl/www/js/my-content-script.js";
-      //
-      // overlayScript.type = 'text/javascript';
-      // var code = 'console.log("script insert");';
-      // try { // doesn't work on ie...
-      //   overlayScript.appendChild(document.createTextNode(code));
-      // } catch(e) { // IE has funky script nodes
-      //   overlayScript.text = code;
-      // }
-
-      // $('<script>alert("done")</script>').appendTo('body');
-
       return $.html()
     } catch (err: any) {
       console.error(err)
