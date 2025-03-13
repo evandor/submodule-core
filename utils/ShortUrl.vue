@@ -8,12 +8,12 @@
 <script lang="ts" setup>
 import Highlight from 'src/tabsets/widgets/Highlight.vue'
 
-const props = defineProps({
-  url: { type: String, required: true },
-  label: { type: String, required: false },
-  hostnameOnly: { type: Boolean, default: false },
-  filter: { type: String, required: false },
-})
+const props = defineProps<{
+  url: string
+  label?: string
+  hostnameOnly: boolean
+  filter?: string | undefined
+}>()
 
 const shortenUrl = () => {
   if (props.hostnameOnly) {
