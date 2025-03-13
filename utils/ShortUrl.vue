@@ -1,15 +1,18 @@
 <template>
   <span class="darkColors lightColors blueish">
-    {{ props.label ? props.label : shortenUrl() }}
+    <Highlight :filter="props.filter" :text="props.label ? props.label : shortenUrl() || ''" />
     <q-tooltip v-if="props.hostnameOnly" class="tooltip">{{ url }}</q-tooltip>
   </span>
 </template>
 
 <script lang="ts" setup>
+import Highlight from 'src/tabsets/widgets/Highlight.vue'
+
 const props = defineProps({
   url: { type: String, required: true },
   label: { type: String, required: false },
   hostnameOnly: { type: Boolean, default: false },
+  filter: { type: String, required: false },
 })
 
 const shortenUrl = () => {
