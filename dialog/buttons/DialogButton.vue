@@ -1,6 +1,7 @@
 <template>
   <q-btn
     :type="props.type"
+    outline
     padding="xs lg"
     :disable="props.disable"
     @click="emits('wasClicked')"
