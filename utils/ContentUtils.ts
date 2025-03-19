@@ -206,7 +206,6 @@ class ContentUtils {
             //console.log("===>s", s)
             // s = s.replaceAll("/url\\(([^)]*)\\)/gm", function(a,b) {
             s = s.replaceAll(regex, function (a, b) {
-              // return "***" + a + "***" + b + "***"
               const normalizedGroup = b.trim().replace('"', '').replace("'", '')
               if (
                 normalizedGroup.startsWith('http://') ||
@@ -220,8 +219,6 @@ class ContentUtils {
               console.log('with      ', res)
               return res
             })
-            //            s = s.replaceAll("url", "***")
-
             $(elem).before(`\n<!-- ${href}-->\n\n<style ${dump('title', title)}${dump('media', media)}>${s}</style>`)
             $(elem).remove()
           }
