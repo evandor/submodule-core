@@ -6,7 +6,7 @@ export function useErrorHandlingConfig() {
     const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
       return !['BrowserApiErrors', 'Breadcrumbs', 'GlobalHandlers'].includes(defaultIntegration.name)
     })
-    console.log('integrations', integrations)
+    //console.log('integrations', integrations)
 
     // integrations.push(feedbackIntegration({
     //   colorScheme: "system",
