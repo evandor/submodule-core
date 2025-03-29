@@ -4,7 +4,10 @@
       <q-icon size="xs" :name="props.icon" :color="color" />
     </q-item-section>
     <q-item-section>
-      {{ props.label }}
+      <span>
+        {{ props.label }}
+        <slot name="banner" />
+      </span>
     </q-item-section>
     <slot></slot>
   </q-item>

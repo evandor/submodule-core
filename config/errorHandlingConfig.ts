@@ -1,4 +1,4 @@
-import { BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope } from '@sentry/browser'
+import { BrowserClient, defaultStackParser, getDefaultIntegrations, makeFetchTransport, Scope } from '@sentry/vue'
 
 export function useErrorHandlingConfig() {
   const setupErrorHandling = () => {

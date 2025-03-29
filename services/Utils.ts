@@ -228,6 +228,83 @@ export function useUtils() {
     }
   }
 
+  // https://stackoverflow.com/questions/19846078/how-to-read-from-chromes-console-in-javascript
+  const setupConsoleInterceptor = (uiStore: any) => {
+    function timestamp() {
+      return new Date().toLocaleString('sv', { timeZone: 'UTC' }) + 'Z'
+    }
+
+    function stackTrace() {
+      //Create a stack trace for getting the line number and column (and other info if you want)
+      return new Error().stack
+    }
+
+    function handle(handler: any, level: string, args: any, persist = true) {
+      handler.apply(console, args)
+      if (persist) {
+        // const st = stackTrace()
+        // const stack = st ? st.match(/([0-9]+):([0-9]+$)/) : ['-', '-', '-']
+        // const file = stack ? stack[0] : '-'
+        // const lineNum = stack ? stack[1] : '-'
+        // const lineCol = stack ? stack[2] : '-'
+        uiStore.log('[' + timestamp() + '] [' + level + '] ' + args)
+      }
+    }
+
+    const debugLog = console.debug.bind(console)
+    const defaultLog = console.log.bind(console)
+    const warnLog = console.warn.bind(console)
+    const errorLog = console.error.bind(console)
+
+    console.debug = function (...args) {
+      handle(debugLog, 'debug', args, false)
+    }
+    console.log = function (...args) {
+      handle(defaultLog, 'log', args)
+    }
+    console.warn = function (...args) {
+      uiStore.increaseWarningCount()
+      handle(warnLog, 'warn', args)
+    }
+    console.error = function (...args) {
+      uiStore.increaseErrorCount()
+      handle(errorLog, 'error', args)
+    }
+    window.onerror = function (error, url, line) {
+      uiStore.increaseErrorCount()
+      uiStore.log(JSON.stringify([timestamp(), 'error', error, url, line]))
+      return false
+    }
+    window.onunhandledrejection = function (e) {
+      uiStore.increaseErrorCount()
+      uiStore.log(JSON.stringify([timestamp(), 'unhandled', e.reason]))
+    }
+  }
+  function useDblClickHandler(onClick: any, onDblClick: any) {
+    let expandTimes = 0
+    let expandTimer: any = null
+
+    const handleDblClick = () => {
+      expandTimes++
+
+      if (expandTimer) {
+        clearTimeout(expandTimer)
+      }
+
+      expandTimer = setTimeout(() => {
+        if (expandTimes === 1) {
+          onClick()
+        } else {
+          onDblClick()
+        }
+        expandTimer = null
+        expandTimes = 0
+      }, 200)
+    }
+
+    return handleDblClick
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -245,5 +322,7 @@ export function useUtils() {
     serializeSelection,
     throwIdNotFound,
     addListenerOnce,
+    setupConsoleInterceptor,
+    useDblClickHandler,
   }
 }
