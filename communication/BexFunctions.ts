@@ -1,7 +1,9 @@
+import { QVueGlobals } from 'quasar'
 import { ContentItem } from 'src/content/models/ContentItem'
 import { TabReference, TabReferenceType } from 'src/content/models/TabReference'
 import { useContentService } from 'src/content/services/ContentService'
 import { useContentStore } from 'src/content/stores/contentStore'
+import { BexEvent } from 'src/core/services/Utils'
 import ContentUtils from 'src/core/utils/ContentUtils'
 import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
@@ -58,6 +60,27 @@ class BexFunctions {
           tabAndTsId.tab.tabReferences = newTabReferences
           useTabsetsStore().saveTabset(ts)
         }
+      })
+  }
+
+  bexSendWithRetry = ($q: QVueGlobals, eventName: BexEvent, portName: string, payload: object = {}) => {
+    console.log(` --> Sent event '${eventName}' to '${portName}' with payload ${JSON.stringify(payload)}`)
+    $q.bex
+      .send({
+        event: eventName,
+        to: portName,
+        payload,
+      })
+      .catch((err: any) => {
+        console.warn('err', typeof err, err)
+        console.log('port list is', $q.bex.portList)
+        $q.bex.connectToBackground().then(() => {
+          $q.bex.send({
+            event: 'open-comment-request',
+            to: portName,
+            payload,
+          })
+        })
       })
   }
 }

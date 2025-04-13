@@ -2,6 +2,8 @@ import { formatDistance } from 'date-fns'
 import _ from 'lodash'
 import sanitizeHtml from 'sanitize-html'
 
+export type BexEvent = 'open-comment-request' | 'close-comment-request' | 'reload-current-tabset'
+
 export function useUtils() {
   const formatDate = (timestamp: number | undefined) =>
     timestamp ? formatDistance(timestamp, new Date(), { addSuffix: true }) : ''
@@ -79,6 +81,23 @@ export function useUtils() {
           }
         },
       )
+    }
+  }
+
+  const formatReadingTime = (ms: number | undefined): string => {
+    if (!ms) {
+      return ''
+    }
+    if (ms < 1000) {
+      return ''
+    } else if (ms < 60000) {
+      return Math.round(ms / 1000) + 's.'
+    } else if (ms < 60 * 60000) {
+      return Math.round(ms / 60000) + 'm.'
+    } else if (ms < 24 * 60 * 60000) {
+      return Math.round((ms / 60) * 60000) + 'h.'
+    } else {
+      return '' + ms
     }
   }
 
@@ -280,6 +299,7 @@ export function useUtils() {
       uiStore.log(JSON.stringify([timestamp(), 'unhandled', e.reason]))
     }
   }
+
   function useDblClickHandler(onClick: any, onDblClick: any) {
     let expandTimes = 0
     let expandTimer: any = null
@@ -324,5 +344,6 @@ export function useUtils() {
     addListenerOnce,
     setupConsoleInterceptor,
     useDblClickHandler,
+    formatReadingTime,
   }
 }
