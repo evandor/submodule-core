@@ -11,7 +11,7 @@ export function useCommandExecutor() {
     type: NotificationType = NotificationType.TOAST,
   ): Promise<ExecutionResult<any>> => {
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    console.log(' * executing command', command.toString())
+    console.log(' *', command.toString())
     useUiStore().commandExecuting = true
     return command
       .execute()

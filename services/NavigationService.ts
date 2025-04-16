@@ -9,13 +9,13 @@ export function useNavigationService() {
 
   const browserTabFor = async (url: string, forceReload: boolean = false): Promise<chrome.tabs.Tab> => {
     url = url.replace(placeholderPattern, '')
-    console.log(` > opening url '${url}' in current window`)
+    //console.log(` > opening url '${url}' in current window`)
 
     // getting all tabs from this window
     const tabsFromBrowser: chrome.tabs.Tab[] = await chrome.tabs.query({ currentWindow: true }) // url in queryInfo ignores fragments!
     const tabs = tabsFromBrowser.filter((t: chrome.tabs.Tab) => t.url === url)
     if (tabs.length === 0) {
-      console.debug('tab not found, creating new one:', url)
+      //console.debug('tab not found, creating new one:', url)
       const createdTab = await chrome.tabs.create({
         active: true,
         pinned: false,

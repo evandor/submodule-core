@@ -2,7 +2,13 @@ import { formatDistance } from 'date-fns'
 import _ from 'lodash'
 import sanitizeHtml from 'sanitize-html'
 
-export type BexEvent = 'open-comment-request' | 'close-comment-request' | 'reload-current-tabset'
+export type BexEvent =
+  | 'open-viewport'
+  | 'open-comment-request'
+  | 'open-snapshots-request'
+  | 'close-comment-request'
+  | 'close-overlay'
+  | 'reload-current-tabset'
 
 export function useUtils() {
   const formatDate = (timestamp: number | undefined) =>
@@ -65,7 +71,7 @@ export function useUtils() {
 
   const sendMsg = (msgName: string, data: object = {}) => {
     if (inBexMode() && chrome) {
-      console.debug(' >>> sending message', { name: msgName, data })
+      console.debug(' >>> message', { name: msgName, data })
       chrome.runtime.sendMessage(
         {
           name: msgName,

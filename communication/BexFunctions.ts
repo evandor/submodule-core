@@ -5,10 +5,29 @@ import { useContentService } from 'src/content/services/ContentService'
 import { useContentStore } from 'src/content/stores/contentStore'
 import { BexEvent } from 'src/core/services/Utils'
 import ContentUtils from 'src/core/utils/ContentUtils'
+import { Tab } from 'src/tabsets/models/Tab'
 import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
+import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 
 class BexFunctions {
+  handleReload = async ({ payload }: { payload: object }) => {
+    // const tsId = await useTabsetsStore().getCurrentTabsetId()
+    console.log('!!!!!!', payload['tab' as keyof object])
+    const currentTabset = useTabsetsStore().getCurrentTabset
+    if (currentTabset) {
+      const index = currentTabset.tabs.findIndex((tab: Tab) => tab.id === payload['tab' as keyof object]['id'])
+      console.log('found index', index)
+      if (index >= 0) {
+        currentTabset.tabs[index] = payload['tab' as keyof object] as Tab
+      }
+    }
+    await useTabsetService().saveCurrentTabset()
+
+    // const ts = await useTabsetsStore().reloadTabset(tsId!)
+    // console.log('ts', ts)
+  }
+
   handleBexTabExcerpt = async ({
     from,
     to,
@@ -76,7 +95,7 @@ class BexFunctions {
         console.log('port list is', $q.bex.portList)
         $q.bex.connectToBackground().then(() => {
           $q.bex.send({
-            event: 'open-comment-request',
+            event: eventName,
             to: portName,
             payload,
           })
