@@ -1,10 +1,10 @@
 <template>
   <q-item clickable :dense="dense" :disable="props.disable" @click.stop="emits('wasClicked')">
     <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px">
-      <q-icon size="xs" :name="props.icon" :color="color" />
+      <q-icon size="xs" :name="props.icon" :color="props.indicateIssue ? 'grey-5' : props.color" />
     </q-item-section>
     <q-item-section>
-      <span>
+      <span :style="props.indicateIssue ? 'color: grey' : ''">
         {{ props.label }}
         <slot name="banner" />
       </span>
@@ -22,5 +22,6 @@ const props = defineProps({
   color: { type: String, default: 'info' },
   disable: { type: Boolean, default: false },
   dense: { type: Boolean, default: false },
+  indicateIssue: { tyep: Boolean, default: false },
 })
 </script>
