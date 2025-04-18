@@ -260,13 +260,13 @@ const onMessageListener = (message: any) => {
 if (inBexMode()) {
   // seems we need to define these listeners here to get the matching messages reliably
   // these messages are created by triggering events in the mainpanel
-  // console.warn('adding on message listener!', chrome.runtime.onMessage.hasListeners())
+  console.warn('adding onMessage listener!')
   chrome.runtime.onMessage.addListener(onMessageListener)
 }
 
 onUnmounted(() => {
   if (inBexMode()) {
-    console.log('removing on message listener!')
+    console.log('removing onMessage listener!')
     chrome.runtime.onMessage.removeListener(onMessageListener)
   }
 })
