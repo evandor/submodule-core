@@ -102,7 +102,9 @@
                       <div class="col-1">
                         <q-icon name="o_tab" color="primary" class="q-mr-sm q-mb-xs" size="xs" />
                       </div>
-                      <div class="col q-ml-sm">Add (all) your <em>active tab(s)</em> to this new tabset</div>
+                      <div class="col q-ml-sm">
+                        Add your current <em>tab</em> (or all your open tabs) to this new tabset
+                      </div>
                     </div>
                   </div>
                 </div>

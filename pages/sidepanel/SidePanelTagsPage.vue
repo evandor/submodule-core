@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { uid, useQuasar } from 'quasar'
-import SearchHit from 'src/components/layouts/SearchHit.vue'
+import SearchHit from 'src/core/components/layouts/SearchHit.vue'
 import FirstToolbarHelper from 'src/core/pages/sidepanel/helper/FirstToolbarHelper2.vue'
 import Analytics from 'src/core/utils/google-analytics'
 import SidePanelToolbarTabNavigationHelper from 'src/opentabs/pages/SidePanelToolbarTabNavigationHelper.vue'

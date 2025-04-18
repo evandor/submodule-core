@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import _ from 'lodash'
 import { uid } from 'quasar'
-import SearchHit from 'src/components/layouts/SearchHit.vue'
+import SearchHit from 'src/core/components/layouts/SearchHit.vue'
 import { Hit } from 'src/search/models/Hit'
 import { useSearchStore } from 'src/search/stores/searchStore'
 import InfoMessageWidget from 'src/ui/widgets/InfoMessageWidget.vue'
