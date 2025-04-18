@@ -233,7 +233,7 @@ const removeNonMatches = (treeData: NodeTreeObject[], filter: string): NodeTreeO
   return res
 }
 
-watchEffect(async () => {
+watchEffect(() => {
   if (tabsets.value && tabsets.value.length > 0) {
     const useSpaces = useFeaturesStore().hasFeature(FeatureIdent.SPACES)
     const space = useSpacesStore().space
@@ -268,7 +268,7 @@ const getTabsetOrder = [
   },
 ]
 
-watchEffect(async () => {
+watchEffect(() => {
   if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
     const currentSpace = useSpacesStore().space
     // console.log("currentspace", currentSpace)

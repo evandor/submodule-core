@@ -409,46 +409,13 @@ const requestRows = ref<object[]>([])
 const metaLinkRows = ref<object[]>([])
 const linkRows = ref<object[]>([])
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 watchEffect(async () => {
   if (selectedTab.value) {
-    // TabsetService.getThumbnailFor(selectedTab.value)
-    //   .then(data => {
-    //     if (data) {
-    //       thumbnail.value = data.thumbnail
-    //     }
-    //   })
     const data: ContentItem | undefined = await TabsetService.getContentFor(selectedTab.value)
     if (data) {
       content.value = data
     }
-    // TabsetService.getRequestFor(selectedTab.value)
-    //   .then(data => {
-    //     if (data) {
-    //       //console.log("got data", data)
-    //       request.value = data.requestInfo
-    //
-    //       _.forEach(data.requestInfo['headers'], h => {
-    //         requestRows.value.push({
-    //           name: h.name,
-    //           value: h.value
-    //         })
-    //       })
-    //     }
-    //   })
-
-    // TabsetService.getMetaLinksFor(selectedTab.value)
-    //   .then(data => {
-    //     if (data) {
-    //       metaLinkRows.value = data.metaLinks
-    //     }
-    //   })
-    //
-    // TabsetService.getLinksFor(selectedTab.value)
-    //   .then(data => {
-    //     if (data) {
-    //       linkRows.value = data.links
-    //     }
-    //   })
   } else {
     //router.push("/tabset")
   }

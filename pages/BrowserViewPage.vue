@@ -122,7 +122,7 @@ watch(
   },
 )
 
-watchEffect(async () => {
+watchEffect(() => {
   tabId.value = route.params.tabId as string
   const found = _.find(useTabsetsStore().getCurrentTabs, (t: Tab) => t.id === route.params.tabId)
   console.log('tabid set to ', tabId.value, found)

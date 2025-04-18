@@ -20,6 +20,7 @@ let timer
 $q.loading.show({
   message: 'Initializing tabsets. Please hang on...',
 })
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 timer = setTimeout(async () => {
   if (useTabsetsStore().tabsets.size === 0) {
     router.push('/')

@@ -122,8 +122,10 @@ const switchTabsetModel = ref(null)
 const switchTabsetOptions = ref<string[]>([])
 const currentTabsetId = ref<string | undefined>(undefined)
 
-watchEffect(async () => {
-  currentTabsetId.value = await useTabsetsStore().getCurrentTabsetId()
+watchEffect(() => {
+  useTabsetsStore()
+    .getCurrentTabsetId()
+    .then((id: string | undefined) => (currentTabsetId.value = id))
 })
 
 watchEffect(() => {

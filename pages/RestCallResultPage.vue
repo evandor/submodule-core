@@ -158,7 +158,7 @@ onMounted(async () => {
   tabId.value = route.params.api as string
 })
 
-watchEffect(async () => {
+watchEffect(() => {
   if (useTabsetsStore().loaded) {
     //console.log('tabId', tabId.value, useTabsetsStore().loaded)
     const tAndTs = useTabsetsStore().getTabAndTabsetId(tabId.value)

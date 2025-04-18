@@ -144,7 +144,6 @@ watchEffect(() => {
       getTabsetOrder,
       ['asc'],
     )
-    // console.log("tabsets:", tabsets.value)
   } else {
     tabsets.value = determineTabsets()
   }

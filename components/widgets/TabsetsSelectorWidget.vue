@@ -67,8 +67,10 @@ const props = defineProps({
   fromPanel: { type: Boolean, default: false },
 })
 
-watchEffect(async () => {
-  currentTabsetId.value = await useTabsetsStore().getCurrentTabsetId()
+watchEffect(() => {
+  useTabsetsStore()
+    .getCurrentTabsetId()
+    .then((id: string | undefined) => (currentTabsetId.value = id))
 })
 
 watchEffect(() => {

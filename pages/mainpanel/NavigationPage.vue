@@ -128,7 +128,7 @@ const { sendMsg } = useUtils()
 const callerPortName = route.query.portName as string
 // console.log('route', route.query.portName)
 
-watchEffect(async () => {
+watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
 })
 

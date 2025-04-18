@@ -57,7 +57,6 @@ import { useQuasar } from 'quasar'
 import { TabReference, TabReferenceType } from 'src/content/models/TabReference'
 import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'
-import NavigationService from 'src/services/NavigationService'
 import { Tab } from 'src/tabsets/models/Tab'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { onMounted, ref, watchEffect } from 'vue'
@@ -82,18 +81,13 @@ onMounted(() => {
   Analytics.firePageViewEvent('MainPanelReadingModePage', document.location.href)
 })
 
-watchEffect(async () => {
+watchEffect(() => {
   const res = useTabsetsStore().getTabAndTabsetId(tabId)
   if (res && res.tab) {
     tab.value = res.tab
     const tabRefs: TabReference[] = res.tab.tabReferences.filter((r) => r.type === TabReferenceType.READING_MODE)
     if (tabRefs.length > 0) {
       const article = tabRefs[0]!.data[0]
-      // const response = await fetch(tab.value.url || '')
-      // const s = await response.text()
-      // const parser = new DOMParser();
-      // const doc = parser.parseFromString(s, "text/html");
-      // const article = new Readability(doc).parse() || {};
 
       if (article) {
         title.value = sanitizeAsText(article['title' as keyof object])

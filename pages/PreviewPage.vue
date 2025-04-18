@@ -72,11 +72,19 @@ onMounted(() => {
   }
 })
 
-watchEffect(async () => {
-  currentTabsetId.value = await useTabsetsStore().getCurrentTabsetId()
+watchEffect(() => {
+  useTabsetsStore()
+    .getCurrentTabsetId()
+    .then((tsId: string | undefined) => (currentTabsetId.value = tsId))
 })
 
-watchEffect(async () => {
+watchEffect(() => {
+  useTabsetsStore()
+    .getCurrentTabsetId()
+    .then((tsId: string | undefined) => (currentTabsetId.value = tsId))
+})
+
+watchEffect(() => {
   tabId.value = route.params.tabId as string
   console.log('checking tabId', tabId.value)
   const found = _.find(useTabsetsStore().getCurrentTabs, (t: Tab) => t.id === route.params.tabId)

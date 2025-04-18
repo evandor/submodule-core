@@ -52,7 +52,6 @@
 
 <script setup lang="ts">
 import { formatDistance, parseISO } from 'date-fns'
-import { date } from 'quasar'
 import Analytics from 'src/core/utils/google-analytics'
 import NavigationService from 'src/services/NavigationService'
 import { onMounted, ref, watchEffect } from 'vue'
@@ -69,7 +68,7 @@ onMounted(() => {
   Analytics.firePageViewEvent('SidePanelRssPage', document.location.href)
 })
 
-watchEffect(async () => {
+watchEffect(() => {
   encodedUrl.value = route.params.encodedUrl as string
   console.log('url3', atob(encodedUrl.value))
 

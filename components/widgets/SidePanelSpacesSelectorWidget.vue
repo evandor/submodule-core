@@ -27,8 +27,10 @@ const spaces = ref<object>(null as unknown as object)
 const spacesOptions = ref<object[]>([])
 const currentTabsetId = ref<string | undefined>(undefined)
 
-watchEffect(async () => {
-  currentTabsetId.value = await useTabsetsStore().getCurrentTabsetId()
+watchEffect(() => {
+  useTabsetsStore()
+    .getCurrentTabsetId()
+    .then((id: string | undefined) => (currentTabsetId.value = id))
 })
 
 watchEffect(() => {

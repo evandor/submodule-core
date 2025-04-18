@@ -379,6 +379,7 @@ const updateBlobs = () => {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 watchEffect(async () => {
   sourceId.value = route.params.sourceId as string
   console.log('sourceId', sourceId.value)

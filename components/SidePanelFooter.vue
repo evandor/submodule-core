@@ -316,6 +316,7 @@ const calcShowSuggestionIcon = (suggestions: Suggestion[]) => {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 watchEffect(async () => {
   const suggestions: Suggestion[] = useSuggestionsStore().getSuggestions(['NEW', 'DECISION_DELAYED', 'NOTIFICATION'])
   showSuggestionButton.value = await calcShowSuggestionButton(suggestions)

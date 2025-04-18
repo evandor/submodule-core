@@ -84,6 +84,7 @@ watchEffect(() => {
   portName.value = $q.bex.portName
 })
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 watchEffect(async () => {
   const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
     .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
