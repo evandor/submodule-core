@@ -26,9 +26,9 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import BexFunctions from 'src/core/communication/BexFunctions'
+import SnapshotViewHelper from 'src/core/pages/sidepanel/helper/SnapshotViewHelper.vue'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useUtils } from 'src/core/services/Utils'
-import SnapshotViewHelper from 'src/pages/sidepanel/helper/SnapshotViewHelper.vue'
 import { SaveMHtmlCommand } from 'src/snapshots/commands/SaveMHtmlCommand'
 import { BlobMetadata } from 'src/snapshots/models/BlobMetadata'
 import { useSnapshotsStore } from 'src/snapshots/stores/SnapshotsStore'
