@@ -17,7 +17,7 @@
             <div class="col-1" :style="tags.length > 0 ? 'max-width: 17px; border: 0 solid orange' : 'padding-top:8px'">
               <div class="text-caption" :style="tags.length > 0 ? 'transform: rotate(90deg)' : ''">&nbsp;Tags</div>
             </div>
-            <div class="col-5">
+            <div class="col-8" style="border: 0 solid green">
               <q-select
                 input-class="q-ma-none q-pa-none"
                 borderless
@@ -32,7 +32,11 @@
                 new-value-mode="add-unique"
                 @update:model-value="(val) => updatedTags(val)" />
             </div>
-            <div class="col-6"></div>
+            <div class="col-3 text-right q-mt-sm cursor-pointer" @click="openHelpPage()">
+              <q-badge v-if="badgeNotShownYet()" class="q-px-lg" align="middle" style="height: 20px"
+                >where's this toolbar coming from?</q-badge
+              >
+            </div>
           </div>
         </div>
         <div class="col text-caption q-mt-sm q-mr-sm text-right" style="border: 0 solid orange">
@@ -56,10 +60,21 @@
             name="edit_note"
             @click="openNote()"
             size="sm"
-            class="cursor-pointer"
+            class="cursor-pointer q-mr-sm"
             :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
             <q-tooltip :delay="1000">Create or Edit Notes for this page</q-tooltip>
           </q-icon>
+
+          <q-icon
+            v-if="!badgeNotShownYet()"
+            name="sym_o_help"
+            @click="openHelpPage()"
+            size="xs"
+            class="cursor-pointer q-mr-sm"
+            :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
+            <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
+          </q-icon>
+
           <q-badge color="blue" class="q-ml-sm" style="width: 50px; height: 17px">
             <template v-slot:default>
               <div class="text-right fit" style="text-align: center">
@@ -96,8 +111,9 @@
 </template>
 
 <script setup lang="ts">
-import { date, useQuasar } from 'quasar'
+import { date, LocalStorage, useQuasar } from 'quasar'
 import BexFunctions from 'src/core/communication/BexFunctions'
+import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { Tab } from 'src/tabsets/models/Tab'
@@ -138,8 +154,35 @@ watchEffect(() => {
 
 watchEffect(() => {
   currentChromeTab.value = useTabsStore2().currentChromeTab
+  console.log('****1 checking chrome tab**', currentChromeTab.value?.url)
   if (currentChromeTab.value?.url) {
     tabAndTabsetIds.value = useTabsetsStore().tabsForUrl(currentChromeTab.value.url)
+    console.log(
+      '****2 checking chrome tab done**',
+      tabAndTabsetIds.value.length,
+      currentChromeTab.value.url,
+      [...useTabsetsStore().tabsets.values()]
+        .map((t: Tabset) => t.tabs)
+        .map((t: Tab[]) => t.map((tt: Tab) => tt.url).join(', ')),
+    )
+
+    const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
+      .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
+      .at(0)?.tab
+    if (!tabInCurrentTs) {
+      console.log('****3 checking tab done** ---')
+      tab.value = undefined
+      return
+    }
+    tab.value = tabInCurrentTs
+    console.log('****4 checking tab done**', tab.value)
+    //console.log('got', tab.value.url, tab.value.tags.length)
+    if (tab.value.tags.constructor === Array) {
+      tags.value = [...new Set(tab.value.tags)]
+      Tab.setTags(tab.value, tags.value)
+    } else {
+      tags.value = []
+    }
   }
 })
 
@@ -154,23 +197,26 @@ watchEffect(() => {
   portName.value = $q.bex.portName
 })
 
-watchEffect(() => {
-  const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
-    .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
-    .at(0)?.tab
-  if (!tabInCurrentTs) {
-    tab.value = undefined
-    return
-  }
-  tab.value = tabInCurrentTs
-  //console.log('got', tab.value.url, tab.value.tags.length)
-  if (tab.value.tags.constructor === Array) {
-    tags.value = [...new Set(tab.value.tags)]
-    Tab.setTags(tab.value, tags.value)
-  } else {
-    tags.value = []
-  }
-})
+// watchEffect(() => {
+//   console.log('**checking tab**', tabAndTabsetIds.value.length)
+//   const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
+//     .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
+//     .at(0)?.tab
+//   if (!tabInCurrentTs) {
+//     console.log('**checking tab done** ---')
+//     tab.value = undefined
+//     return
+//   }
+//   tab.value = tabInCurrentTs
+//   console.log('**checking tab done**', tab.value)
+//   //console.log('got', tab.value.url, tab.value.tags.length)
+//   if (tab.value.tags.constructor === Array) {
+//     tags.value = [...new Set(tab.value.tags)]
+//     Tab.setTags(tab.value, tags.value)
+//   } else {
+//     tags.value = []
+//   }
+// })
 
 const openNote = () => {
   large.value = !large.value
@@ -220,10 +266,12 @@ const updatedTags = (val: string[]) => {
   }
 }
 
-const share = () => {
-  const text = encodeURIComponent(`Note: ${tab.value?.note}<br><br> Website: ${tab.value?.url}`)
-  window.open(`mailto:?subject=${encodeURIComponent('Website: ' + tab.value?.url)}&body=${text}`)
+const openHelpPage = () => {
+  LocalStorage.setItem('ui.toolbar.info.badge.shown', true)
+  useNavigationService().browserTabFor('https://docs.tabsets.net/tabsets-toolbar')
 }
+
+const badgeNotShownYet = () => !LocalStorage.getItem('ui.toolbar.info.badge.shown')
 </script>
 
 <style scoped>

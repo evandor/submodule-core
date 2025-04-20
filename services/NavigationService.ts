@@ -1,5 +1,4 @@
-import { FeatureIdent } from 'src/app/models/FeatureIdent'
-import { useFeaturesStore } from 'src/features/stores/featuresStore'
+import { LocalStorage } from 'quasar'
 import { useWindowsStore } from 'src/windows/stores/windowsStore'
 
 export function useNavigationService() {
@@ -21,19 +20,13 @@ export function useNavigationService() {
         pinned: false,
         url: url,
       })
-      if (createdTab?.id && !useFeaturesStore().hasFeature(FeatureIdent.TOOLBAR_INTEGRATION)) {
-        // reloading seems to be necessary to "force-sync" after/before bex-communication
-        // const tsId = await useTabsetsStore().getCurrentTabsetId()
-        // if (tsId) {
-        //   await useTabsetsStore().reloadTabset(tsId!)
-        //   console.log('here!!!...')
+      if (createdTab?.id && LocalStorage.getItem('ui.toolbar.integration') === 'tabsets') {
         chrome.scripting
           .executeScript({
             target: { tabId: createdTab.id },
-            files: ['my-content-script.js'],
+            files: ['tabsets-toolbar-contentscript.js'],
           })
           .catch((err) => console.log('executeScript error:', err))
-        //}
       }
 
       return Promise.resolve(createdTab)

@@ -1,6 +1,6 @@
 <template>
   <!-- SidePanelPage2 -->
-  <q-page class="darkInDarkMode brightInBrightMode" style="padding-top: 77px">
+  <q-page class="darkInDarkMode brightInBrightMode" style="padding-top: 80px">
     <offline-info />
 
     <div class="wrap" v-if="useUiStore().appLoading">
@@ -14,20 +14,22 @@
     <div class="q-ma-none q-pa-none q-pt-xs">
       <template v-if="useTabsetsStore().tabsets.size > 0">
         <div class="row q-ma-none q-pa-none items-start darkInDarkMode brightInBrightMode">
-          <SidePanelPageContent2
-            v-if="currentTabset && useFolderExpansion === 'expand'"
-            :tabset="currentTabset"
-            :key="currentTabset.id"
-            :filter="filter"
-            @tabs-found="(n: number) => (filteredTabsCount = n)"
-            @folders-found="(n: number) => (filteredFoldersCount = n)" />
-          <SidePanelPageContent
-            v-if="currentTabset && useFolderExpansion === 'goInto'"
-            :tabset="currentTabset"
-            :key="currentTabset?.id"
-            :filter="filter"
-            @tabs-found="(n: number) => (filteredTabsCount = n)"
-            @folders-found="(n: number) => (filteredFoldersCount = n)" />
+          <template v-if="currentTabset">
+            <SidePanelPageContent
+              v-if="useFolderExpansion === 'goInto'"
+              :tabset="currentTabset"
+              :key="currentTabset?.id"
+              :filter="filter"
+              @tabs-found="(n: number) => (filteredTabsCount = n)"
+              @folders-found="(n: number) => (filteredFoldersCount = n)" />
+            <SidePanelPageContent2
+              v-else
+              :tabset="currentTabset"
+              :key="currentTabset.id"
+              :filter="filter"
+              @tabs-found="(n: number) => (filteredTabsCount = n)"
+              @folders-found="(n: number) => (filteredFoldersCount = n)" />
+          </template>
         </div>
       </template>
 
