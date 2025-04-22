@@ -154,7 +154,11 @@ watchEffect(() => {
 
 watchEffect(() => {
   currentChromeTab.value = useTabsStore2().currentChromeTab
-  console.log('****1 checking chrome tab**', currentChromeTab.value?.url, Tabset.logIdent(currentTabset.value))
+  console.log(
+    '****1 checking chrome tab**',
+    currentChromeTab.value?.url,
+    Tabset.logIdent(currentTabset.value as Tabset),
+  )
   if (currentChromeTab.value?.url) {
     tabAndTabsetIds.value = useTabsetsStore().tabsForUrl(currentChromeTab.value.url)
     console.log('****2 checking chrome tab done**', tabAndTabsetIds.value)

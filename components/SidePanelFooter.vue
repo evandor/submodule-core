@@ -471,7 +471,7 @@ const drop = (evt: any) => {
   const currentTabUrl = useContentStore().getCurrentTabUrl
   console.log('===>', evt, text, html, currentTabUrl)
   if (currentTabUrl) {
-    const existing: Tab | undefined = useTabsetsStore().tabForUrlInSelectedTabset(currentTabUrl!)
+    const existing: Tab | undefined = useTabsetsStore().tabForUrlInSelectedTabset(currentTabUrl)
     if (existing) {
       existing.snippets.push(new TabSnippet(text, html))
       existing.title = 'Snippet (' + existing.snippets.length + ')'
@@ -480,7 +480,7 @@ const drop = (evt: any) => {
         useTabsetsStore().saveTabset(currentTabset)
       }
     } else {
-      const tab = new Tab(uid(), BrowserApi.createChromeTabObject('Snippet', currentTabUrl!))
+      const tab = new Tab(uid(), BrowserApi.createChromeTabObject('Snippet', currentTabUrl))
       tab.snippets.push(new TabSnippet(text, html))
       tab.description = text
       useCommandExecutor().executeFromUi(new AddTabToTabsetCommand(tab))

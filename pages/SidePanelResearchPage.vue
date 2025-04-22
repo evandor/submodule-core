@@ -515,9 +515,9 @@ const saveSnapshot = async () => {
   if (editedSnapshot.value) {
     console.log('saving', editedSnapshot.value)
     await useSnapshotsService().saveEditedHTML(
-      editedSnapshot.value!.sourceId,
-      editedSnapshot.value!.url,
-      editedSnapshot.value!.html,
+      editedSnapshot.value.sourceId,
+      editedSnapshot.value.url,
+      editedSnapshot.value.html,
     )
   }
 }

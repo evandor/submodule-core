@@ -99,7 +99,7 @@ const createOrUpdateAnnotation = async () => {
     if (a) {
       a.title = currentSelectionTitle.value!
       a.comment = currentSelectionRemark.value
-      a!.color = currentSelectionColor.value || 'grey'
+      a.color = currentSelectionColor.value || 'grey'
       as = await useSnapshotsService().updateAnnotation(props.sourceId, a, currentSelectionIndex.value)
     }
   }

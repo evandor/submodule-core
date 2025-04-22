@@ -94,7 +94,7 @@ onMounted(() => {
 const typeMatch = (e: string, matches: string[]) =>
   // matches.find((m: string) => schema.value!.properties![e as keyof object]!['type' as keyof object] === m)
   matches.find(
-    (m: string) => props.layout['properties' as keyof object]![e as keyof object]!['type' as keyof object] === m,
+    (m: string) => props.layout['properties' as keyof object][e as keyof object]['type' as keyof object] === m,
   )
 
 const columns = () => {

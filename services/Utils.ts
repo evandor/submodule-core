@@ -235,7 +235,7 @@ export function useUtils() {
     range.setEnd(startContainer, startOffset)
 
     state.start = range.toString().length
-    state.end = state!.start + state.content.length
+    state.end = state.start + state.content.length
 
     // add a shortcut method to restore this selection
     state.restore = restoreSelection.bind(null, state, referenceNode)

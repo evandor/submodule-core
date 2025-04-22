@@ -120,10 +120,10 @@ import { useRoute } from 'vue-router'
 import 'vue-json-pretty/lib/styles.css'
 import { useQuasar } from 'quasar'
 import { TabReference, TabReferenceType } from 'src/content/models/TabReference'
+import JsonRepresentation from 'src/core/pages/widgets/JsonRepresentation.vue'
+import JsonSchemaRepresentation from 'src/core/pages/widgets/JsonSchemaRepresentation.vue'
+import RestCallRequestParamsPanel from 'src/core/pages/widgets/RestCallRequestParamsPanel.vue'
 import { useNavigationService } from 'src/core/services/NavigationService'
-import JsonRepresentation from 'src/pages/widgets/JsonRepresentation.vue'
-import JsonSchemaRepresentation from 'src/pages/widgets/JsonSchemaRepresentation.vue'
-import RestCallRequestParamsPanel from 'src/pages/widgets/RestCallRequestParamsPanel.vue'
 import toJsonSchema from 'to-json-schema'
 
 const $q = useQuasar()
@@ -164,7 +164,7 @@ watchEffect(() => {
     const tAndTs = useTabsetsStore().getTabAndTabsetId(tabId.value)
     //console.log('tAndTs', tAndTs)
     if (tAndTs) {
-      restTab.value = tAndTs!.tab as RestTab
+      restTab.value = tAndTs.tab as RestTab
       restTab.value.params.forEach((p: any) => {
         if (p.value && !p.val) {
           p.val = p.value

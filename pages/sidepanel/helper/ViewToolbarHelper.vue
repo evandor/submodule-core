@@ -85,7 +85,7 @@ windowLocation.value = window.location.href
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
   if (currentTabset.value) {
-    const currentTabsetTabs: Set<string> = new Set(currentTabset.value!.tabs.map((t: Tab) => t.url || ''))
+    const currentTabsetTabs: Set<string> = new Set(currentTabset.value.tabs.map((t: Tab) => t.url || ''))
     const browserTabs: Set<string> = new Set(useTabsStore2().browserTabs.map((t: chrome.tabs.Tab) => t.url || ''))
     try {
       const allTabs = currentTabsetTabs.union(browserTabs)
