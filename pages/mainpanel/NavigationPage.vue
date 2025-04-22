@@ -154,17 +154,16 @@ watchEffect(() => {
 
 watchEffect(() => {
   currentChromeTab.value = useTabsStore2().currentChromeTab
-  console.log('****1 checking chrome tab**', currentChromeTab.value?.url)
+  console.log('****1 checking chrome tab**', currentChromeTab.value?.url, Tabset.logIdent(currentTabset.value))
   if (currentChromeTab.value?.url) {
     tabAndTabsetIds.value = useTabsetsStore().tabsForUrl(currentChromeTab.value.url)
-    console.log(
-      '****2 checking chrome tab done**',
-      tabAndTabsetIds.value.length,
-      currentChromeTab.value.url,
-      [...useTabsetsStore().tabsets.values()]
-        .map((t: Tabset) => t.tabs)
-        .map((t: Tab[]) => t.map((tt: Tab) => tt.url).join(', ')),
-    )
+    console.log('****2 checking chrome tab done**', tabAndTabsetIds.value)
+    //   tabAndTabsetIds.value,
+    //   currentChromeTab.value.url,
+    //   [...useTabsetsStore().tabsets.values()]
+    //     .map((t: Tabset) => t.tabs)
+    //     .map((t: Tab[]) => t.map((tt: Tab) => tt.url).join(', ')),
+    // )
 
     const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
       .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)

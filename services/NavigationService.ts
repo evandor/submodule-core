@@ -20,7 +20,10 @@ export function useNavigationService() {
         pinned: false,
         url: url,
       })
-      if (createdTab?.id && LocalStorage.getItem('ui.toolbar.integration') === 'tabsets') {
+
+      const toolbar = LocalStorage.getItem('ui.toolbar.integration')
+      //console.log('checking toolbar integration', createdTab?.id, toolbar)
+      if (createdTab?.id && (toolbar === 'tabsets' || toolbar === null)) {
         chrome.scripting
           .executeScript({
             target: { tabId: createdTab.id },

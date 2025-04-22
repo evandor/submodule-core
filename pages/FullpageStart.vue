@@ -24,7 +24,7 @@ onMounted(() => {
 })
 
 $q.loading.show({
-  message: 'Initializing tabsets. The Fullpage View will deactivate the SidePanel for this tab. Please hang on...',
+  message: 'Initializing tabsets. Please hang on...',
 })
 if (inBexMode()) {
   setTimeout(() => {

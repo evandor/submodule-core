@@ -1,5 +1,5 @@
 <template>
-  <!-- optional: notes -->
+  <!-- SidePanelPageContent optional: notes -->
   <div class="col-12">
     <SidePanelNotesView :tabset="props.tabset" />
   </div>

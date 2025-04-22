@@ -1,27 +1,18 @@
 <template>
   <q-layout view="lHh lpr lFf" container style="height: 100%">
-    <q-header class="q-pa-none q-mt-sm darkInDarkMode brightInBrightMode">
+    <q-header class="q-pa-none q-mt-none darkInDarkMode brightInBrightMode">
       <q-toolbar>
         <q-toolbar-title>
-          <div class="row justify-start items-baseline" v-if="useFeaturesStore().hasFeature(FeatureIdent.SPACES)">
+          <div class="row justify-start" v-if="useFeaturesStore().hasFeature(FeatureIdent.SPACES)">
             <SpacesSelectorWidget />
           </div>
           <div class="row justify-start items-baseline" v-else>My Tabsets</div>
         </q-toolbar-title>
-
-        <q-btn
-          outline
-          label="New Tabset"
-          size="sm"
-          data-testid="addTabsetBtn"
-          @click="addTabset()"
-          class="q-ma-none q-ml-sm q-px-sm q-py-none q-mt-sm"
-          name="o_bookmark_add" />
       </q-toolbar>
     </q-header>
 
     <q-page-container>
-      <q-page class="q-pa-md">
+      <q-page class="q-pa-none">
         <q-list class="q-mt-none greyBorderTop">
           <NavTabsetsListWidgetNonBex :tabsets="tabsets()" :space-id="useSpacesStore().space?.id || '0'" />
         </q-list>
@@ -33,9 +24,9 @@
     </q-page-container>
 
     <q-footer class="q-pa-none q-mt-sm darkInDarkMode brightInBrightMode">
-      <template v-if="useFeaturesStore().hasFeature(FeatureIdent.TABSET_LIST)">
-        <SidePanelTabsetListMarkup />
-      </template>
+      <!--      <template v-if="useFeaturesStore().hasFeature(FeatureIdent.TABSET_LIST)">-->
+      <!--        <SidePanelTabsetListMarkup />-->
+      <!--      </template>-->
 
       <SidePanelMessagesMarkup />
     </q-footer>
@@ -50,7 +41,6 @@ import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import SpacesSelectorWidget from 'src/spaces/widgets/SpacesSelectorWidget.vue'
 import SidePanelMessagesMarkup from 'src/tabsets/components/helper/SidePanelMessagesMarkup.vue'
-import SidePanelTabsetListMarkup from 'src/tabsets/components/helper/SidePanelTabsetListMarkup.vue'
 import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
 import { Tabset, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
@@ -115,4 +105,8 @@ const addTabset = () =>
       setEmptyByDefault: useUiStore().newTabsetEmptyByDefault,
     },
   })
+
+const tabsetChanged = () => {
+  // currentTabset.value = useTabsetsStore().getCurrentTabset
+}
 </script>
