@@ -4,12 +4,15 @@
       <div class="row fit" ref="navigationRef" style="border: 0 solid red; background-color: white; min-height: 40px">
         <div class="col-2 text-body2 q-mt-sm q-ml-sm">
           <q-img src="/icons/favicon-32x32.png" height="16px" width="16px" />
-          <span class="q-ml-sm">{{ currentTabset?.name }}</span>
-          <q-icon v-if="indexInCurrentTabset() >= 0" name="check" class="q-ml-xs" color="positive">
-            <q-tooltip class="tooltip-small" style="width: 280px" :display="1000"
-              >contained in current Tabset, created {{ date.formatDate(tab?.created, 'DD.MM.YY') }}
-            </q-tooltip>
-          </q-icon>
+          <span class="q-ml-sm">
+            {{ rootTabset?.name }}
+            <q-tooltip class="tooltip-small" :delay="1000">{{ rootTabsetTooltip() }}</q-tooltip>
+          </span>
+          <!--          <q-icon v-if="indexInCurrentTabset() >= 0" name="check" class="q-ml-xs" color="positive">-->
+          <!--            <q-tooltip class="tooltip-small" style="width: 280px" :display="1000"-->
+          <!--              >contained in current Tabset, created {{ date.formatDate(tab?.created, 'DD.MM.YY') }}-->
+          <!--            </q-tooltip>-->
+          <!--          </q-icon>-->
         </div>
         <div class="col-7" style="border: 0 solid green">
           <!--        {{ portName }}: {{ currentChromeTab?.url }}-->
@@ -34,8 +37,8 @@
             </div>
             <div class="col-3 text-right q-mt-sm cursor-pointer" @click="openHelpPage()">
               <q-badge v-if="badgeNotShownYet()" class="q-px-lg" align="middle" style="height: 20px"
-                >where's this toolbar coming from?</q-badge
-              >
+                >where's this toolbar coming from?
+              </q-badge>
             </div>
           </div>
         </div>
@@ -99,7 +102,7 @@
       <div class="row fit" ref="navigationRef" style="border: 0 solid red; background-color: white; min-height: 40px">
         <div class="col-2 text-body2 q-mt-sm q-ml-sm">
           <q-img src="/icons/favicon-32x32.png" height="16px" width="16px" />
-          <span class="q-ml-sm">{{ currentTabset?.name }}</span>
+          <span class="q-ml-sm">{{ rootTabset?.name }}</span>
         </div>
         <div class="col-8 text-body2 q-mt-sm q-ml-sm"></div>
         <div class="col text-body2 q-mt-sm q-ml-sm text-right">
@@ -111,30 +114,25 @@
 </template>
 
 <script setup lang="ts">
-import { date, LocalStorage, useQuasar } from 'quasar'
+import { LocalStorage, useQuasar } from 'quasar'
 import BexFunctions from 'src/core/communication/BexFunctions'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
-import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { Tab } from 'src/tabsets/models/Tab'
-import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
-import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 
 const { formatReadingTime } = useUtils()
 
 const portName = ref('---')
-const currentSpace = ref('---')
-const currentTabset = ref<Tabset | undefined>(undefined)
-const currentChromeTab = ref<chrome.tabs.Tab | undefined>()
+const rootTabset = ref<Tabset | undefined>(undefined)
 const navigationRef = ref<HTMLDivElement>(null as unknown as HTMLDivElement)
-const tabAndTabsetIds = ref<TabAndTabsetId[]>([])
 const large = ref(false)
 const tab = ref<Tab | undefined>(undefined)
+const parentChain = ref<[Tabset[], Tab | undefined]>([[] as Tabset[], undefined])
 const tags = ref<string[]>([])
 
 const $q = useQuasar()
@@ -142,44 +140,19 @@ const route = useRoute()
 const { sendMsg } = useUtils()
 
 const callerPortName = route.query.portName as string
-// console.log('route', route.query.portName)
+
+const currentTabId = LocalStorage.getItem('ui.currentTab.id') as string | undefined
 
 watchEffect(() => {
-  currentTabset.value = useTabsetsStore().getCurrentTabset
-})
-
-watchEffect(() => {
-  currentSpace.value = useSpacesStore().space?.label || ''
-})
-
-watchEffect(() => {
-  currentChromeTab.value = useTabsStore2().currentChromeTab
-  console.log(
-    '****1 checking chrome tab**',
-    currentChromeTab.value?.url,
-    Tabset.logIdent(currentTabset.value as Tabset),
-  )
-  if (currentChromeTab.value?.url) {
-    tabAndTabsetIds.value = useTabsetsStore().tabsForUrl(currentChromeTab.value.url)
-    console.log('****2 checking chrome tab done**', tabAndTabsetIds.value)
-    //   tabAndTabsetIds.value,
-    //   currentChromeTab.value.url,
-    //   [...useTabsetsStore().tabsets.values()]
-    //     .map((t: Tabset) => t.tabs)
-    //     .map((t: Tab[]) => t.map((tt: Tab) => tt.url).join(', ')),
-    // )
-
-    const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
-      .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
-      .at(0)?.tab
-    if (!tabInCurrentTs) {
-      console.log('****3 checking tab done** ---')
+  if (currentTabId && !tab.value) {
+    parentChain.value = useTabsetsStore().getParentChainForTabId(currentTabId)
+    if (!parentChain.value[1]) {
       tab.value = undefined
       return
     }
-    tab.value = tabInCurrentTs
-    console.log('****4 checking tab done**', tab.value)
-    //console.log('got', tab.value.url, tab.value.tags.length)
+    tab.value = parentChain.value[1]
+    rootTabset.value = parentChain.value[0][0]
+
     if (tab.value.tags.constructor === Array) {
       tags.value = [...new Set(tab.value.tags)]
       Tab.setTags(tab.value, tags.value)
@@ -190,43 +163,14 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  //console.log('window height', window.innerHeight)
-  if (navigationRef.value) {
-    navigationRef.value.style.height = window.innerHeight + 'px'
-  }
-})
-
-watchEffect(() => {
   portName.value = $q.bex.portName
 })
 
-// watchEffect(() => {
-//   console.log('**checking tab**', tabAndTabsetIds.value.length)
-//   const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
-//     .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
-//     .at(0)?.tab
-//   if (!tabInCurrentTs) {
-//     console.log('**checking tab done** ---')
-//     tab.value = undefined
-//     return
-//   }
-//   tab.value = tabInCurrentTs
-//   console.log('**checking tab done**', tab.value)
-//   //console.log('got', tab.value.url, tab.value.tags.length)
-//   if (tab.value.tags.constructor === Array) {
-//     tags.value = [...new Set(tab.value.tags)]
-//     Tab.setTags(tab.value, tags.value)
-//   } else {
-//     tags.value = []
-//   }
-// })
-
 const openNote = () => {
   large.value = !large.value
-  //BexFunctions.bexSendWithRetry($q, 'open-comment-request', callerPortName)
   BexFunctions.bexSendWithRetry($q, 'open-viewport', callerPortName, {
     name: 'note',
-    page: 'overlay/note',
+    page: `overlay/note/${tab.value?.id}`,
     width: '350px',
     height: '450px',
   })
@@ -235,19 +179,10 @@ const openNote = () => {
 const save = () => {
   BexFunctions.bexSendWithRetry($q, 'open-viewport', callerPortName, {
     name: 'snapshots',
-    page: 'overlay/snapshots',
+    page: `overlay/snapshots/${tab.value?.id}`,
     height: '200px',
     width: '290px',
   })
-  // if (tab.value && tab.value.url) {
-  //   useCommandExecutor().executeFromUi(new SaveMHtmlCommand(tab.value.id, tab.value.url))
-  // }
-}
-
-const indexInCurrentTabset = () => {
-  return tabAndTabsetIds.value
-    .map((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId)
-    .findIndex((tsId: string) => tsId === currentTabset.value?.id)
 }
 
 const updatedTags = (val: string[]) => {
@@ -259,9 +194,7 @@ const updatedTags = (val: string[]) => {
       .then(() => {
         sendMsg('refresh-store')
         // all those did not work:
-        // chrome.runtime.sendMessage(null, { message: 'refresh-store' }, function (response) {
-        //   console.log('refreshed store', response)
-        // })
+        // chrome.runtime.sendMessage(null, { message: 'refresh-store' }, function (response) {...
         // BexFunctions.bexSendWithRetry($q, 'reload-current-tabset', 'background')
         // useTabsetsStore().reloadTabset(currentTabset.value!.id)
       })
@@ -275,6 +208,9 @@ const openHelpPage = () => {
 }
 
 const badgeNotShownYet = () => !LocalStorage.getItem('ui.toolbar.info.badge.shown')
+
+const rootTabsetTooltip = () =>
+  'contained in Tabset ' + parentChain.value[0].map((tabset: Tabset) => tabset.name).join(' > ')
 </script>
 
 <style scoped>

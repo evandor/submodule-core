@@ -14,6 +14,12 @@
             <div class="q-ml-xs q-mt-none">
               <div class="text-body1 text-bold ellipsis">
                 <template v-if="currentTabset">
+                  <!--                  <q-btn outline size="sm" style="width: 145px">-->
+                  <!--                    <div class="column">-->
+                  <!--                      <div class="text-left text-caption" style="font-size: smaller">Tabset</div>-->
+                  <!--                      <div class="text-left">{{ tabsetSelectionModel?.label }}</div>-->
+                  <!--                    </div>-->
+                  <!--                  </q-btn>-->
                   <q-select
                     v-if="showTabsetSelection()"
                     filled
@@ -53,7 +59,6 @@
               </div>
             </div>
           </div>
-          <!--          </template>-->
         </div>
 
         <div class="col-2 text-center" style="border: 0 solid blue"></div>
@@ -103,6 +108,7 @@ import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/mod
 import SpecialUrlAddToTabsetComponent from 'src/tabsets/actionHandling/SpecialUrlAddToTabsetComponent.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
+import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
 import { Tabset, TabsetSharing, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
@@ -111,27 +117,17 @@ import { useUiStore } from 'src/ui/stores/uiStore'
 import { useWindowsStore } from 'src/windows/stores/windowsStore'
 import { ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 type SelectOption = { label: string; value: string; disable?: boolean; icon?: string }
 
 const { t } = useI18n({ useScope: 'global' })
 
-const props = defineProps({
-  title: { type: String, default: 'My Tabsets' },
-  forceTitle: { type: Boolean, default: false },
-  showSearchBox: { type: Boolean, default: false },
-  searchTerm: { type: String, default: '' },
-  searchHits: { type: Number, required: false },
-})
-
 const emits = defineEmits(['tabset-changed'])
 
 const $q = useQuasar()
 const router = useRouter()
-const route = useRoute()
 
-const searching = ref(false)
 const showFilter = ref(false)
 const windowLocation = ref('')
 const annimateNewTabsetButton = ref(false)
@@ -202,12 +198,15 @@ watchEffect(() => {
 
   if (tabsetsAdded) {
     tabsetSelectionOptions.value.unshift({
-      label: 'Switch to:',
+      label: 'Switch Tabset:',
       value: '',
       icon: 'o_featured_play_list',
       disable: true,
     })
   }
+
+  // tabsetSelectionOptions.value.unshift({ label: '', value: '', disable: true })
+  tabsetSelectionOptions.value.unshift({ label: 'New Tabset', value: 'create-tabset', icon: 'o_add' })
 
   tabsetSelectionModel.value = {
     label: currentTabset.value?.name || '?',
@@ -217,6 +216,7 @@ watchEffect(() => {
 
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
+  console.log('xxx', currentTabset.value?.name)
   if (currentTabset.value) {
     overlap.value = useTabsStore2().getOverlap(currentTabset.value)
     overlapTooltip.value = `${Math.round(100 * overlap.value)}% overlap between this tabset and the currently open tabs`
@@ -234,12 +234,6 @@ watchEffect(() => {
 
 watchEffect(() => {
   annimateNewTabsetButton.value = useUiStore().animateNewTabsetButton
-})
-
-watchEffect(() => {
-  if (props.showSearchBox && !searching.value) {
-    searching.value = true
-  }
 })
 
 watchEffect(() => {
@@ -297,6 +291,21 @@ const switchTabset = async (tabset: object) => {
   const tsId = tabset['value' as keyof object]
   if (tsId === 'select-space') {
     await router.push('/sidepanel/spaces')
+    return
+  }
+  if (tsId === 'create-tabset') {
+    $q.dialog({
+      component: NewTabsetDialog,
+      componentProps: {
+        tabsetId: useTabsetsStore().getCurrentTabset?.id,
+        spaceId: useSpacesStore().space?.id,
+        fromPanel: true,
+      },
+    })
+    tabsetSelectionModel.value = {
+      label: currentTabset.value?.name || '?',
+      value: currentTabset.value?.id || '-',
+    }
     return
   }
   if (tsId === '') {

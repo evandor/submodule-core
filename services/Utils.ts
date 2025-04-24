@@ -331,6 +331,14 @@ export function useUtils() {
     return handleDblClick
   }
 
+  function closeWindow() {
+    chrome.tabs.getCurrent().then((current) => {
+      if (current && current.id) {
+        chrome.tabs.remove(current.id)
+      }
+    })
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -351,5 +359,6 @@ export function useUtils() {
     setupConsoleInterceptor,
     useDblClickHandler,
     formatReadingTime,
+    closeWindow,
   }
 }

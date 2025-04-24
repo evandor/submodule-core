@@ -28,7 +28,6 @@ import { useQuasar } from 'quasar'
 import BexFunctions from 'src/core/communication/BexFunctions'
 import SnapshotViewHelper from 'src/core/pages/sidepanel/helper/SnapshotViewHelper.vue'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
-import { useUtils } from 'src/core/services/Utils'
 import { SaveMHtmlCommand } from 'src/snapshots/commands/SaveMHtmlCommand'
 import { BlobMetadata } from 'src/snapshots/models/BlobMetadata'
 import { useSnapshotsStore } from 'src/snapshots/stores/SnapshotsStore'
@@ -40,8 +39,6 @@ import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
-
-const { sendMsg } = useUtils()
 
 const portName = ref('---')
 const currentSpace = ref('---')
@@ -55,8 +52,23 @@ const mds = ref<BlobMetadata[]>([])
 const $q = useQuasar()
 const route = useRoute()
 
+const props = defineProps<{ tabId: string }>()
+
 const callerPortName = route.query.portName as string
 console.log('route', route.query.portName)
+
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+watchEffect(async () => {
+  const ts: [Tabset[], Tab | undefined] = useTabsetsStore().getParentChainForTabId(props.tabId)
+  if (!ts[1]) {
+    //console.log('****3 checking tab done** ---')
+    tab.value = undefined
+    return
+  }
+  tab.value = ts[1]
+  mds.value = await useSnapshotsStore().metadataFor(tab.value.id)
+  console.log('got', mds.value)
+})
 
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
@@ -84,19 +96,19 @@ watchEffect(() => {
   portName.value = $q.bex.portName
 })
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-watchEffect(async () => {
-  const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
-    .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
-    .at(0)?.tab
-  if (!tabInCurrentTs) {
-    tab.value = undefined
-    return
-  }
-  tab.value = tabInCurrentTs
-  mds.value = await useSnapshotsStore().metadataFor(tab.value.id)
-  console.log('got', mds.value)
-})
+// // eslint-disable-next-line @typescript-eslint/no-misused-promises
+// watchEffect(async () => {
+//   const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
+//     .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
+//     .at(0)?.tab
+//   if (!tabInCurrentTs) {
+//     tab.value = undefined
+//     return
+//   }
+//   tab.value = tabInCurrentTs
+//   mds.value = await useSnapshotsStore().metadataFor(tab.value.id)
+//   console.log('got', mds.value)
+// })
 
 const closeComment = () => {
   $q.bex.log('hier closeComment')
@@ -114,6 +126,7 @@ const closeComment = () => {
 }
 
 const save = () => {
+  console.log(`got ${tab.value?.id} and ${tab.value?.url}`)
   if (tab.value?.id && tab.value.url) {
     useCommandExecutor().executeFromUi(new SaveMHtmlCommand(tab.value.id, tab.value.url))
   }

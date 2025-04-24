@@ -82,11 +82,25 @@ const tabAndTabsetIds = ref<TabAndTabsetId[]>([])
 const editor = ref<string>('')
 const tab = ref<Tab | undefined>(undefined)
 
+const props = defineProps<{ tabId: string }>()
+
 const $q = useQuasar()
 const route = useRoute()
 
 const callerPortName = route.query.portName as string
 console.log('route', route.query.portName)
+
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+watchEffect(async () => {
+  const ts: [Tabset[], Tab | undefined] = useTabsetsStore().getParentChainForTabId(props.tabId)
+  if (!ts[1]) {
+    //console.log('****3 checking tab done** ---')
+    tab.value = undefined
+    return
+  }
+  tab.value = ts[1]
+  editor.value = tab.value.note
+})
 
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
@@ -114,17 +128,17 @@ watchEffect(() => {
   portName.value = $q.bex.portName
 })
 
-watchEffect(() => {
-  const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
-    .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
-    .at(0)?.tab
-  if (!tabInCurrentTs) {
-    tab.value = undefined
-    return
-  }
-  tab.value = tabInCurrentTs
-  editor.value = tab.value.note
-})
+// watchEffect(() => {
+//   const tabInCurrentTs: Tab | undefined = tabAndTabsetIds.value
+//     .filter((tabWithTsId: TabAndTabsetId) => tabWithTsId.tabsetId === currentTabset.value?.id)
+//     .at(0)?.tab
+//   if (!tabInCurrentTs) {
+//     tab.value = undefined
+//     return
+//   }
+//   tab.value = tabInCurrentTs
+//   editor.value = tab.value.note
+// })
 
 const closeComment = () => {
   $q.bex.log('hier closeComment')

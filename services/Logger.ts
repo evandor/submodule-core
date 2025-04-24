@@ -44,10 +44,8 @@ const postLogsToLoki = async (message: string, labels: object) => {
     // const response = await axios.post(lokiURL, logData,{ headers }).catch((e)=>{
     //   console.log(e);
     // });
-    fetch(lokiURL, { method: 'POST', headers, body: JSON.stringify(logData) }).then((response) => {
-      response.json().then((data) => {
-        console.log('data', data)
-      })
+    fetch(lokiURL, { method: 'POST', headers, body: JSON.stringify(logData) }).catch((response) => {
+      console.error('loki error:', response)
     })
   } catch (error) {
     console.error('Error posting logs to Loki:', error)
