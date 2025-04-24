@@ -14,44 +14,94 @@
             <div class="q-ml-xs q-mt-none">
               <div class="text-body1 text-bold ellipsis">
                 <template v-if="currentTabset">
-                  <!--                  <q-btn outline size="sm" style="width: 145px">-->
-                  <!--                    <div class="column">-->
-                  <!--                      <div class="text-left text-caption" style="font-size: smaller">Tabset</div>-->
-                  <!--                      <div class="text-left">{{ tabsetSelectionModel?.label }}</div>-->
-                  <!--                    </div>-->
-                  <!--                  </q-btn>-->
-                  <q-select
-                    v-if="showTabsetSelection()"
-                    filled
-                    transition-show="scale"
-                    transition-hide="scale"
-                    :label="tabsetSelectLabel()"
-                    v-model="tabsetSelectionModel"
-                    @update:model-value="(newTabset: object) => switchTabset(newTabset)"
-                    :options="tabsetSelectionOptions"
-                    dense
-                    options-dense>
-                    <template v-slot:option="scope">
-                      <q-item v-bind="scope.itemProps">
-                        <template v-if="scope.opt.label.length > 0">
-                          <q-item-section style="max-width: 20px">
-                            <q-icon size="xs" :name="scope.opt.icon" v-if="scope.opt.icon" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>{{ scope.opt.label }}</q-item-label>
-                            <q-item-label caption>{{ scope.opt.description }}</q-item-label>
-                          </q-item-section>
-                        </template>
-                        <q-item-section class="q-ma-none q-pa-none" v-else>
+                  <q-btn flat size="sm" style="width: 100%" no-caps align="left">
+                    <div class="column">
+                      <div
+                        class="text-left text-caption q-ma-none q-pa-none text-grey-8"
+                        style="font-size: x-small; max-height: 14px">
+                        Tabset
+                      </div>
+                      <div class="text-left text-body2 q-ma-none q-pa-none">{{ tabsetSelectionModel?.label }}</div>
+                    </div>
+                    <q-menu>
+                      <q-list style="min-width: 200px" dense>
+                        <CreateTabsetAction :tabset="currentTabset" level="root" />
+                        <EditTabsetAction :tabset="currentTabset" level="root" />
+                        <CreateSubfolderAction :tabset="currentTabset" level="root" />
+                        <OpenAllInMenuAction :tabset="currentTabset" level="root" />
+                        <template v-if="tabsetSelectionOptions.length > 0">
                           <q-separator />
-                        </q-item-section>
-                      </q-item>
-                    </template>
-                  </q-select>
-                  <div v-else>
-                    <div class="text-caption q-ml-md">{{ title() }}</div>
-                    <div class="q-ml-md">{{ currentTabset.name }}</div>
-                  </div>
+                          <q-item dense>
+                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px">
+                              <q-icon size="xs" name="swap_vert" />
+                            </q-item-section>
+                            <q-item-section>
+                              <span> Switch to Tabset: </span>
+                            </q-item-section>
+                            <slot></slot>
+                          </q-item>
+                          <q-item
+                            clickable
+                            v-close-popup
+                            v-for="option in tabsetSelectionOptions"
+                            dense
+                            @click.stop="switchTabset(option)">
+                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px"></q-item-section>
+                            <q-item-section>
+                              <div class="text-italic">{{ option.label }}</div>
+                            </q-item-section>
+                            <slot></slot>
+                          </q-item>
+                          <!--                          <q-item clickable v-close-popup dense @click.stop="switchTabset(option)">-->
+                          <!--                            <q-item-section>{{ option.label }}</q-item-section>-->
+                          <!--                          </q-item>-->
+                        </template>
+                        <template
+                          v-if="
+                            currentTabset &&
+                            currentTabset.tabs.length > 0 &&
+                            useFeaturesStore().hasFeature(FeatureIdent.GALLERY)
+                          ">
+                          <ShowGalleryAction :tabset="currentTabset" level="root" />
+                        </template>
+                        <q-separator />
+                        <DeleteTabsetAction :tabset="currentTabset" level="root" />
+                      </q-list>
+                    </q-menu>
+                  </q-btn>
+
+                  <!--                  <q-select-->
+                  <!--                    v-if="showTabsetSelection()"-->
+                  <!--                    filled-->
+                  <!--                    transition-show="scale"-->
+                  <!--                    transition-hide="scale"-->
+                  <!--                    :label="tabsetSelectLabel()"-->
+                  <!--                    v-model="tabsetSelectionModel"-->
+                  <!--                    @update:model-value="(newTabset: object) => switchTabset(newTabset)"-->
+                  <!--                    :options="tabsetSelectionOptions"-->
+                  <!--                    dense-->
+                  <!--                    options-dense>-->
+                  <!--                    <template v-slot:option="scope">-->
+                  <!--                      <q-item v-bind="scope.itemProps">-->
+                  <!--                        <template v-if="scope.opt.label.length > 0">-->
+                  <!--                          <q-item-section style="max-width: 20px">-->
+                  <!--                            <q-icon size="xs" :name="scope.opt.icon" v-if="scope.opt.icon" />-->
+                  <!--                          </q-item-section>-->
+                  <!--                          <q-item-section>-->
+                  <!--                            <q-item-label>{{ scope.opt.label }}</q-item-label>-->
+                  <!--                            <q-item-label caption>{{ scope.opt.description }}</q-item-label>-->
+                  <!--                          </q-item-section>-->
+                  <!--                        </template>-->
+                  <!--                        <q-item-section class="q-ma-none q-pa-none" v-else>-->
+                  <!--                          <q-separator />-->
+                  <!--                        </q-item-section>-->
+                  <!--                      </q-item>-->
+                  <!--                    </template>-->
+                  <!--                  </q-select>-->
+                  <!--                  <div v-else>-->
+                  <!--                    <div class="text-caption q-ml-md">{{ title() }}</div>-->
+                  <!--                    <div class="q-ml-md">{{ currentTabset.name }}</div>-->
+                  <!--                  </div>-->
                 </template>
                 <template v-else>
                   <q-spinner color="primary" size="1em" />
@@ -106,8 +156,15 @@ import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { useActionHandlers } from 'src/tabsets/actionHandling/ActionHandlers'
 import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/model/ActionHandlerButtonClickedHolder'
 import SpecialUrlAddToTabsetComponent from 'src/tabsets/actionHandling/SpecialUrlAddToTabsetComponent.vue'
+import CreateSubfolderAction from 'src/tabsets/actions/CreateSubfolderAction.vue'
+import CreateTabsetAction from 'src/tabsets/actions/CreateTabsetAction.vue'
+import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
+import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
+import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
+import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
+import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
 import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
 import { Tabset, TabsetSharing, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -196,17 +253,17 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: 'Select Space...', value: 'select-space', icon: 'o_space_dashboard' })
   }
 
-  if (tabsetsAdded) {
-    tabsetSelectionOptions.value.unshift({
-      label: 'Switch Tabset:',
-      value: '',
-      icon: 'o_featured_play_list',
-      disable: true,
-    })
-  }
+  // if (tabsetsAdded) {
+  //   tabsetSelectionOptions.value.unshift({
+  //     label: 'Switch Tabset:',
+  //     value: '',
+  //     icon: 'o_featured_play_list',
+  //     disable: true,
+  //   })
+  // }
 
   // tabsetSelectionOptions.value.unshift({ label: '', value: '', disable: true })
-  tabsetSelectionOptions.value.unshift({ label: 'New Tabset', value: 'create-tabset', icon: 'o_add' })
+  //tabsetSelectionOptions.value.unshift({ label: 'New Tabset', value: 'create-tabset', icon: 'o_add' })
 
   tabsetSelectionModel.value = {
     label: currentTabset.value?.name || '?',
@@ -286,6 +343,32 @@ const handleButtonClicked = async (tabset: Tabset, args: ActionHandlerButtonClic
 const offsetTop = () => ($q.platform.is.capacitor || $q.platform.is.cordova ? 'margin-top:40px;' : '')
 
 const addUrlDialog = () => $q.dialog({ component: AddUrlDialog })
+
+const newTabsetDialog = () => {
+  $q.dialog({
+    component: NewTabsetDialog,
+    componentProps: {
+      tabsetId: useTabsetsStore().getCurrentTabset?.id,
+      spaceId: useSpacesStore().space?.id,
+      fromPanel: true,
+    },
+  })
+}
+
+const editTabsetDialog = () => {
+  $q.dialog({
+    component: EditTabsetDialog,
+    //TODO switch to tabset: tabset?
+    componentProps: {
+      tabsetId: currentTabset.value!.id,
+      tabsetName: currentTabset.value!.name,
+      tabsetColor: currentTabset.value!.color,
+      window: currentTabset.value!.window,
+      details: currentTabset.value!.details || useUiStore().listDetailLevel,
+      fromPanel: true,
+    },
+  })
+}
 
 const switchTabset = async (tabset: object) => {
   const tsId = tabset['value' as keyof object]

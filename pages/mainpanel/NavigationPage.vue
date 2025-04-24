@@ -52,6 +52,13 @@
           <!--          <q-tooltip :delay="1000">Mail</q-tooltip>-->
           <!--        </q-icon>-->
           <q-icon
+            name="o_menu_book"
+            size="xs"
+            class="cursor-pointer q-mr-sm"
+            :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
+            <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
+          </q-icon>
+          <q-icon
             name="save"
             @click="save()"
             size="xs"
