@@ -1,10 +1,10 @@
 import { LocalStorage } from 'quasar'
 import { useBookmarksStore } from 'src/bookmarks/stores/bookmarksStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
+import { useAuthStore } from 'src/stores/authStore'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { useWindowsStore } from 'src/windows/stores/windowsStore'
-import { useAuthStore } from 'stores/authStore'
 
 export interface StatRow {
   name: string
