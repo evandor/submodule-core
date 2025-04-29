@@ -1,10 +1,10 @@
 <template>
-  <q-page padding style="padding-top: 45px">
+  <q-page padding style="padding-top: 55px">
     <div class="q-ma-none">
       <InfoMessageWidget
         :probability="1"
         ident="groupByDomain_atLeastTwo"
-        hint="In this view, you will see your tabs grouped by Domain" />
+        hint="This view lists all your tabs grouped by Domain" />
 
       <div class="q-ma-none">
         <div class="row q-ma-none q-pa-none">
@@ -39,7 +39,6 @@ onMounted(() => {
 })
 
 const showByDomainPage = (host: string) => {
-  console.log('clicked', host)
   router.push('/sidepanel/bydomain/' + btoa(host))
 }
 </script>

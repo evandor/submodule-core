@@ -72,7 +72,7 @@
         <SidePanelFooterViewMenuItem
           :side-panel-view="SidePanelViews.MAIN"
           label="Default View"
-          icon=""
+          icon="o_featured_play_list"
           :size="buttonSize"
           tooltip="Back to Default View" />
       </q-list>
@@ -122,10 +122,11 @@
   </template>
 
   <SidePanelFooterLeftButton
+    v-if="useFeaturesStore().hasFeature(FeatureIdent.OPEN_TABS)"
     :side-panel-view="SidePanelViews.TABS_LIST"
     :size="props.size"
     :class="{ shakeWithColor: animateTabsListButton }"
-    icon="o_playlist_add"
+    icon="sym_o_tabs"
     tooltip="All your browser's open tabs" />
 
   <SidePanelFooterLeftButton
@@ -145,11 +146,11 @@
     :size="props.size"
     tooltip="Show the Bookmarks Browser" />
 
-  <SidePanelFooterLeftButton
-    :side-panel-view="SidePanelViews.RSS_LIST"
-    icon="o_rss_feed"
-    :size="props.size"
-    tooltip="List all your RSS feeds" />
+  <!--  <SidePanelFooterLeftButton-->
+  <!--    :side-panel-view="SidePanelViews.RSS_LIST"-->
+  <!--    icon="o_rss_feed"-->
+  <!--    :size="props.size"-->
+  <!--    tooltip="List all your RSS feeds" />-->
 
   <span
     class="q-ma-none"

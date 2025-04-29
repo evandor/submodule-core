@@ -7,14 +7,14 @@
       </InfoMessageWidget>
     </div>
 
-    <div class="row q-ma-lg fit items-center justify-center" v-if="loading">
-      <q-spinner-dots color="primary" size="2em" />
-    </div>
-
     <q-tabs v-model="tab" dense class="text-grey" active-color="primary" indicator-color="primary" narrow-indicator>
       <q-tab name="by_count" label="Count" />
       <q-tab name="by_reading_time" label="Reading Time" />
     </q-tabs>
+
+    <div class="row q-ma-lg fit items-center justify-center" v-if="loading">
+      <q-spinner-dots color="primary" size="2em" />
+    </div>
 
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel name="by_count">
@@ -29,7 +29,26 @@
                       : tabAndTabsetId.tab.activatedCount + ' time'
                   "
                   :tab="tabAndTabsetId.tab"
-                  :tabsetId="tabAndTabsetId.tabsetId" />
+                  :detail-level="'MINIMAL'">
+                  <template v-slot:actionPart>
+                    <q-item-section
+                      class="q-ma-none q-pa-none text-right"
+                      style="justify-content: start; width: 30px; max-width: 30px">
+                      <q-icon
+                        name="sym_o_cancel_presentation"
+                        size="xs"
+                        color="grey-7"
+                        class="cursor-pointer"
+                        @click="
+                          clearCounter(tabAndTabsetId, (t: Tab) => {
+                            t.activatedCount = 0
+                          })
+                        ">
+                        <q-tooltip class="tooltip-small">Clear Counter</q-tooltip>
+                      </q-icon>
+                    </q-item-section>
+                  </template>
+                </PanelTabListElementWidget>
               </q-item>
             </q-list>
           </div>
@@ -40,7 +59,29 @@
           <div class="col-12 q-ma-none q-pa-none">
             <q-list class="q-ma-none">
               <q-item v-for="tabAndTabsetId in top10ReadingTime" clickable v-ripple class="q-ma-none q-pa-sm">
-                <PanelTabListElementWidget :tab="tabAndTabsetId.tab" :tabsetId="tabAndTabsetId.tabsetId" />
+                <PanelTabListElementWidget
+                  :header="formatReadingTime(tabAndTabsetId.tab.readingTime)"
+                  :tab="tabAndTabsetId.tab"
+                  :detail-level="'MINIMAL'">
+                  <template v-slot:actionPart>
+                    <q-item-section
+                      class="q-ma-none q-pa-none text-right"
+                      style="justify-content: start; width: 30px; max-width: 30px">
+                      <q-icon
+                        name="sym_o_cancel_presentation"
+                        size="xs"
+                        color="grey-7"
+                        class="cursor-pointer"
+                        @click="
+                          clearCounter(tabAndTabsetId, (t: Tab) => {
+                            t.readingTime = 0
+                          })
+                        ">
+                        <q-tooltip class="tooltip-small">Clear Counter</q-tooltip>
+                      </q-icon>
+                    </q-item-section>
+                  </template>
+                </PanelTabListElementWidget>
               </q-item>
             </q-list>
           </div>
@@ -58,6 +99,7 @@
 <script lang="ts" setup>
 import _ from 'lodash'
 import ViewToolbarHelper from 'src/core/pages/sidepanel/helper/ViewToolbarHelper.vue'
+import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'
 import { Tab } from 'src/tabsets/models/Tab'
 import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
@@ -65,7 +107,9 @@ import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import PanelTabListElementWidget from 'src/tabsets/widgets/PanelTabListElementWidget.vue'
 import InfoMessageWidget from 'src/ui/widgets/InfoMessageWidget.vue'
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, ref } from 'vue'
+
+const { formatReadingTime } = useUtils()
 
 const top10 = ref<TabAndTabsetId[]>([])
 const top10ReadingTime = ref<TabAndTabsetId[]>([])
@@ -81,27 +125,39 @@ onMounted(() => {
 //const bgCalc = new Worker("../background-calc-worker.js", { type: "module" });
 //console.log("bgCalc", bgCalc)
 
-watchEffect(() => {
+setTimeout(() => {
+  calcData()
+}, 500)
+
+const calcData = () => {
   loading.value = true
-  setTimeout(() => {
-    const r: TabAndTabsetId[] = _.flatMap([...useTabsetsStore().tabsets.values()] as Tabset[], (tabset: Tabset) => {
-      return _.map(
-        _.filter(tabset.tabs, (t: Tab) => t.url !== undefined && t.url.trim() !== ''),
-        (t: Tab) => new TabAndTabsetId(t, tabset.id),
-      )
-    })
-    top10.value = _.take(
-      _.orderBy(r, (t: TabAndTabsetId) => t.tab.activatedCount || 0, 'desc'),
+  const r: TabAndTabsetId[] = _.flatMap([...useTabsetsStore().tabsets.values()] as Tabset[], (tabset: Tabset) => {
+    return _.map(
+      _.filter(tabset.tabs, (t: Tab) => t.url !== undefined && t.url.trim() !== ''),
+      (t: Tab) => new TabAndTabsetId(t, tabset.id),
+    )
+  })
+  top10.value = _.take(
+    _.orderBy(r, (t: TabAndTabsetId) => t.tab.activatedCount || 0, 'desc'),
+    25,
+  )
+  top10ReadingTime.value = _.filter(
+    _.take(
+      _.orderBy(r, (t: TabAndTabsetId) => t.tab.readingTime || 0, 'desc'),
       25,
-    )
-    top10ReadingTime.value = _.filter(
-      _.take(
-        _.orderBy(r, (t: TabAndTabsetId) => t.tab.readingTime || 0, 'desc'),
-        25,
-      ),
-      (t: TabAndTabsetId) => t.tab.readingTime !== undefined,
-    )
-    loading.value = false
-  }, 500)
-})
+    ),
+    (t: TabAndTabsetId) => t.tab.readingTime !== undefined,
+  )
+  loading.value = false
+}
+
+const clearCounter = (tabAndTabsetId: TabAndTabsetId, clearFkt: (tab: Tab) => void) => {
+  const ts = useTabsetsStore().getTabset(tabAndTabsetId.tabsetId)
+  if (ts) {
+    // tabAndTabsetId.tab.activatedCount = 0
+    clearFkt(tabAndTabsetId.tab)
+    useTabsetsStore().saveTabset(ts)
+    calcData()
+  }
+}
 </script>

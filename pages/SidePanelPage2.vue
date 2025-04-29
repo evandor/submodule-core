@@ -39,7 +39,11 @@
     <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
       <FirstToolbarHelper2 :showSearchBox="showSearchBox" @tabset-changed="tabsetChanged()" />
       <SearchToolbarHelper
-        v-if="useTabsetsStore().allTabsCount > 0"
+        v-if="
+          (useTabsetsStore().allTabsCount > 9 || useTabsetsStore().tabsets.size > 1) &&
+          currentTabset &&
+          currentTabset.tabs.length > 0
+        "
         @on-term-changed="(val) => termChanged(val)"
         :filteredFoldersCount="filteredFoldersCount"
         :filteredTabsCount="filteredTabsCount" />
@@ -246,7 +250,8 @@ const onMessageListener = (message: any) => {
     }
   } else if (message.name === 'reload-application') {
     //AppService.restart('restarted=true')
-    console.error('message reload-application was called, no-op')
+    // console.error('message reload-application was called, no-op')
+    window.location.reload()
   } else if (message.name === 'window-updated') {
     useWindowsStore().setup('window-updated event')
   } else if (message.name === 'refresh-store') {
@@ -262,7 +267,7 @@ const onMessageListener = (message: any) => {
 if (inBexMode()) {
   // seems we need to define these listeners here to get the matching messages reliably
   // these messages are created by triggering events in the mainpanel
-  console.warn('adding onMessage listener!')
+  // console.warn('adding onMessage listener!')
   chrome.runtime.onMessage.addListener(onMessageListener)
 }
 

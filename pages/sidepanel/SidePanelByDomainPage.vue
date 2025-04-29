@@ -11,10 +11,7 @@
             </div>
             <div class="col-10">
               <div class="col-1">
-                <span class="text-dark">Domain</span>
-                <span class="text-primary">
-                  {{ domain }}
-                </span>
+                <span class="text-primary"> {{ domain }} </span>
               </div>
             </div>
             <div class="col-1 text-right"></div>
@@ -55,6 +52,7 @@ watchEffect(() => {
   if (domain.value) {
     domain.value = atob(domain.value)
   }
+  console.log('domain', domain.value)
 })
 
 const groupedTabs = ref<Tab[]>([])

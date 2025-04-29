@@ -12,12 +12,7 @@
 
     <!-- place QPageSticky at end of page -->
     <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
-      <FirstToolbarHelper :title="useUiStore().selectedTag + ' (Tags List)'">
-        <template v-slot:iconsRight>
-          <SidePanelToolbarTabNavigationHelper />
-          <CloseSidePanelViewButton />
-        </template>
-      </FirstToolbarHelper>
+      <ViewToolbarHelper title="Tags Overview" />
     </q-page-sticky>
   </q-page>
 </template>
@@ -26,15 +21,13 @@
 import _ from 'lodash'
 import { uid, useQuasar } from 'quasar'
 import SearchHit from 'src/core/components/layouts/SearchHit.vue'
-import FirstToolbarHelper from 'src/core/pages/sidepanel/helper/FirstToolbarHelper2.vue'
+import ViewToolbarHelper from 'src/core/pages/sidepanel/helper/ViewToolbarHelper.vue'
 import Analytics from 'src/core/utils/google-analytics'
-import SidePanelToolbarTabNavigationHelper from 'src/opentabs/pages/SidePanelToolbarTabNavigationHelper.vue'
 import { Hit } from 'src/search/models/Hit'
 import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
-import CloseSidePanelViewButton from 'src/ui/components/CloseSidePanelViewButton.vue'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { onMounted, ref, watchEffect } from 'vue'
 

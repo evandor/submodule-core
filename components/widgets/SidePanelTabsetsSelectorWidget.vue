@@ -73,7 +73,11 @@
         </template>
 
         <q-separator />
-        <q-item v-if="useTabsetsStore().currentTabsetName" clickable v-close-popup @click="openEditTabsetDialog()">
+        <q-item
+          v-if="useTabsetsStore().currentTabsetName && !useAsTabsetsSwitcher"
+          clickable
+          v-close-popup
+          @click="openEditTabsetDialog()">
           <q-item-section>Edit Tabset Name</q-item-section>
         </q-item>
 

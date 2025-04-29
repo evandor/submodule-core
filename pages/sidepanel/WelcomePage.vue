@@ -6,7 +6,7 @@
       <div class="q-ma-none q-pa-md fit">
         <div class="row q-mt-lg q-ml-sm">
           <div class="row">
-            <div class="col-12 text-caption">The Art Of Linking</div>
+            <div class="col-12 text-body2">The Art Of Linking</div>
           </div>
           <div class="col-12 text-h6 q-mb-md text-primary">{{ $t('welcome_to_tabsets') }}</div>
         </div>
@@ -17,7 +17,7 @@
           <transition
             :name="showDocumentation ? 'q-transition--jump-right' : 'q-transition--jump-left'"
             :class="showDocumentation ? 'documentation' : 'box'">
-            <q-card v-if="!showDocumentation" class="my-card fit">
+            <q-card v-if="!showDocumentation" class="fit">
               <q-card-section class="q-pb-none">
                 <div class="row">
                   <div class="col-11">
@@ -69,14 +69,14 @@
                 </div>
                 <div v-else>&nbsp;</div>
               </q-card-section>
-              <q-card-section align="center" class="q-pr-md q-pb-md q-ma-none q-mt-none">
-                <div
-                  class="text-center q-ma-none q-pa-none text-accent cursor-pointer"
-                  style="font-size: smaller"
-                  @click="importFromBackup()">
-                  or import from backup...
-                </div>
-              </q-card-section>
+              <!--              <q-card-section align="center" class="q-pr-md q-pb-md q-ma-none q-mt-none">-->
+              <!--                <div-->
+              <!--                  class="text-center q-ma-none q-pa-none text-accent cursor-pointer"-->
+              <!--                  style="font-size: smaller"-->
+              <!--                  @click="importFromBackup()">-->
+              <!--                  or import from backup...-->
+              <!--                </div>-->
+              <!--              </q-card-section>-->
             </q-card>
 
             <q-card v-else class="my-card fit" :class="showDocumentation ? 'documentation' : 'box'">
@@ -91,7 +91,7 @@
                         <q-icon name="o_featured_play_list" color="primary" class="q-mb-xs" size="xs" />
                       </div>
                       <div class="col q-ml-sm">
-                        Start by creating a <em>tabset</em> (a <em>set of tabs</em> with a <em>name</em>).
+                        Create a <em>tabset</em> (a <em>set of tabs</em> with a <em>name</em>).
                       </div>
                     </div>
                   </div>
@@ -103,45 +103,45 @@
                         <q-icon name="o_tab" color="primary" class="q-mr-sm q-mb-xs" size="xs" />
                       </div>
                       <div class="col q-ml-sm">
-                        Add your current <em>tab</em> (or all your open tabs) to this new tabset
+                        Add your current <em>tab</em> (or all your open tabs) to the new tabset
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="q-row q-my-md q-ml-sm">
-                  <div class="q-col text-body1">
-                    <div class="row">
-                      <div class="col-1">
-                        <q-icon name="o_replay" color="primary" class="q-mr-sm q-mb-xs" size="xs" />
-                      </div>
-                      <div class="col q-ml-sm">Switch tab or tabset, Repeat</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="q-row q-mt-md q-ml-sm">
-                  <div class="q-col text-body1">
-                    <div class="row">
-                      <div class="col-1">
-                        <q-icon name="o_settings" color="primary" class="q-mr-sm q-mb-xs" size="xs" />
-                      </div>
-                      <div class="col q-ml-sm">Discover more features</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="q-row q-mb-md q-ml-sm">
-                  <div class="q-col text-body1">
-                    <div class="row">
-                      <div class="col-1"></div>
-                      <div class="col q-ml-md text-body2 text-grey">
-                        Search<br />
-                        Drag & Drop<br />
-                        Bookmarks Integration<br />
-                        Quick Access to tabs<br />
-                        ...<br />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <!--                <div class="q-row q-my-md q-ml-sm">-->
+                <!--                  <div class="q-col text-body1">-->
+                <!--                    <div class="row">-->
+                <!--                      <div class="col-1">-->
+                <!--                        <q-icon name="o_replay" color="primary" class="q-mr-sm q-mb-xs" size="xs" />-->
+                <!--                      </div>-->
+                <!--                      <div class="col q-ml-sm">Switch tab or tabset, Repeat</div>-->
+                <!--                    </div>-->
+                <!--                  </div>-->
+                <!--                </div>-->
+                <!--                <div class="q-row q-mt-md q-ml-sm">-->
+                <!--                  <div class="q-col text-body1">-->
+                <!--                    <div class="row">-->
+                <!--                      <div class="col-1">-->
+                <!--                        <q-icon name="o_settings" color="primary" class="q-mr-sm q-mb-xs" size="xs" />-->
+                <!--                      </div>-->
+                <!--                      <div class="col q-ml-sm">Discover more features</div>-->
+                <!--                    </div>-->
+                <!--                  </div>-->
+                <!--                </div>-->
+                <!--                <div class="q-row q-mb-md q-ml-sm">-->
+                <!--                  <div class="q-col text-body1">-->
+                <!--                    <div class="row">-->
+                <!--                      <div class="col-1"></div>-->
+                <!--                      <div class="col q-ml-md text-body2 text-grey">-->
+                <!--                        Search<br />-->
+                <!--                        Drag & Drop<br />-->
+                <!--                        Bookmarks Integration<br />-->
+                <!--                        Quick Access to tabs<br />-->
+                <!--                        ...<br />-->
+                <!--                      </div>-->
+                <!--                    </div>-->
+                <!--                  </div>-->
+                <!--                </div>-->
                 <div class="q-row">
                   <div class="q-col text-body1 text-center q-mt-sm">
                     <DialogButton label="got it..." @was-clicked="toggleDocumentation()" data-testid="welcome-got-it" />
@@ -220,9 +220,7 @@ onMounted(() => {
   LocalStorage.set(TITLE_IDENT, 'Tabsets' + stageIdentifier())
 })
 
-const toggleDocumentation = () => {
-  showDocumentation.value = !showDocumentation.value
-}
+const toggleDocumentation = () => (showDocumentation.value = !showDocumentation.value)
 
 watchEffect(() => {
   openTabsCount.value = useTabsStore2().browserTabs.length
@@ -269,17 +267,3 @@ const importFromBackup = () => {
   useNavigationService().browserTabFor(url)
 }
 </script>
-
-<style lang="scss">
-.documentation {
-  border: 3px solid $accent;
-  border-radius: 10px;
-  min-height: 400px;
-}
-
-.box {
-  border: 2px solid $accent;
-  border-radius: 10px;
-  min-height: 400px;
-}
-</style>

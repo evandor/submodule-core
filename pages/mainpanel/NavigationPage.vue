@@ -52,11 +52,13 @@
           <!--          <q-tooltip :delay="1000">Mail</q-tooltip>-->
           <!--        </q-icon>-->
           <q-icon
+            v-if="showReadingMode()"
             name="o_menu_book"
             size="xs"
             class="cursor-pointer q-mr-sm"
-            :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
-            <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
+            color="warning"
+            @click.stop="showInReadingMode()">
+            <q-tooltip :delay="1000">Open Reading Mode</q-tooltip>
           </q-icon>
           <q-icon
             name="save"
@@ -122,9 +124,13 @@
 
 <script setup lang="ts">
 import { LocalStorage, useQuasar } from 'quasar'
+import BrowserApi from 'src/app/BrowserApi'
+import { FeatureIdent } from 'src/app/models/FeatureIdent'
+import { TabReferenceType } from 'src/content/models/TabReference'
 import BexFunctions from 'src/core/communication/BexFunctions'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
+import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -218,6 +224,18 @@ const badgeNotShownYet = () => !LocalStorage.getItem('ui.toolbar.info.badge.show
 
 const rootTabsetTooltip = () =>
   'contained in Tabset ' + parentChain.value[0].map((tabset: Tabset) => tabset.name).join(' > ')
+
+const showReadingMode = () => {
+  if (tab.value) {
+    const t: Tab = Object.assign(new Tab(tab.value.id, BrowserApi.createChromeTabObject('', '')), tab.value)
+    console.log('checking reading mode', t)
+    return useFeaturesStore().hasFeature(FeatureIdent.READING_MODE) && t.hasTabReference(TabReferenceType.READING_MODE)
+  }
+  return false
+}
+
+const showInReadingMode = () =>
+  useNavigationService().browserTabFor(chrome.runtime.getURL(`/www/index.html#/mainpanel/readingmode/${tab.value?.id}`))
 </script>
 
 <style scoped>

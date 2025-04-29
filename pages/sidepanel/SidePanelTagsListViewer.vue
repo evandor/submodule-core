@@ -5,7 +5,7 @@
         :probability="1"
         ident="sidePanelTagsListViewer_overview"
         hint="Tabs you add are being tagged automatically (or you can tag them
-            yourself). This is a list of the most used tags." />
+            yourself). This is a list of the most often used tags." />
     </div>
 
     <div class="row q-ma-none q-pa-none">

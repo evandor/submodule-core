@@ -64,7 +64,9 @@ class BexFunctions {
       .forEach((tabAndTsId: TabAndTabsetId) => {
         const ts = useTabsetsStore().getTabset(tabAndTsId.tabsetId)
         if (ts) {
-          // console.log(`setting tabReferences for tab url '${tabAndTsId.tab.url}' to ${JSON.stringify(currentTabReferences.value)}`)
+          // console.log(
+          //   `setting tabReferences for tab url '${tabAndTsId.tab.url}' to ${JSON.stringify(currentTabReferences.value)}`,
+          // )
           const originalRefs = tabAndTsId.tab.tabReferences
 
           newTabReferences

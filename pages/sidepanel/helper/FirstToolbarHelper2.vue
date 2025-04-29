@@ -9,99 +9,105 @@
         </q-linear-progress>
       </div>
       <div class="row q-ma-none q-pa-none">
-        <div class="col-6 q-ma-none q-pa-none" style="border: 0 solid red">
+        <div class="col-1 q-ma-none q-pa-none q-ml-md q-mt-xs" style="border: 0 solid red; max-width: 24px">
+          <q-icon name="menu" class="cursor-pointer" />
+          <q-menu v-if="currentTabset">
+            <q-list style="min-width: 200px" dense>
+              <CreateTabsetAction :tabset="currentTabset" level="root" />
+              <EditTabsetAction :tabset="currentTabset" level="root" />
+              <CreateSubfolderAction :tabset="currentTabset" level="root" />
+              <OpenAllInMenuAction :tabset="currentTabset" level="root" />
+              <DeleteTabsetAction :tabset="currentTabset" level="root" />
+            </q-list>
+          </q-menu>
+        </div>
+        <div class="col-6 q-ma-none q-pa-none text center" style="border: 0 solid red">
           <div class="col-12 text-subtitle1">
             <div class="q-ml-xs q-mt-none">
-              <div class="text-body1 text-bold ellipsis">
+              <div class="text-bold ellipsis">
                 <template v-if="currentTabset">
-                  <q-btn flat size="sm" style="width: 100%" no-caps align="left">
-                    <div class="column">
-                      <div
-                        class="text-left text-caption q-ma-none q-pa-none text-grey-8"
-                        style="font-size: x-small; max-height: 14px">
-                        Tabset
-                      </div>
-                      <div class="text-left text-body2 q-ma-none q-pa-none">{{ tabsetSelectionModel?.label }}</div>
-                    </div>
-                    <q-menu>
-                      <q-list style="min-width: 200px" dense>
-                        <CreateTabsetAction :tabset="currentTabset" level="root" />
-                        <EditTabsetAction :tabset="currentTabset" level="root" />
-                        <CreateSubfolderAction :tabset="currentTabset" level="root" />
-                        <OpenAllInMenuAction :tabset="currentTabset" level="root" />
-                        <template v-if="tabsetSelectionOptions.length > 0">
-                          <q-separator />
-                          <q-item dense>
-                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px">
-                              <q-icon size="xs" name="swap_vert" />
-                            </q-item-section>
-                            <q-item-section>
-                              <span> Switch to Tabset: </span>
-                            </q-item-section>
-                            <slot></slot>
-                          </q-item>
-                          <q-item
-                            clickable
-                            v-close-popup
-                            v-for="option in tabsetSelectionOptions"
-                            dense
-                            @click.stop="switchTabset(option)">
-                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px"></q-item-section>
-                            <q-item-section>
-                              <div class="text-italic">{{ option.label }}</div>
-                            </q-item-section>
-                            <slot></slot>
-                          </q-item>
-                          <!--                          <q-item clickable v-close-popup dense @click.stop="switchTabset(option)">-->
-                          <!--                            <q-item-section>{{ option.label }}</q-item-section>-->
-                          <!--                          </q-item>-->
-                        </template>
-                        <template
-                          v-if="
-                            currentTabset &&
-                            currentTabset.tabs.length > 0 &&
-                            useFeaturesStore().hasFeature(FeatureIdent.GALLERY)
-                          ">
-                          <ShowGalleryAction :tabset="currentTabset" level="root" />
-                        </template>
-                        <q-separator />
-                        <DeleteTabsetAction :tabset="currentTabset" level="root" />
-                      </q-list>
-                    </q-menu>
-                  </q-btn>
+                  <!--                  <q-btn flat size="sm" style="width: 100%" no-caps align="center">-->
+                  <!--                    <div class="column">-->
+                  <!--                      <div class="text-left text-caption q-ma-none q-pa-none text-grey-8" style="max-height: 16px">-->
+                  <!--                        Tabset-->
+                  <!--                      </div>-->
+                  <!--                      <div class="text-left text-subtitle1 q-ma-none q-pa-none">{{ tabsetSelectionModel?.label }}</div>-->
+                  <!--                    </div>-->
+                  <!--                    <q-menu>-->
+                  <!--                      <q-list style="min-width: 200px" dense>-->
+                  <!--                        &lt;!&ndash;                        <CreateTabsetAction :tabset="currentTabset" level="root" />&ndash;&gt;-->
 
-                  <!--                  <q-select-->
-                  <!--                    v-if="showTabsetSelection()"-->
-                  <!--                    filled-->
-                  <!--                    transition-show="scale"-->
-                  <!--                    transition-hide="scale"-->
-                  <!--                    :label="tabsetSelectLabel()"-->
-                  <!--                    v-model="tabsetSelectionModel"-->
-                  <!--                    @update:model-value="(newTabset: object) => switchTabset(newTabset)"-->
-                  <!--                    :options="tabsetSelectionOptions"-->
-                  <!--                    dense-->
-                  <!--                    options-dense>-->
-                  <!--                    <template v-slot:option="scope">-->
-                  <!--                      <q-item v-bind="scope.itemProps">-->
-                  <!--                        <template v-if="scope.opt.label.length > 0">-->
-                  <!--                          <q-item-section style="max-width: 20px">-->
-                  <!--                            <q-icon size="xs" :name="scope.opt.icon" v-if="scope.opt.icon" />-->
-                  <!--                          </q-item-section>-->
-                  <!--                          <q-item-section>-->
-                  <!--                            <q-item-label>{{ scope.opt.label }}</q-item-label>-->
-                  <!--                            <q-item-label caption>{{ scope.opt.description }}</q-item-label>-->
-                  <!--                          </q-item-section>-->
-                  <!--                        </template>-->
-                  <!--                        <q-item-section class="q-ma-none q-pa-none" v-else>-->
+                  <!--                        <template v-if="tabsetSelectionOptions.length > 0">-->
                   <!--                          <q-separator />-->
-                  <!--                        </q-item-section>-->
-                  <!--                      </q-item>-->
-                  <!--                    </template>-->
-                  <!--                  </q-select>-->
-                  <!--                  <div v-else>-->
-                  <!--                    <div class="text-caption q-ml-md">{{ title() }}</div>-->
-                  <!--                    <div class="q-ml-md">{{ currentTabset.name }}</div>-->
-                  <!--                  </div>-->
+                  <!--                          <q-item dense>-->
+                  <!--                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px">-->
+                  <!--                              <q-icon size="xs" name="swap_vert" />-->
+                  <!--                            </q-item-section>-->
+                  <!--                            <q-item-section>-->
+                  <!--                              <span> Switch to Tabset: </span>-->
+                  <!--                            </q-item-section>-->
+                  <!--                            <slot></slot>-->
+                  <!--                          </q-item>-->
+                  <!--                          <q-item-->
+                  <!--                            clickable-->
+                  <!--                            v-close-popup-->
+                  <!--                            v-for="option in tabsetSelectionOptions"-->
+                  <!--                            dense-->
+                  <!--                            @click.stop="switchTabset(option)">-->
+                  <!--                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px"></q-item-section>-->
+                  <!--                            <q-item-section>-->
+                  <!--                              <div class="text-italic">{{ option.label }}</div>-->
+                  <!--                            </q-item-section>-->
+                  <!--                            <slot></slot>-->
+                  <!--                          </q-item>-->
+                  <!--                          &lt;!&ndash;                          <q-item clickable v-close-popup dense @click.stop="switchTabset(option)">&ndash;&gt;-->
+                  <!--                          &lt;!&ndash;                            <q-item-section>{{ option.label }}</q-item-section>&ndash;&gt;-->
+                  <!--                          &lt;!&ndash;                          </q-item>&ndash;&gt;-->
+                  <!--                        </template>-->
+                  <!--                        <template-->
+                  <!--                          v-if="-->
+                  <!--                            currentTabset &&-->
+                  <!--                            currentTabset.tabs.length > 0 &&-->
+                  <!--                            useFeaturesStore().hasFeature(FeatureIdent.GALLERY)-->
+                  <!--                          ">-->
+                  <!--                          <ShowGalleryAction :tabset="currentTabset" level="root" />-->
+                  <!--                        </template>-->
+                  <!--                      </q-list>-->
+                  <!--                    </q-menu>-->
+                  <!--                  </q-btn>-->
+
+                  <q-select
+                    v-if="showTabsetSelection()"
+                    filled
+                    transition-show="scale"
+                    transition-hide="scale"
+                    :label="tabsetSelectLabel()"
+                    v-model="tabsetSelectionModel"
+                    @update:model-value="(newTabset: object) => switchTabset(newTabset)"
+                    :options="tabsetSelectionOptions"
+                    dense
+                    options-dense>
+                    <template v-slot:option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <template v-if="scope.opt.label.length > 0">
+                          <!--                          <q-item-section style="max-width: 20px">-->
+                          <!--                            <q-icon size="xs" :name="scope.opt.icon" v-if="scope.opt.icon" />-->
+                          <!--                          </q-item-section>-->
+                          <q-item-section>
+                            <q-item-label>{{ scope.opt.label }}</q-item-label>
+                            <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                          </q-item-section>
+                        </template>
+                        <q-item-section class="q-ma-none q-pa-none" v-else>
+                          <q-separator />
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
+                  <div v-else>
+                    <!--                    <div class="text-caption q-ml-md">{{ title() }}</div>-->
+                    <div class="q-ml-md q-mt-sm">{{ currentTabset.name }}</div>
+                  </div>
                 </template>
                 <template v-else>
                   <q-spinner color="primary" size="1em" />
@@ -111,13 +117,12 @@
           </div>
         </div>
 
-        <div class="col-2 text-center" style="border: 0 solid blue"></div>
         <div
-          class="col-4 text-subtitle1 text-right q-ma-none q-pa-none q-pr-none"
+          class="col text-subtitle1 text-right q-ma-none q-pa-none q-pr-none"
           v-if="!useUiStore().appLoading"
           style="border: 0 solid green">
           <slot name="iconsRight">
-            <div class="q-mt-none q-ma-none q-qa-none q-mr-xs q-mt-xs">
+            <div class="q-mt-none q-ma-none q-qa-none q-mr-sm q-mt-xs">
               <span>
                 <SpecialUrlAddToTabsetComponent
                   v-if="currentChromeTab && currentTabset && currentTabset.type !== TabsetType.SPECIAL"
@@ -161,7 +166,6 @@ import CreateTabsetAction from 'src/tabsets/actions/CreateTabsetAction.vue'
 import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
 import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
 import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
-import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
 import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
@@ -273,7 +277,6 @@ watchEffect(() => {
 
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
-  console.log('xxx', currentTabset.value?.name)
   if (currentTabset.value) {
     overlap.value = useTabsStore2().getOverlap(currentTabset.value)
     overlapTooltip.value = `${Math.round(100 * overlap.value)}% overlap between this tabset and the currently open tabs`
@@ -282,7 +285,8 @@ watchEffect(() => {
   }
 })
 
-const thresholdStyle = () => 'color: hsl(' + Math.round(120 * overlap.value) + ' 80% 50%)'
+const thresholdStyle = () =>
+  'color: hsl(' + Math.round(120 * overlap.value) + ' 80% 50%); position: absolute; top: 0px;'
 
 watchEffect(() => {
   const windowId = useWindowsStore().currentBrowserWindow?.id || 0
