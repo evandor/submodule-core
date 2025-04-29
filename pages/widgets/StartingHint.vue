@@ -34,26 +34,26 @@
             </q-item>
           </transition>
 
-          <template v-if="useTabsStore2().browserTabs.length > 4">
-            <transition
-              v-show="showOpenTabs"
-              appear
-              enter-active-class="animated fadeIn slower delay-1s"
-              leave-active-class="animated fadeOut">
-              <q-item clickable @click="useUiStore().startButtonAnimation('tabsList')">
-                <q-item-section avatar>
-                  <SidePanelToolbarButton icon="playlist_add" />
-                </q-item-section>
+          <!--          <template v-if="useTabsStore2().browserTabs.length > 4">-->
+          <!--            <transition-->
+          <!--              v-show="showOpenTabs"-->
+          <!--              appear-->
+          <!--              enter-active-class="animated fadeIn slower delay-1s"-->
+          <!--              leave-active-class="animated fadeOut">-->
+          <!--              <q-item clickable @click="useUiStore().startButtonAnimation('tabsList')">-->
+          <!--                <q-item-section avatar>-->
+          <!--                  <SidePanelToolbarButton icon="playlist_add" />-->
+          <!--                </q-item-section>-->
 
-                <q-item-section>
-                  <q-item-label><span>Open Tabs View</span></q-item-label>
-                  <q-item-label caption
-                    ><span>Click to show the tabs currently open in your browser</span>
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </transition>
-          </template>
+          <!--                <q-item-section>-->
+          <!--                  <q-item-label><span>Open Tabs View</span></q-item-label>-->
+          <!--                  <q-item-label caption-->
+          <!--                    ><span>Click to show the tabs currently open in your browser</span>-->
+          <!--                  </q-item-label>-->
+          <!--                </q-item-section>-->
+          <!--              </q-item>-->
+          <!--            </transition>-->
+          <!--          </template>-->
 
           <transition
             v-show="showBookmarks"
@@ -105,7 +105,6 @@ import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import SidePanelToolbarButton from 'src/core/components/SidePanelToolbarButton.vue'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
-import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref } from 'vue'
 
@@ -114,14 +113,6 @@ const showOpenTabs = ref(false)
 const showBookmarks = ref(false)
 
 setTimeout(() => (showSettings.value = true), 4 * 1000)
-setTimeout(() => (showOpenTabs.value = true), 7 * 1000)
-setTimeout(() => (showBookmarks.value = true), 10 * 1000)
+// setTimeout(() => (showOpenTabs.value = true), 7 * 1000)
+setTimeout(() => (showBookmarks.value = true), 7 * 1000)
 </script>
-
-<style lang="scss" scoped>
-.box {
-  border: 1px solid $accent;
-  border-radius: 10px;
-  min-height: 50px;
-}
-</style>

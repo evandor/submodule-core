@@ -1,5 +1,5 @@
 <template>
-  <q-page padding style="padding-top: 55px">
+  <q-page padding style="padding-top: 65px">
     <div class="q-ma-none">
       <InfoMessageWidget
         :probability="1"
@@ -8,7 +8,7 @@
 
       <div class="q-ma-none">
         <div class="row q-ma-none q-pa-none">
-          <div class="col-12 q-ma-none q-pa-none q-pt-lg">
+          <div class="col-12 q-ma-none q-pa-none q-pt-sm">
             <ByDomainListWidget @domainSelected="(value: string) => showByDomainPage(value)" />
           </div>
         </div>

@@ -10,6 +10,7 @@
     size="sm"
     data-testid="addTabsetSubmitBtn"
     :color="props.color"
+    :text-color="props.textColor"
     :label="props.label"
     v-close-popup />
 </template>
@@ -20,6 +21,7 @@ const emits = defineEmits(['wasClicked'])
 type Props = {
   label: string
   color?: string
+  textColor?: string | undefined
   type?: string
   disable?: boolean
   defaultAction?: boolean

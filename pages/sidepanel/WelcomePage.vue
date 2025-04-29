@@ -5,20 +5,20 @@
 
       <div class="q-ma-none q-pa-md fit">
         <div class="row q-mt-lg q-ml-sm">
-          <div class="row">
-            <div class="col-12 text-body2">The Art Of Linking</div>
+          <div class="row fit">
+            <div class="col-12 text-body2 text-center">The Art Of Linking</div>
           </div>
-          <div class="col-12 text-h6 q-mb-md text-primary">{{ $t('welcome_to_tabsets') }}</div>
+          <div class="col-12 text-h6 q-mb-md text-primary text-center">{{ $t('welcome_to_tabsets') }}</div>
         </div>
 
         <div
           class="q-pa-none q-ma-sm row items-start relative-position overflow-hidden cursor-pointer non-selectable"
           @click.stop="selected()">
           <transition
-            :name="showDocumentation ? 'q-transition--jump-right' : 'q-transition--jump-left'"
+            :name="showDocumentation ? 'q-transition--scale' : 'q-transition--scale'"
             :class="showDocumentation ? 'documentation' : 'box'">
             <q-card v-if="!showDocumentation" class="fit">
-              <q-card-section class="q-pb-none">
+              <q-card-section class="q-pb-none text-center">
                 <div class="row">
                   <div class="col-11">
                     <div class="text-h6 q-mb-sm">{{ $t('create_your_first_ts') }}</div>
@@ -47,7 +47,7 @@
                   label-color="grey"
                   :label="$t('tabset_name')" />
               </q-card-section>
-              <q-card-section class="q-ml-sm q-pl-none text-grey-8 text-body1">
+              <q-card-section class="q-ml-sm q-pl-none text-grey-8 text-body1 text-center">
                 <q-checkbox
                   v-model="addCurrentTabs"
                   :label="$t('add_current_tabs', { count: openTabsCount })"
@@ -59,7 +59,8 @@
                 <DialogButton
                   :label="$t('add_tabset')"
                   @was-clicked="addFirstTabset"
-                  :default-action="true"
+                  :color="$q.dark.isActive ? '' : ''"
+                  :text-color="$q.dark.isActive ? 'warning' : 'primary'"
                   :disable="tabsetName.trim().length === 0 || !newTabsetNameIsValid()" />
               </q-card-actions>
               <q-card-section align="center" class="q-pr-md q-pb-none q-ma-none q-mt-sm" style="min-height: 95px">
@@ -79,33 +80,18 @@
               <!--              </q-card-section>-->
             </q-card>
 
+            <!-- documentation -->
             <q-card v-else class="my-card fit" :class="showDocumentation ? 'documentation' : 'box'">
               <q-card-section class="q-pb-none">
                 <div class="q-row">
-                  <div class="q-col text-h6">Getting started...</div>
+                  <div class="q-col text-h6 text-center">Thank you for choosing Tabsets - we appreciate it</div>
                 </div>
-                <div class="q-row q-my-md q-ml-sm">
-                  <div class="q-col text-body1">
-                    <div class="row">
-                      <div class="col-1">
-                        <q-icon name="o_featured_play_list" color="primary" class="q-mb-xs" size="xs" />
-                      </div>
-                      <div class="col q-ml-sm">
-                        Create a <em>tabset</em> (a <em>set of tabs</em> with a <em>name</em>).
-                      </div>
-                    </div>
-                  </div>
+                <div class="q-row q-my-md">
+                  <div class="q-col text-body1 text-center">Let's begin without further delay!</div>
                 </div>
-                <div class="q-row q-my-md q-ml-sm">
-                  <div class="q-col text-body1">
-                    <div class="row">
-                      <div class="col-1">
-                        <q-icon name="o_tab" color="primary" class="q-mr-sm q-mb-xs" size="xs" />
-                      </div>
-                      <div class="col q-ml-sm">
-                        Add your current <em>tab</em> (or all your open tabs) to the new tabset
-                      </div>
-                    </div>
+                <div class="q-row q-my-md">
+                  <div class="q-col text-body1 text-center">
+                    Create your first tabset so that you can start adding tabs and manage all your links and URLs.
                   </div>
                 </div>
                 <!--                <div class="q-row q-my-md q-ml-sm">-->
@@ -144,7 +130,12 @@
                 <!--                </div>-->
                 <div class="q-row">
                   <div class="q-col text-body1 text-center q-mt-sm">
-                    <DialogButton label="got it..." @was-clicked="toggleDocumentation()" data-testid="welcome-got-it" />
+                    <DialogButton
+                      label="ok, let's go"
+                      :color="$q.dark.isActive ? '' : ''"
+                      :text-color="$q.dark.isActive ? 'warning' : 'primary'"
+                      @was-clicked="toggleDocumentation()"
+                      data-testid="welcome-got-it" />
                   </div>
                 </div>
                 <div class="q-row q-mt-lg">
