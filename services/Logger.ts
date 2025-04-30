@@ -1,4 +1,5 @@
 import { getLokiLogger } from '@miketako3/cloki'
+import { LocalStorage, Platform } from 'quasar'
 import { EXTENSION_NAME } from 'src/boot/constants'
 import { useErrorHandlingConfig } from 'src/core/config/errorHandlingConfig'
 
@@ -62,19 +63,23 @@ async function log(msg: string, level: number) {
     lokiToken: process.env.GRAFANA_LOKI_TOKEN as string,
   })
 
+  const platform = LocalStorage.getItem('platform') as Platform | undefined
+
   if (level === 3) {
     await logger.error(
       { message: msg },
-      { _mode: process.env.MODE || 'unknown', _version: version, service_name: EXTENSION_NAME },
+      {
+        _mode: process.env.MODE || 'unknown',
+        _version: version,
+        _platform: platform ? platform.is['name'] : 'unknown',
+        service_name: EXTENSION_NAME,
+      },
     )
   } else {
-    // await logger.info(
-    //   { message: msg },
-    //   { _mode: process.env.MODE || 'unknown', _version: version, service_name: EXTENSION_NAME },
-    // )
     postLogsToLoki(msg, {
       _mode: process.env.MODE || 'unknown',
       _version: version,
+      _platform: platform ? platform.is['name'] : 'unknown',
       _logger: 'postlogstoloki',
       service_name: EXTENSION_NAME,
     })
