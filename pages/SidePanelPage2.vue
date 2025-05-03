@@ -208,9 +208,9 @@ const onMessageListener = (message: any) => {
   } else if (message.name === 'detail-level-changed') {
     console.log('setting list detail level to ', message.data.level)
     useUiStore().setListDetailLevel(message.data.level)
-  } else if (message.name === 'detail-level-perTabset-changed') {
-    console.log('setting list detail perTabset level to ', message.data.level)
-    useUiStore().showDetailsPerTabset = message.data.level
+    // } else if (message.name === 'detail-level-perTabset-changed') {
+    //   console.log('setting list detail perTabset level to ', message.data.level)
+    //   useUiStore().showDetailsPerTabset = message.data.level
   } else if (message.name === 'settings-changed') {
     console.log(`setting ${message.data.identifier} to ${message.data.value}`)
     switch (message.data.identifier) {

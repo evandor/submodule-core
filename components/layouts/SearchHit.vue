@@ -78,12 +78,12 @@ import _ from 'lodash'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useUtils } from 'src/core/services/Utils'
+import { useSettingsStore } from 'src/core/stores/settingsStore'
 import ShortUrl from 'src/core/utils/ShortUrl.vue'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { Hit } from 'src/search/models/Hit'
 import NavigationService from 'src/services/NavigationService'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
-import { useSettingsStore } from 'src/core/stores/settingsStore'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
@@ -125,7 +125,7 @@ const openTabset = (tabsetId: string, encodedUrl: string | undefined = undefined
   selectTabset(tabsetId)
   let navigateTo = ''
   if (!inBexMode() || !chrome.sidePanel) {
-    navigateTo = '/tabsets/' + tabsetId
+    navigateTo = '/sidepanel/tabsets/' + tabsetId
   } else {
     navigateTo = '/sidepanel'
   }

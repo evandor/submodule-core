@@ -251,6 +251,9 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
     tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
   }
+
+  tabsetSelectionOptions.value.push({ label: 'Create Tabset', value: 'create-tabset', icon: 'o_add' })
+
   if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
     if (tabsetSelectionOptions.value.length > 1) {
       tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })

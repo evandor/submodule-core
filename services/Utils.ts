@@ -247,6 +247,7 @@ export function useUtils() {
     throw new Error(`id for ${identifier} not found: ${id}`)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const addListenerOnce = <T extends Function>(browserEvent: chrome.events.Event<T>, listener: T) => {
     if (!browserEvent.hasListener(listener)) {
       browserEvent.addListener(listener)

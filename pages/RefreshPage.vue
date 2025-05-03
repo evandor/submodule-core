@@ -14,6 +14,6 @@ if (useQuasar().platform.is.bex) {
   console.log('refreshing page, redirecting to', redirect)
   router.push('/' + redirect)
 } else {
-  router.push('/tabsets')
+  router.push('/sidepanel/tabsets')
 }
 </script>

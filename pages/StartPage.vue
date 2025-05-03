@@ -29,9 +29,9 @@ timer = setTimeout(async () => {
     if (selectedTS) {
       console.log('setting selected tabset from storage', selectedTS)
       useTabsetsStore().selectCurrentTabset(selectedTS)
-      router.push('/tabsets/' + selectedTS)
+      router.push('/sidepanel/tabsets/' + selectedTS)
     } else {
-      router.push('/tabsets')
+      router.push('/sidepanel/tabsets')
     }
   }
   setTimeout(() => {

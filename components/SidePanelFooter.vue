@@ -357,7 +357,7 @@ watchEffect(() => {
 
 const openOptionsPage = () => {
   if ($q.platform.is.cordova || $q.platform.is.capacitor || !$q.platform.is.bex) {
-    router.push('/settings')
+    router.push('mainpanel/settings')
   } else {
     NavigationService.openOrCreateTab(
       [chrome.runtime.getURL('www/index.html#/mainpanel/settings')],

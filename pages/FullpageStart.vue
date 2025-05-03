@@ -35,7 +35,6 @@ if (inBexMode()) {
         enabled: false,
       }
       console.log('setting options', options)
-      // @ts-ignore
       chrome.sidePanel.setOptions(options)
     })
     if (useTabsetsStore().tabsets.size === 0) {
@@ -56,6 +55,6 @@ if (inBexMode()) {
     //timer = void 0
   }, 2000)
 } else {
-  router.push('/tabsets')
+  router.push('/sidepanel/tabsets')
 }
 </script>

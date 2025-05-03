@@ -159,15 +159,29 @@
       <q-tooltip>{{ useTabsStore2().browserTabs?.length }} open tabs</q-tooltip>
     </OpenTabsThresholdWidget>
   </span>
+
+  <q-btn
+    v-if="useTabsetsStore().getCurrentTabs.length > 0 && useTabsetsStore().getCurrentTabset?.folderActive === undefined"
+    :icon="currentTabset?.details === 'MAXIMAL' ? 'compress' : 'expand'"
+    flat
+    color="primary"
+    :size="props.size"
+    style="max-width: 20px"
+    @click="toggleDetails()">
+    <q-tooltip :delay="700" anchor="top middle" self="bottom middle" class="tooltip-small"
+      >Toggle Detail Level
+    </q-tooltip>
+    <slot></slot>
+  </q-btn>
 </template>
 
 <script setup lang="ts">
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { SidePanelViews } from 'src/app/models/SidePanelViews'
-import { useNavigationService } from 'src/core/services/NavigationService'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import OpenTabsThresholdWidget from 'src/opentabs/widgets/OpenTabsThresholdWidget.vue'
 import { useSuggestionsStore } from 'src/suggestions/stores/suggestionsStore'
+import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import SidePanelFooterLeftButton from 'src/ui/components/SidePanelFooterLeftButton.vue'
@@ -186,6 +200,7 @@ const buttonSize = ref('15px')
 const unreadMessagesCount = ref(0)
 const animateBookmarksButton = ref(false)
 const animateTabsListButton = ref(false)
+const currentTabset = ref<Tabset | undefined>(undefined)
 
 watchEffect(() => {
   buttonSize.value = useUiStore().getButtonSize('sidePanelFooter')
@@ -197,6 +212,10 @@ watchEffect(() => {
 
 watchEffect(() => {
   animateTabsListButton.value = useUiStore().animateTabsListButton
+})
+
+watchEffect(() => {
+  currentTabset.value = useTabsetsStore().getCurrentTabset
 })
 
 const suggestionsLabel = () => {
@@ -218,8 +237,25 @@ const showViewMenu = () => {
   return activeViews.filter(Boolean).length > 3
 }
 
-const showHistory = () => {
-  useNavigationService().browserTabFor('chrome://history')
+const toggleDetails = () => {
+  if (currentTabset.value) {
+    if (!currentTabset.value.details || currentTabset.value.details === 'DEFAULT') {
+      currentTabset.value.details = 'MINIMAL'
+    }
+    switch (currentTabset.value.details) {
+      case 'MINIMAL':
+        currentTabset.value.details = 'SOME'
+        break
+      case 'SOME':
+        currentTabset.value.details = 'MAXIMAL'
+        break
+      case 'MAXIMAL':
+        currentTabset.value.details = 'MINIMAL'
+        break
+    }
+    //console.log('details set to ', currentTabset.value.id, currentTabset.value.details)
+    useTabsetsStore().saveTabset(currentTabset.value)
+  }
 }
 </script>
 

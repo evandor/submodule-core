@@ -29,7 +29,7 @@
           color="primary"
           label="Back to tabsets"
           class="q-mr-md"
-          @click="router.push('/tabsets/' + currentTabsetId)">
+          @click="router.push('/sidepanel/tabsets/' + currentTabsetId)">
           <q-tooltip>Back to tabsets</q-tooltip>
         </q-btn>
       </div>
