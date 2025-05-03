@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { defineStore } from 'pinia'
+import { LocalStorage } from 'quasar'
 import { computed, ref, watch } from 'vue'
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -17,12 +18,12 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(
     thresholds,
     (thresholdsVal: Object) => {
-      localStorage.set('thresholds', thresholdsVal)
+      LocalStorage.setItem('thresholds', thresholdsVal)
     },
     { deep: true },
   )
 
-  watch(thumbnailQuality, (val: Object) => localStorage.set('thumbnailQuality', val))
+  watch(thumbnailQuality, (val: Object) => LocalStorage.setItem('thumbnailQuality', val))
 
   function initialize(localStorage: any) {
     // console.debug(' ...initializing settingsStore', '✅')
@@ -49,7 +50,7 @@ export const useSettingsStore = defineStore('settings', () => {
     } else if (index < 0 && setActive) {
       activeToggles.value.push(ident)
     }
-    localStorage.set('settings', _.join(activeToggles.value, ','))
+    LocalStorage.setItem('settings', _.join(activeToggles.value, ','))
   }
 
   return { initialize, activeToggles, setFeatureToggle, isEnabled, thresholds, thumbnailQuality }

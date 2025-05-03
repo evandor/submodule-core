@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
+import { LocalStorage, useQuasar } from 'quasar'
 import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
@@ -41,7 +41,7 @@ if (inBexMode()) {
     if (useTabsetsStore().tabsets.size === 0) {
       router.push('/')
     } else {
-      const selectedTS = localStorage.getItem('selectedTabset')
+      const selectedTS = LocalStorage.getItem('selectedTabset') as string | undefined
       if (selectedTS) {
         console.log('setting selected tabset from storage', selectedTS)
         useTabsetsStore().selectCurrentTabset(selectedTS)
