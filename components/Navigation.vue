@@ -40,12 +40,15 @@
       </q-toolbar>
 
       <q-list class="q-mt-none greyBorderTop">
-        <NavTabsetsListWidgetNonBex :tabsets="tabsets()" :space-id="useSpacesStore().space?.id || '0'" />
+        <NavTabsetsListWidgetNonBex
+          :tabsets="tabsets()"
+          :space-id="useSpacesStore().space?.id || '0'"
+          view-port="sidepanel" />
       </q-list>
 
       <q-separator v-if="tabsetsWithTypes([TabsetType.SPECIAL]).length > 0" />
 
-      <NavTabsetsListWidgetNonBex :tabsets="tabsetsWithTypes([TabsetType.SPECIAL])" />
+      <NavTabsetsListWidgetNonBex :tabsets="tabsetsWithTypes([TabsetType.SPECIAL])" view-port="sidepanel" />
     </div>
   </div>
 </template>

@@ -14,12 +14,15 @@
     <q-page-container>
       <q-page class="q-pa-none">
         <q-list class="q-mt-none greyBorderTop">
-          <NavTabsetsListWidgetNonBex :tabsets="tabsets()" :space-id="useSpacesStore().space?.id || '0'" />
+          <NavTabsetsListWidgetNonBex
+            :tabsets="tabsets()"
+            :space-id="useSpacesStore().space?.id || '0'"
+            view-port="fullpage" />
         </q-list>
 
         <q-separator v-if="tabsetsWithTypes([TabsetType.SPECIAL]).length > 0" />
 
-        <NavTabsetsListWidgetNonBex :tabsets="tabsetsWithTypes([TabsetType.SPECIAL])" />
+        <NavTabsetsListWidgetNonBex :tabsets="tabsetsWithTypes([TabsetType.SPECIAL])" view-port="fullpage" />
       </q-page>
     </q-page-container>
 

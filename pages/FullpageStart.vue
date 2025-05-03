@@ -45,9 +45,9 @@ if (inBexMode()) {
       if (selectedTS) {
         console.log('setting selected tabset from storage', selectedTS)
         useTabsetsStore().selectCurrentTabset(selectedTS)
-        router.push('/tabsets/' + selectedTS)
+        router.push('/fullpage/tabsets/' + selectedTS)
       } else {
-        router.push('/tabsets')
+        router.push('/fullpage/tabsets')
       }
     }
     setTimeout(() => {
