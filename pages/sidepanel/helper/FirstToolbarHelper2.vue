@@ -282,7 +282,7 @@ watchEffect(() => {
     overlap.value = useTabsStore2().getOverlap(currentTabset.value)
     overlapTooltip.value = `${Math.round(100 * overlap.value)}% overlap between this tabset and the currently open tabs`
   } else {
-    //redirectOnEmpty()
+    redirectOnEmpty()
   }
 })
 
