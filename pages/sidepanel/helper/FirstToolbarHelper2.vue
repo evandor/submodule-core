@@ -205,17 +205,17 @@ const tabsetSelectionOptions = ref<SelectOption[]>([])
 
 windowLocation.value = window.location.href
 
-// const redirectOnEmpty = () => {
-//   setTimeout(() => {
-//     // redirect to welcome page if there are not tabsets
-//     if (useTabsetsStore().tabsets.size === 0) {
-//       console.log('redirecting to /sidepanel/welcome')
-//       router.push('/sidepanel/welcome')
-//     }
-//   }, 1000)
-// }
+const redirectOnEmpty = () => {
+  setTimeout(() => {
+    // redirect to welcome page if there are not tabsets
+    if (useTabsetsStore().tabsets.size === 0) {
+      console.log('redirecting to /sidepanel/welcome')
+      router.push('/sidepanel/welcome')
+    }
+  }, 1000)
+}
 
-// redirectOnEmpty()
+redirectOnEmpty()
 
 watchEffect(() => {
   tabsets.value = [...useTabsetsStore().tabsets.values()] as Tabset[]
