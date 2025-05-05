@@ -228,6 +228,12 @@ const onMessageListener = (message: any) => {
         break
       case 'ui.folder.style':
         useUiStore().setFolderStyle(message.data.value)
+        // make sure to start from root level
+        const currentTs = useTabsetsStore().getCurrentTabset
+        if (currentTs) {
+          currentTs.folderActive = undefined
+          useTabsetsStore().saveTabset(currentTs)
+        }
         break
       default:
         console.log(`unknown message identifier ${message.data.identifier}`)
