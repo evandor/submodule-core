@@ -158,7 +158,7 @@ const getFaviconUrl = (hitId: string, url: string, favIconUrl: string | undefine
   if (favIconUrl) {
     return favIconUrl
   }
-  if (!useSettingsStore().isEnabled('noDDG')) {
+  if (useSettingsStore().isDisabled('noDDG')) {
     let theUrl = url
     let theRealUrl
     try {

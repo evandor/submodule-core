@@ -49,8 +49,8 @@ import { uid, useQuasar } from 'quasar'
 import { TreeNode } from 'src/bookmarks/models/Tree'
 import { useBookmarksStore } from 'src/bookmarks/stores/bookmarksStore'
 import { useUtils } from 'src/core/services/Utils'
-import NavigationService from 'src/services/NavigationService'
 import { useSettingsStore } from 'src/core/stores/settingsStore'
+import NavigationService from 'src/services/NavigationService'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { ref, watch, watchEffect } from 'vue'
 import Highlighter from 'vue-highlight-words'
@@ -207,7 +207,7 @@ const getFaviconUrl = (n: TreeNode) => {
   if (theUrl.startsWith('chrome')) {
     return ''
   }
-  if (!useSettingsStore().isEnabled('noDDG')) {
+  if (useSettingsStore().isDisabled('noDDG')) {
     return favIconFromUrl(theUrl)
   }
   return ''

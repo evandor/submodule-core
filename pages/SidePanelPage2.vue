@@ -22,7 +22,7 @@
               :filter="filter"
               @tabs-found="(n: number) => (filteredTabsCount = n)"
               @folders-found="(n: number) => (filteredFoldersCount = n)" />
-            <SidePanelPageContent2
+            <SidePanelPageContentExpand
               v-else
               :tabset="currentTabset"
               :key="currentTabset.id"
@@ -58,7 +58,7 @@ import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
 import FirstToolbarHelper2 from 'src/core/pages/sidepanel/helper/FirstToolbarHelper2.vue'
 import SearchToolbarHelper from 'src/core/pages/sidepanel/helper/SearchToolbarHelper.vue'
 import SidePanelPageContent from 'src/core/pages/SidePanelPageContent.vue'
-import SidePanelPageContent2 from 'src/core/pages/SidePanelPageContent2.vue'
+import SidePanelPageContentExpand from 'src/core/pages/SidePanelPageContentExpand.vue'
 import StartingHint from 'src/core/pages/widgets/StartingHint.vue'
 import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'

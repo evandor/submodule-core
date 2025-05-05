@@ -12,14 +12,9 @@
         </q-toolbar-title>
       </div>
       <div class="col-xs-12 col-md-5 text-right">
-        <!--        <q-btn-->
-        <!--          flat dense icon="block"-->
-        <!--          color="primary"-->
-        <!--          :label="$q.screen.gt.md ? 'Never open in Reading Mode' : 'Avoid Reading Mode'"-->
-        <!--          class="q-mr-sm"-->
-        <!--          @click="NavigationService.openOrCreateTab([tab?.tabReferences.filter(r => r.type === TabReferenceType.ORIGINAL_URL)[0].href || ''])">-->
-        <!--          <q-tooltip>Open Original Page</q-tooltip>-->
-        <!--        </q-btn>-->
+        <q-btn flat dense icon="o_cancel" color="warning" label="remove" class="q-mr-sm" @click="remove()">
+          <q-tooltip>Remove Link to Reading Mode</q-tooltip>
+        </q-btn>
 
         <q-btn
           flat
@@ -27,8 +22,8 @@
           icon="open_in_new"
           color="primary"
           :label="$q.screen.gt.md ? 'Open Original Page' : 'Original'"
-          class="q-mr-sm">
-          <!--          @click="NavigationService.openOrCreateTab([tab?.tabReferences.filter(r => r.type === TabReferenceType.ORIGINAL_URL)[0].href || ''])">-->
+          class="q-mr-sm"
+          @click="openOriginal()">
           <q-tooltip>Open Original Page</q-tooltip>
         </q-btn>
       </div>
@@ -55,6 +50,7 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar'
 import { TabReference, TabReferenceType } from 'src/content/models/TabReference'
+import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'
 import { Tab } from 'src/tabsets/models/Tab'
@@ -76,6 +72,7 @@ const excerpt = ref('')
 const content = ref('')
 const byline = ref('')
 const siteName = ref('')
+const originalUrl = ref('')
 
 onMounted(() => {
   Analytics.firePageViewEvent('MainPanelReadingModePage', document.location.href)
@@ -88,6 +85,7 @@ watchEffect(() => {
     const tabRefs: TabReference[] = res.tab.tabReferences.filter((r) => r.type === TabReferenceType.READING_MODE)
     if (tabRefs.length > 0) {
       const article = tabRefs[0]!.data[0]
+      originalUrl.value = tabRefs[0]!.href || ''
 
       if (article) {
         title.value = sanitizeAsText(article['title' as keyof object])
@@ -99,4 +97,19 @@ watchEffect(() => {
     }
   }
 })
+
+const openOriginal = () => useNavigationService().browserTabFor(originalUrl.value)
+
+const remove = () => {
+  const tabAndTabsetId = useTabsetsStore().getTabAndTabsetId(tabId)
+  if (tabAndTabsetId) {
+    tabAndTabsetId.tab.tabReferences = tabAndTabsetId.tab.tabReferences.filter(
+      (r) => r.type !== TabReferenceType.READING_MODE,
+    )
+    const ts = useTabsetsStore().getTabset(tabAndTabsetId.tabsetId)
+    if (ts) {
+      useTabsetsStore().saveTabset(ts)
+    }
+  }
+}
 </script>

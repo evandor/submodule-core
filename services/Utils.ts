@@ -273,7 +273,7 @@ export function useUtils() {
         // const file = stack ? stack[0] : '-'
         // const lineNum = stack ? stack[1] : '-'
         // const lineCol = stack ? stack[2] : '-'
-        uiStore.log('[' + timestamp() + '] [' + level + '] ' + args)
+        //uiStore.log('[' + timestamp() + '] [' + level + '] ' + args)
       }
     }
 
@@ -298,12 +298,12 @@ export function useUtils() {
     }
     window.onerror = function (error, url, line) {
       uiStore.increaseErrorCount()
-      uiStore.log(JSON.stringify([timestamp(), 'error', error, url, line]))
+      //uiStore.log(JSON.stringify([timestamp(), 'error', error, url, line]))
       return false
     }
     window.onunhandledrejection = function (e) {
       uiStore.increaseErrorCount()
-      uiStore.log(JSON.stringify([timestamp(), 'unhandled', e.reason]))
+      //uiStore.log(JSON.stringify([timestamp(), 'unhandled', e.reason]))
     }
   }
 

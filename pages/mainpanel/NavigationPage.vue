@@ -91,7 +91,9 @@
             <template v-slot:default>
               <div class="text-right fit" style="text-align: center">
                 {{ tab?.activatedCount }}x
-                <q-tooltip :delay="1000" anchor="center middle">Opened x times</q-tooltip>
+                <q-tooltip class="tooltip-small" :delay="500" anchor="center left" self="center right"
+                  >Opened x times</q-tooltip
+                >
               </div>
             </template>
           </q-badge>
@@ -100,7 +102,9 @@
               <div class="text-right fit" style="text-align: center">
                 <q-icon name="o_schedule" color="white" />
                 {{ formatReadingTime(tab?.readingTime) }}
-                <q-tooltip :delay="1000" anchor="center middle">Cumulated Reading Time</q-tooltip>
+                <q-tooltip class="tooltip-small" :delay="500" anchor="center left" self="center right"
+                  >Cumulated Reading Time</q-tooltip
+                >
               </div>
             </template>
           </q-badge>

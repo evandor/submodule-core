@@ -17,6 +17,10 @@
               <EditTabsetAction :tabset="currentTabset" level="root" />
               <CreateSubfolderAction :tabset="currentTabset" level="root" />
               <OpenAllInMenuAction :tabset="currentTabset" level="root" />
+              <ShowGalleryAction
+                v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
+                :tabset="currentTabset"
+                level="root" />
               <DeleteTabsetAction :tabset="currentTabset" level="root" />
             </q-list>
           </q-menu>
@@ -166,6 +170,7 @@ import CreateTabsetAction from 'src/tabsets/actions/CreateTabsetAction.vue'
 import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
 import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
 import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
+import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
 import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
@@ -222,7 +227,9 @@ watchEffect(() => {
   const useSpaces = useFeaturesStore().hasFeature(FeatureIdent.SPACES)
   const space = useSpacesStore().space
   tabsetSelectionOptions.value = tabsets.value
-    .filter((ts: Tabset) => ts.status !== TabsetStatus.ARCHIVED)
+    .filter((ts: Tabset) =>
+      useFeaturesStore().hasFeature(FeatureIdent.ARCHIVE_TABSET) ? ts.status !== TabsetStatus.ARCHIVED : true,
+    )
     .filter((ts: Tabset) => ts.type !== TabsetType.SPECIAL)
     .filter((ts: Tabset) => ts.id !== currentTabset.value?.id)
     .filter((ts: Tabset) => {
@@ -242,7 +249,6 @@ watchEffect(() => {
     })
     .sort((a: SelectOption, b: SelectOption) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))
 
-  let tabsetsAdded = tabsetSelectionOptions.value.length > 0
   if (tabsetSelectionOptions.value.length > 10) {
     tabsetSelectionOptions.value = tabsetSelectionOptions.value.slice(0, 10)
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -260,18 +266,6 @@ watchEffect(() => {
     }
     tabsetSelectionOptions.value.push({ label: 'Select Space...', value: 'select-space', icon: 'o_space_dashboard' })
   }
-
-  // if (tabsetsAdded) {
-  //   tabsetSelectionOptions.value.unshift({
-  //     label: 'Switch Tabset:',
-  //     value: '',
-  //     icon: 'o_featured_play_list',
-  //     disable: true,
-  //   })
-  // }
-
-  // tabsetSelectionOptions.value.unshift({ label: '', value: '', disable: true })
-  //tabsetSelectionOptions.value.unshift({ label: 'New Tabset', value: 'create-tabset', icon: 'o_add' })
 
   tabsetSelectionModel.value = {
     label: currentTabset.value?.name || '?',

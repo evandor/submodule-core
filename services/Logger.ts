@@ -2,6 +2,7 @@ import { getLokiLogger } from '@miketako3/cloki'
 import { LocalStorage, Platform } from 'quasar'
 import { EXTENSION_NAME } from 'src/boot/constants'
 import { useErrorHandlingConfig } from 'src/core/config/errorHandlingConfig'
+import { useSettingsStore } from 'src/core/stores/settingsStore'
 
 const version = import.meta.env.PACKAGE_VERSION
 
@@ -38,6 +39,9 @@ const postLogsToLoki = async (message: string, labels: object) => {
 }
 
 async function log(msg: string, level: number) {
+  if (useSettingsStore().isEnabled('noMonitoring')) {
+    return
+  }
   const logger = getLokiLogger({
     lokiHost: 'logs-prod-012.grafana.net',
     lokiUser: process.env.GRAFANA_LOKI_USER as string,

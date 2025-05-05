@@ -6,7 +6,7 @@
 
   <!-- folders -->
   <div class="col-12">
-    <SidePanelFoldersView2
+    <SidePanelFoldersViewExpand
       v-if="props.tabset"
       :key="props.tabset.id + '_' + props.tabset.folderActive + '_' + tabsetsLastUpdate"
       :tabset="props.tabset"
@@ -30,7 +30,7 @@ import SidePanelPageTabList from 'src/tabsets/layouts/SidePanelPageTabList.vue'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
-import SidePanelFoldersView2 from 'src/tabsets/views/sidepanel/SidePanelFoldersView2.vue'
+import SidePanelFoldersViewExpand from 'src/tabsets/views/sidepanel/SidePanelFoldersViewExpand.vue'
 import { ref, watchEffect } from 'vue'
 
 type Props = {
