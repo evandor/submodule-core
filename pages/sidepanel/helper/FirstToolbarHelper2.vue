@@ -1,10 +1,10 @@
 <template>
   <!-- FirstToolbarHelper2 -->
-  <q-toolbar class="q-pa-none q-pl-none q-pr-none q-pb-none" :style="offsetTop()">
+  <q-toolbar class="q-pa-none q-pl-none q-pr-none q-pb-none" :style="offsetTop()" style="border: 0 solid black">
     <q-toolbar-title>
       <div v-if="showWatermark" id="watermark">{{ watermark }}</div>
       <div class="row q-ma-none q-pa-none" v-if="useUiStore().overlapIndicator">
-        <q-linear-progress :value="overlap" size="2px" :style="thresholdStyle()">
+        <q-linear-progress :value="overlap" size="2px" :style="overlapStyle(uiDensity)">
           <q-tooltip class="tooltip-small">{{ overlapTooltip }}</q-tooltip>
         </q-linear-progress>
       </div>
@@ -13,75 +13,32 @@
           <q-icon name="menu" class="cursor-pointer" />
           <q-menu v-if="currentTabset">
             <q-list style="min-width: 200px" dense>
-              <CreateTabsetAction :tabset="currentTabset" level="root" />
+              <!--              <CreateTabsetAction :tabset="currentTabset" level="root" />-->
               <EditTabsetAction :tabset="currentTabset" level="root" />
+              <SearchAction :tabset="currentTabset" level="root" v-if="showSearchAction" @clicked="delayedRemoval()" />
               <CreateSubfolderAction :tabset="currentTabset" level="root" />
               <OpenAllInMenuAction :tabset="currentTabset" level="root" />
               <ShowGalleryAction
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
                 :tabset="currentTabset"
                 level="root" />
+              <CreateNoteAction :tabset="currentTabset" level="root" />
+              <ArchiveTabsetAction :tabset="currentTabset" level="root" />
               <DeleteTabsetAction :tabset="currentTabset" level="root" />
             </q-list>
           </q-menu>
         </div>
-        <div class="col-6 q-ma-none q-pa-none text center" style="border: 0 solid red">
+        <div
+          :class="fabNeedsMoreSpace ? 'col-8' : 'col-9'"
+          class="q-ma-none q-pa-none q-px-sm text-center"
+          style="border: 0 solid red">
           <div class="col-12 text-subtitle1">
             <div class="q-ml-xs q-mt-none">
               <div class="text-bold ellipsis">
                 <template v-if="currentTabset">
-                  <!--                  <q-btn flat size="sm" style="width: 100%" no-caps align="center">-->
-                  <!--                    <div class="column">-->
-                  <!--                      <div class="text-left text-caption q-ma-none q-pa-none text-grey-8" style="max-height: 16px">-->
-                  <!--                        Tabset-->
-                  <!--                      </div>-->
-                  <!--                      <div class="text-left text-subtitle1 q-ma-none q-pa-none">{{ tabsetSelectionModel?.label }}</div>-->
-                  <!--                    </div>-->
-                  <!--                    <q-menu>-->
-                  <!--                      <q-list style="min-width: 200px" dense>-->
-                  <!--                        &lt;!&ndash;                        <CreateTabsetAction :tabset="currentTabset" level="root" />&ndash;&gt;-->
-
-                  <!--                        <template v-if="tabsetSelectionOptions.length > 0">-->
-                  <!--                          <q-separator />-->
-                  <!--                          <q-item dense>-->
-                  <!--                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px">-->
-                  <!--                              <q-icon size="xs" name="swap_vert" />-->
-                  <!--                            </q-item-section>-->
-                  <!--                            <q-item-section>-->
-                  <!--                              <span> Switch to Tabset: </span>-->
-                  <!--                            </q-item-section>-->
-                  <!--                            <slot></slot>-->
-                  <!--                          </q-item>-->
-                  <!--                          <q-item-->
-                  <!--                            clickable-->
-                  <!--                            v-close-popup-->
-                  <!--                            v-for="option in tabsetSelectionOptions"-->
-                  <!--                            dense-->
-                  <!--                            @click.stop="switchTabset(option)">-->
-                  <!--                            <q-item-section style="padding-right: 0; min-width: 25px; max-width: 25px"></q-item-section>-->
-                  <!--                            <q-item-section>-->
-                  <!--                              <div class="text-italic">{{ option.label }}</div>-->
-                  <!--                            </q-item-section>-->
-                  <!--                            <slot></slot>-->
-                  <!--                          </q-item>-->
-                  <!--                          &lt;!&ndash;                          <q-item clickable v-close-popup dense @click.stop="switchTabset(option)">&ndash;&gt;-->
-                  <!--                          &lt;!&ndash;                            <q-item-section>{{ option.label }}</q-item-section>&ndash;&gt;-->
-                  <!--                          &lt;!&ndash;                          </q-item>&ndash;&gt;-->
-                  <!--                        </template>-->
-                  <!--                        <template-->
-                  <!--                          v-if="-->
-                  <!--                            currentTabset &&-->
-                  <!--                            currentTabset.tabs.length > 0 &&-->
-                  <!--                            useFeaturesStore().hasFeature(FeatureIdent.GALLERY)-->
-                  <!--                          ">-->
-                  <!--                          <ShowGalleryAction :tabset="currentTabset" level="root" />-->
-                  <!--                        </template>-->
-                  <!--                      </q-list>-->
-                  <!--                    </q-menu>-->
-                  <!--                  </q-btn>-->
-
                   <q-select
                     v-if="showTabsetSelection()"
+                    :style="tabsetColorStyle()"
                     filled
                     transition-show="scale"
                     transition-hide="scale"
@@ -122,31 +79,23 @@
         </div>
 
         <div
-          class="col text-subtitle1 text-right q-ma-none q-pa-none q-pr-none"
+          class="col text-subtitle1 text-right q-ma-none q-pa-none q-pr-sm q-pt-xs"
           v-if="!useUiStore().appLoading"
           style="border: 0 solid green">
           <slot name="iconsRight">
-            <div class="q-mt-none q-ma-none q-qa-none q-mr-sm q-mt-xs">
-              <span>
-                <SpecialUrlAddToTabsetComponent
-                  v-if="currentChromeTab && currentTabset && currentTabset.type !== TabsetType.SPECIAL"
-                  @button-clicked="
-                    (args: ActionHandlerButtonClickedHolder) => handleButtonClicked(currentTabset!, args)
-                  "
-                  :currentChromeTab="currentChromeTab"
-                  :tabset="currentTabset"
-                  :level="'root'" />
-                <transition
-                  v-else-if="!currentTabset || currentTabset.type !== TabsetType.SPECIAL"
-                  appear
-                  enter-active-class="animated fadeIn slower delay-5s"
-                  leave-active-class="animated fadeOut">
-                  <q-btn icon="add" label="tab" size="sm" class="q-mr-md" @click="addUrlDialog()" />
-                </transition>
-              </span>
-              <!--              <q-icon name="more_vert" size="sm" color="secondary" class="cursor-pointer" />-->
-              <!--              <SidePanelPageContextMenu v-if="currentTabset" :tabset="currentTabset as Tabset" />-->
-            </div>
+            <SidePanelToolbarFab
+              v-if="currentChromeTab && currentTabset && currentTabset.type !== TabsetType.SPECIAL"
+              @button-clicked="(args: ActionHandlerButtonClickedHolder) => handleButtonClicked(currentTabset!, args)"
+              :currentChromeTab="currentChromeTab"
+              :tabset="currentTabset"
+              @extra-space-needed="(res: boolean) => (fabNeedsMoreSpace = res)" />
+            <transition
+              v-else-if="!currentTabset || currentTabset.type !== TabsetType.SPECIAL"
+              appear
+              enter-active-class="animated fadeIn slower delay-5s"
+              leave-active-class="animated fadeOut">
+              <q-btn icon="add" label="tab" size="sm" class="q-mr-md" @click="addUrlDialog()" />
+            </transition>
           </slot>
         </div>
       </div>
@@ -164,24 +113,25 @@ import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { useActionHandlers } from 'src/tabsets/actionHandling/ActionHandlers'
 import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/model/ActionHandlerButtonClickedHolder'
-import SpecialUrlAddToTabsetComponent from 'src/tabsets/actionHandling/SpecialUrlAddToTabsetComponent.vue'
+import SidePanelToolbarFab from 'src/tabsets/actionHandling/SidePanelToolbarFab.vue'
+import ArchiveTabsetAction from 'src/tabsets/actions/ArchiveTabsetAction.vue'
+import CreateNoteAction from 'src/tabsets/actions/CreateNoteAction.vue'
 import CreateSubfolderAction from 'src/tabsets/actions/CreateSubfolderAction.vue'
-import CreateTabsetAction from 'src/tabsets/actions/CreateTabsetAction.vue'
 import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
 import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
 import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
+import SearchAction from 'src/tabsets/actions/SearchAction.vue'
 import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
-import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
 import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
-import { Tabset, TabsetSharing, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
+import { Tabset, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { useWindowsStore } from 'src/windows/stores/windowsStore'
-import { ref, watchEffect } from 'vue'
+import { inject, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -202,11 +152,16 @@ const currentChromeTab = ref<chrome.tabs.Tab | undefined>(undefined)
 const overlap = ref(0.5)
 const overlapTooltip = ref('')
 const showWatermark = ref(false)
+const fabNeedsMoreSpace = ref(false)
 const watermark = ref('')
 const tabsets = ref<Tabset[]>([])
 
 const tabsetSelectionModel = ref<SelectOption | undefined>(undefined)
 const tabsetSelectionOptions = ref<SelectOption[]>([])
+
+let showSearchAction = !useUiStore().quickAccessFor('search')
+
+const uiDensity = inject('ui.density')
 
 windowLocation.value = window.location.href
 
@@ -283,8 +238,11 @@ watchEffect(() => {
   }
 })
 
-const thresholdStyle = () =>
-  'color: hsl(' + Math.round(120 * overlap.value) + ' 80% 50%); position: absolute; top: 0px;'
+const overlapStyle = (d: any) => {
+  const res = 'color: hsl(' + Math.round(120 * overlap.value) + ' 80% 50%); position: absolute; top: 0px;'
+  console.log('uidensity', d)
+  return res + (d === 'dense' ? '' : 'position: absolute; top:-10px')
+}
 
 watchEffect(() => {
   const windowId = useWindowsStore().currentBrowserWindow?.id || 0
@@ -304,33 +262,9 @@ watchEffect(() => {
   watermark.value = useUiStore().getWatermark()
 })
 
-const title = (): string => {
-  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
-    return useSpacesStore().space ? useSpacesStore().space.label : t('no_space_selected')
-  } else {
-    const currentTs = useTabsetsStore().getCurrentTabset
-    if (currentTs) {
-      switch (currentTs.type) {
-        case TabsetType.SESSION:
-          return `Session (${currentTs.tabs.length} tab${currentTs.tabs.length > 1 ? 's' : ''})`
-        default:
-          switch (currentTs.sharing.sharing) {
-            case TabsetSharing.UNSHARED:
-              return 'Tabset'
-            case TabsetSharing.PUBLIC_LINK:
-              return 'Shared Tabset'
-            case TabsetSharing.PUBLIC_LINK_OUTDATED:
-              return 'Shared Tabset'
-            case TabsetSharing.USER:
-              return currentTs.sharing.shareReference ? 'Shared Tabset' : 'Sharing Tabset'
-            default:
-              return 'Tabset'
-          }
-      }
-    }
-    return 'Tabset'
-  }
-}
+watchEffect(() => {
+  showSearchAction = !useUiStore().quickAccessFor('search')
+})
 
 function getActiveFolder(tabset: Tabset) {
   return tabset.folderActive ? useTabsetService().findFolder([tabset], tabset.folderActive) : undefined
@@ -345,32 +279,6 @@ const handleButtonClicked = async (tabset: Tabset, args: ActionHandlerButtonClic
 const offsetTop = () => ($q.platform.is.capacitor || $q.platform.is.cordova ? 'margin-top:40px;' : '')
 
 const addUrlDialog = () => $q.dialog({ component: AddUrlDialog })
-
-const newTabsetDialog = () => {
-  $q.dialog({
-    component: NewTabsetDialog,
-    componentProps: {
-      tabsetId: useTabsetsStore().getCurrentTabset?.id,
-      spaceId: useSpacesStore().space?.id,
-      fromPanel: true,
-    },
-  })
-}
-
-const editTabsetDialog = () => {
-  $q.dialog({
-    component: EditTabsetDialog,
-    //TODO switch to tabset: tabset?
-    componentProps: {
-      tabsetId: currentTabset.value!.id,
-      tabsetName: currentTabset.value!.name,
-      tabsetColor: currentTabset.value!.color,
-      window: currentTabset.value!.window,
-      details: currentTabset.value!.details || useUiStore().listDetailLevel,
-      fromPanel: true,
-    },
-  })
-}
 
 const switchTabset = async (tabset: object) => {
   const tsId = tabset['value' as keyof object]
@@ -411,15 +319,20 @@ const tabsetSelectLabel = () => {
   return 'Tabset'
 }
 
-const showTabsetSelection = () => {
-  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
-    return true
-  }
-  return (
-    tabsets.value
-      .filter((ts: Tabset) => ts.status !== TabsetStatus.ARCHIVED)
-      .filter((ts: Tabset) => ts.type !== TabsetType.SPECIAL).length > 1
-  )
+const showTabsetSelection = () => true
+
+const delayedRemoval = () => {
+  setTimeout(() => (showSearchAction = false), 500)
+}
+
+const tabsetColorStyle = () => {
+  return currentTabset.value && currentTabset.value.color
+    ? 'border-left: 3px solid ' +
+        currentTabset.value.color +
+        ';border-right: 3px solid ' +
+        currentTabset.value.color +
+        ';border-radius:3px'
+    : ''
 }
 </script>
 

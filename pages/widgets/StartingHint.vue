@@ -1,6 +1,6 @@
 <template>
   <transition appear enter-active-class="animated fadeIn slower delay-5s" leave-active-class="animated fadeOut">
-    <div class="q-ma-lg q-mt-xl">
+    <div class="q-ma-sm q-mt-xl">
       <div class="row items-center text-grey-5 q-mb-sm">how to start?</div>
       <div class="box" style="min-width: 300px">
         <q-list>

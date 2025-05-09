@@ -1,6 +1,10 @@
 <template>
   <!-- SidePanelPage2 -->
-  <q-page class="darkInDarkMode brightInBrightMode" style="padding-top: 80px">
+  <q-page
+    class="darkInDarkMode brightInBrightMode"
+    :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-mx-md'"
+    :style="paddingTop"
+    style="border: 0 solid black">
     <offline-info />
 
     <div class="wrap" v-if="useUiStore().appLoading">
@@ -36,14 +40,14 @@
       <StartingHint v-if="showStartingHint()" />
     </div>
 
-    <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
+    <q-page-sticky
+      expand
+      position="top"
+      class="darkInDarkMode brightInBrightMode"
+      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
       <FirstToolbarHelper2 :showSearchBox="showSearchBox" @tabset-changed="tabsetChanged()" />
       <SearchToolbarHelper
-        v-if="
-          (useTabsetsStore().allTabsCount > 9 || useTabsetsStore().tabsets.size > 1) &&
-          currentTabset &&
-          currentTabset.tabs.length > 0
-        "
+        v-if="showSearchToolbarHelper"
         @on-term-changed="(val) => termChanged(val)"
         :filteredFoldersCount="filteredFoldersCount"
         :filteredTabsCount="filteredTabsCount" />
@@ -69,9 +73,9 @@ import { Tabset, TabsetStatus } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
-import { FolderAppearance, useUiStore } from 'src/ui/stores/uiStore'
+import { FolderAppearance, UiDensity, useUiStore } from 'src/ui/stores/uiStore'
 import { useWindowsStore } from 'src/windows/stores/windowsStore'
-import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, provide, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
 const { inBexMode } = useUtils()
@@ -87,6 +91,11 @@ const tabsetsLastUpdate = ref(0)
 const filteredTabsCount = ref(0)
 const filteredFoldersCount = ref(0)
 const useFolderExpansion = ref<FolderAppearance>(useUiStore().folderStyle)
+const showSearchToolbarHelper = ref<boolean>(useUiStore().quickAccessFor('search'))
+const paddingTop = ref('padding-top: 80px')
+const uiDensity = ref<UiDensity>(useUiStore().uiDensity)
+
+provide('ui.density', uiDensity)
 
 function updateOnlineStatus(e: any) {
   const { type } = e
@@ -99,6 +108,16 @@ onMounted(() => {
 
   Analytics.firePageViewEvent('SidePanelPage2', document.location.href)
 })
+
+watch(
+  () => useUiStore().quickAccessLastChange,
+  (a: any, b: any) => {
+    setTimeout(() => {
+      showSearchToolbarHelper.value = useUiStore().quickAccessFor('search')
+      setPaddingTop()
+    }, 500)
+  },
+)
 
 watchEffect(() => {
   useFolderExpansion.value = useUiStore().folderStyle
@@ -226,6 +245,11 @@ const onMessageListener = (message: any) => {
       case 'ui.fontsize':
         useUiStore().setFontsize(message.data.value)
         break
+      case 'ui.density':
+        //useUiStore().setUiDensity(message.data.value)
+        uiDensity.value = message.data.value
+        setPaddingTop()
+        break
       case 'ui.folder.style':
         useUiStore().setFolderStyle(message.data.value)
         // make sure to start from root level
@@ -234,6 +258,12 @@ const onMessageListener = (message: any) => {
           currentTs.folderActive = undefined
           useTabsetsStore().saveTabset(currentTs)
         }
+        break
+      case 'ui.quickAccess':
+        console.log('message', message)
+        showSearchToolbarHelper.value = message.data.value
+        setPaddingTop()
+        // console.log('showSearchToolbarHelper', showSearchToolbarHelper.value)
         break
       default:
         console.log(`unknown message identifier ${message.data.identifier}`)
@@ -291,6 +321,25 @@ const termChanged = (a: { term: string }) => (filter.value = a.term)
 const tabsetChanged = () => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
 }
+
+const setPaddingTop = () => {
+  if (showSearchToolbarHelper.value) {
+    if (uiDensity.value === 'dense') {
+      paddingTop.value = 'padding-top: 80px'
+    } else {
+      paddingTop.value = 'padding-top: 98px'
+    }
+  } else {
+    if (uiDensity.value !== 'dense') {
+      paddingTop.value = 'padding-top: 80px'
+    } else {
+      paddingTop.value = 'padding-top: 48px'
+    }
+  }
+  //paddingTop.value = showSearchToolbarHelper.value ? 'padding-top: 80px' : 'padding-top: 48px'
+}
+
+setPaddingTop()
 </script>
 
 <style lang="scss" src="src/pages/css/sidePanelPage2.scss" />

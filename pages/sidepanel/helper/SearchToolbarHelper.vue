@@ -33,7 +33,7 @@ const props = defineProps({
   filteredTabsCount: { type: Number, default: 0 },
 })
 
-const emits = defineEmits(['onTermChanged'])
+const emits = defineEmits(['onTermChanged', 'cancelClicked'])
 
 const router = useRouter()
 

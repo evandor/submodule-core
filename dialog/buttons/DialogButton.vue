@@ -33,17 +33,4 @@ const props = withDefaults(defineProps<Props>(), {
   disable: false,
   defaultAction: false,
 })
-
-// const props = withDefaults(defineProps<Props>(), {
-//   title: 'My Tabsets',
-//   forceTitle: false,
-//   showSearchBox: false,
-//   searchTerm: '',
-// })
-// const props = defineProps({
-//   label: { type: String, required: true },
-//   color: { type: String, default: 'warning' },
-//   type: { type: String, default: 'button' },
-//   disable: { type: Boolean, default: false },
-// })
 </script>

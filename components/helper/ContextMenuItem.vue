@@ -22,6 +22,6 @@ const props = defineProps({
   color: { type: String, default: 'info' },
   disable: { type: Boolean, default: false },
   dense: { type: Boolean, default: false },
-  indicateIssue: { tyep: Boolean, default: false },
+  indicateIssue: { type: Boolean, default: false },
 })
 </script>

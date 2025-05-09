@@ -92,8 +92,8 @@
               <div class="text-right fit" style="text-align: center">
                 {{ tab?.activatedCount }}x
                 <q-tooltip class="tooltip-small" :delay="500" anchor="center left" self="center right"
-                  >Opened x times</q-tooltip
-                >
+                  >Opened x times
+                </q-tooltip>
               </div>
             </template>
           </q-badge>
@@ -103,8 +103,8 @@
                 <q-icon name="o_schedule" color="white" />
                 {{ formatReadingTime(tab?.readingTime) }}
                 <q-tooltip class="tooltip-small" :delay="500" anchor="center left" self="center right"
-                  >Cumulated Reading Time</q-tooltip
-                >
+                  >Cumulated Reading Time
+                </q-tooltip>
               </div>
             </template>
           </q-badge>
@@ -119,7 +119,13 @@
         </div>
         <div class="col-8 text-body2 q-mt-sm q-ml-sm"></div>
         <div class="col text-body2 q-mt-sm q-ml-sm text-right">
-          <q-btn label="Add to Tabsets" color="primary" outline size="sm" class="q-mr-sm"></q-btn>
+          <q-btn
+            label="Add to Tabsets"
+            color="primary"
+            outline
+            size="sm"
+            class="q-mr-sm"
+            @click="addToTabset()"></q-btn>
         </div>
       </div>
     </template>
@@ -127,14 +133,17 @@
 </template>
 
 <script setup lang="ts">
-import { LocalStorage, useQuasar } from 'quasar'
+import { LocalStorage, uid, useQuasar } from 'quasar'
 import BrowserApi from 'src/app/BrowserApi'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { TabReferenceType } from 'src/content/models/TabReference'
 import BexFunctions from 'src/core/communication/BexFunctions'
+import { ExecutionResult } from 'src/core/domain/ExecutionResult'
+import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
+import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
 import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -216,6 +225,25 @@ const updatedTags = (val: string[]) => {
         // useTabsetsStore().reloadTabset(currentTabset.value!.id)
       })
       .catch((err) => console.error(err))
+  }
+}
+
+const addToTabset = () => {
+  console.log('save tabet')
+  const currentTs = useTabsetsStore().getCurrentTabset
+  if (currentTs) {
+    chrome.tabs.getCurrent().then((chromeTab: chrome.tabs.Tab | undefined) => {
+      console.log('save tabet', chromeTab)
+      if (chromeTab) {
+        const t = new Tab(uid(), chromeTab)
+        useCommandExecutor()
+          .execute(new AddTabToTabsetCommand(t, currentTs))
+          .then((res: ExecutionResult<any>) => {
+            tab.value = t
+          })
+          .catch((err: any) => console.error(err))
+      }
+    })
   }
 }
 

@@ -131,9 +131,10 @@
                 <div class="q-col text-body1 text-center q-mt-sm">
                   <DialogButton
                     label="ok, let's go"
-                    :color="$q.dark.isActive ? '' : ''"
-                    :text-color="$q.dark.isActive ? 'warning' : 'primary'"
+                    :color="$q.dark.isActive ? '' : 'primary'"
+                    :text-color="$q.dark.isActive ? 'warning' : 'white'"
                     @was-clicked="toggleDocumentation()"
+                    :default-action="true"
                     data-testid="welcome-got-it" />
                 </div>
               </div>
