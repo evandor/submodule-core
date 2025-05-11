@@ -200,6 +200,7 @@ const onMessageListener = (message: any) => {
   } else if (message.name === 'tabsets-imported') {
     useSpacesStore().reload()
     useTabsetService().init()
+    // router.push('/sidepanel/collections')
     window.location.reload()
   } else if (message.name === 'tab-being-dragged') {
     useUiStore().draggingTab(message.data.tabId, null as unknown as any)
