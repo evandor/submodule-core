@@ -28,7 +28,7 @@
                     class="cursor-pointer"
                     @click="toggleDocumentation"
                     size="xs"
-                    color="accent" />
+                    color="warning" />
                 </div>
               </div>
 
