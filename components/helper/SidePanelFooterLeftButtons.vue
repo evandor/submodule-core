@@ -79,17 +79,17 @@
     </q-menu>
   </q-btn>
 
-  <template v-if="!showViewMenu()">
-    <SidePanelFooterLeftButton
-      v-if="useTabsetsStore().activeReminders().length > 0"
-      :side-panel-view="SidePanelViews.REMINDERS"
-      :size="props.size"
-      default-color="warning"
-      icon="o_alarm"
-      :tooltip="'You have ' + useTabsetsStore().activeReminders().length + ' active Reminder(s)'">
-      <q-badge color="red" floating>{{ useTabsetsStore().activeReminders().length }}</q-badge>
-    </SidePanelFooterLeftButton>
+  <SidePanelFooterLeftButton
+    v-if="useTabsetsStore().activeReminders().length > 0"
+    :side-panel-view="SidePanelViews.REMINDERS"
+    :size="props.size"
+    default-color="warning"
+    icon="o_alarm"
+    :tooltip="'You have ' + useTabsetsStore().activeReminders().length + ' active Reminder(s)'">
+    <q-badge color="red" size="10px" floating>{{ useTabsetsStore().activeReminders().length }}</q-badge>
+  </SidePanelFooterLeftButton>
 
+  <template v-if="!showViewMenu()">
     <SidePanelFooterLeftButton
       :side-panel-view="SidePanelViews.BY_DOMAIN_LIST"
       :size="props.size"

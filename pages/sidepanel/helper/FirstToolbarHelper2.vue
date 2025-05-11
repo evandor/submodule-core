@@ -22,7 +22,10 @@
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
                 :tabset="currentTabset"
                 level="root" />
-              <CreateNoteAction :tabset="currentTabset" level="root" />
+              <CreateNoteAction
+                :tabset="currentTabset"
+                level="root"
+                v-if="useFeaturesStore().hasFeature(FeatureIdent.DEV_MODE)" />
               <ArchiveTabsetAction :tabset="currentTabset" level="root" />
               <DeleteTabsetAction :tabset="currentTabset" level="root" />
             </q-list>
@@ -240,8 +243,7 @@ watchEffect(() => {
 
 const overlapStyle = (d: any) => {
   const res = 'color: hsl(' + Math.round(120 * overlap.value) + ' 80% 50%); position: absolute; top: 0px;'
-  console.log('uidensity', d)
-  return res + (d === 'dense' ? '' : 'position: absolute; top:-10px')
+  return res + (d === 'dense' ? '' : 'position: absolute; top:-15px')
 }
 
 watchEffect(() => {
@@ -263,7 +265,7 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  showSearchAction = !useUiStore().quickAccessFor('search')
+  showSearchAction = !useUiStore().quickAccessFor('search') && useTabsetsStore().allTabsCount > 0
 })
 
 function getActiveFolder(tabset: Tabset) {
