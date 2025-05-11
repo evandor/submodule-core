@@ -225,15 +225,19 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: 'Select Space...', value: 'select-space', icon: 'o_space_dashboard' })
   }
 
-  tabsetSelectionModel.value = {
-    label: currentTabset.value?.name || '?',
-    value: currentTabset.value?.id || '-',
-  }
+  // tabsetSelectionModel.value = {
+  //   label: currentTabset.value?.name || '?',
+  //   value: currentTabset.value?.id || '-',
+  // }
 })
 
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
   if (currentTabset.value) {
+    tabsetSelectionModel.value = {
+      label: currentTabset.value?.name || '?',
+      value: currentTabset.value?.id || '-',
+    }
     overlap.value = useTabsStore2().getOverlap(currentTabset.value)
     overlapTooltip.value = `${Math.round(100 * overlap.value)}% overlap between this tabset and the currently open tabs`
   } else {
