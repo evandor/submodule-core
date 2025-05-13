@@ -293,16 +293,13 @@ export function useUtils() {
       handle(warnLog, 'warn', args)
     }
     console.error = function (...args) {
-      uiStore.increaseErrorCount()
       handle(errorLog, 'error', args)
     }
     window.onerror = function (error, url, line) {
-      uiStore.increaseErrorCount()
       //uiStore.log(JSON.stringify([timestamp(), 'error', error, url, line]))
       return false
     }
     window.onunhandledrejection = function (e) {
-      uiStore.increaseErrorCount()
       //uiStore.log(JSON.stringify([timestamp(), 'unhandled', e.reason]))
     }
   }
