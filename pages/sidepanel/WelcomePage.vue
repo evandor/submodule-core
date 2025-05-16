@@ -90,50 +90,16 @@
               </div>
               <div class="q-row q-my-md">
                 <div class="q-col text-body1 text-center">
-                  Create your first tabset so that you can start adding tabs and manage all your links and URLs.
+                  Click the button to create your first tabset called 'Getting started'
                 </div>
               </div>
-              <!--                <div class="q-row q-my-md q-ml-sm">-->
-              <!--                  <div class="q-col text-body1">-->
-              <!--                    <div class="row">-->
-              <!--                      <div class="col-1">-->
-              <!--                        <q-icon name="o_replay" color="primary" class="q-mr-sm q-mb-xs" size="xs" />-->
-              <!--                      </div>-->
-              <!--                      <div class="col q-ml-sm">Switch tab or tabset, Repeat</div>-->
-              <!--                    </div>-->
-              <!--                  </div>-->
-              <!--                </div>-->
-              <!--                <div class="q-row q-mt-md q-ml-sm">-->
-              <!--                  <div class="q-col text-body1">-->
-              <!--                    <div class="row">-->
-              <!--                      <div class="col-1">-->
-              <!--                        <q-icon name="o_settings" color="primary" class="q-mr-sm q-mb-xs" size="xs" />-->
-              <!--                      </div>-->
-              <!--                      <div class="col q-ml-sm">Discover more features</div>-->
-              <!--                    </div>-->
-              <!--                  </div>-->
-              <!--                </div>-->
-              <!--                <div class="q-row q-mb-md q-ml-sm">-->
-              <!--                  <div class="q-col text-body1">-->
-              <!--                    <div class="row">-->
-              <!--                      <div class="col-1"></div>-->
-              <!--                      <div class="col q-ml-md text-body2 text-grey">-->
-              <!--                        Search<br />-->
-              <!--                        Drag & Drop<br />-->
-              <!--                        Bookmarks Integration<br />-->
-              <!--                        Quick Access to tabs<br />-->
-              <!--                        ...<br />-->
-              <!--                      </div>-->
-              <!--                    </div>-->
-              <!--                  </div>-->
-              <!--                </div>-->
               <div class="q-row">
                 <div class="q-col text-body1 text-center q-mt-sm">
                   <DialogButton
                     label="ok, let's go"
                     :color="$q.dark.isActive ? '' : 'primary'"
                     :text-color="$q.dark.isActive ? 'warning' : 'white'"
-                    @was-clicked="toggleDocumentation()"
+                    @was-clicked="createGettingStartedTabset()"
                     :default-action="true"
                     data-testid="welcome-got-it" />
                 </div>
@@ -179,6 +145,7 @@
 
 <script lang="ts" setup>
 import { LocalStorage, openURL } from 'quasar'
+import BrowserApi from 'src/app/BrowserApi'
 import { SidePanelViews } from 'src/app/models/SidePanelViews'
 import { STRIP_CHARS_IN_USER_INPUT, TITLE_IDENT } from 'src/boot/constants'
 import DialogButton from 'src/core/dialog/buttons/DialogButton.vue'
@@ -211,6 +178,18 @@ onMounted(() => {
 })
 
 const toggleDocumentation = () => (showDocumentation.value = !showDocumentation.value)
+
+const createGettingStartedTabset = () => {
+  const tab1 = BrowserApi.createChromeTabObject('Getting Started', 'https://docs.tabsets.net/get-started')
+  const tab2 = BrowserApi.createChromeTabObject('Release Notes', 'https://docs.tabsets.net/release-notes')
+
+  useCommandExecutor()
+    .executeFromUi(new CreateTabsetCommand('My first Tabset', [tab1, tab2]))
+    .then(() => {
+      router.push('/sidepanel')
+      useNavigationService().browserTabFor('https://docs.tabsets.net/get-started')
+    })
+}
 
 watchEffect(() => {
   openTabsCount.value = useTabsStore2().browserTabs.length

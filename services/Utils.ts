@@ -337,6 +337,28 @@ export function useUtils() {
     })
   }
 
+  function isEmpty(value: any) {
+    if (value === null || value === undefined) {
+      return true
+    }
+
+    if (Array.isArray(value)) {
+      return value.every(isEmpty)
+    } else if (typeof value === 'object') {
+      return Object.values(value).every(isEmpty)
+    }
+
+    return false
+  }
+
+  function replacer(key: any, value: any) {
+    return isEmpty(value) ? undefined : value
+  }
+
+  function getMinimalJSON(obj: any) {
+    return JSON.stringify(obj, replacer, 2)
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -358,5 +380,6 @@ export function useUtils() {
     useDblClickHandler,
     formatReadingTime,
     closeWindow,
+    getMinimalJSON,
   }
 }

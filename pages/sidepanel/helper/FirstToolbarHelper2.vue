@@ -22,11 +22,18 @@
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
                 :tabset="currentTabset"
                 level="root" />
-              <CreateNoteAction
+              <!--              <CreateNoteAction-->
+              <!--                :tabset="currentTabset"-->
+              <!--                level="root"-->
+              <!--                v-if="useFeaturesStore().hasFeature(FeatureIdent.DEV_MODE)" />-->
+              <CreatePageAction
                 :tabset="currentTabset"
                 level="root"
-                v-if="useFeaturesStore().hasFeature(FeatureIdent.DEV_MODE)" />
-              <ArchiveTabsetAction :tabset="currentTabset" level="root" />
+                v-if="useFeaturesStore().hasFeature(FeatureIdent.PAGES)" />
+              <ArchiveTabsetAction
+                :tabset="currentTabset"
+                level="root"
+                v-if="useFeaturesStore().hasFeature(FeatureIdent.ARCHIVE_TABSET)" />
               <DeleteTabsetAction :tabset="currentTabset" level="root" />
             </q-list>
           </q-menu>
@@ -118,7 +125,7 @@ import { useActionHandlers } from 'src/tabsets/actionHandling/ActionHandlers'
 import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/model/ActionHandlerButtonClickedHolder'
 import SidePanelToolbarFab from 'src/tabsets/actionHandling/SidePanelToolbarFab.vue'
 import ArchiveTabsetAction from 'src/tabsets/actions/ArchiveTabsetAction.vue'
-import CreateNoteAction from 'src/tabsets/actions/CreateNoteAction.vue'
+import CreatePageAction from 'src/tabsets/actions/CreatePageAction.vue'
 import CreateSubfolderAction from 'src/tabsets/actions/CreateSubfolderAction.vue'
 import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
 import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
