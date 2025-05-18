@@ -187,7 +187,7 @@ const createGettingStartedTabset = () => {
     .executeFromUi(new CreateTabsetCommand('My first Tabset', [tab1, tab2]))
     .then(() => {
       router.push('/sidepanel')
-      useNavigationService().browserTabFor('https://docs.tabsets.net/get-started')
+      //useNavigationService().browserTabFor('https://docs.tabsets.net/get-started')
     })
 }
 

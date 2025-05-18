@@ -1,9 +1,4 @@
 <template>
-  <!-- SidePanelPageContent optional: notes -->
-  <div class="col-12">
-    <SidePanelNotesView :tabset="props.tabset" />
-  </div>
-
   <!-- folders -->
   <div class="col-12">
     <SidePanelFoldersView
@@ -26,7 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import SidePanelNotesView from 'src/notes/views/sidepanel/SidePanelNotesView.vue'
 import SidePanelPageTabList from 'src/tabsets/layouts/SidePanelPageTabList.vue'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'

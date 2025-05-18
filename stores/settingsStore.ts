@@ -4,17 +4,19 @@ import { LocalStorage } from 'quasar'
 import { computed, ref, watch } from 'vue'
 
 export const useSettingsStore = defineStore('settings', () => {
-  //const localStorage = useQuasar().localStorage
-
-  const activeToggles = ref<string[]>([])
+  const settingToggles = ref<string[]>([])
   const thresholds = ref({
     min: 0,
     max: 40,
   })
   const thumbnailQuality = ref(75)
 
-  const isEnabled = computed(() => (ident: string) => _.findIndex(activeToggles.value, (e: string) => e === ident) >= 0)
-  const isDisabled = computed(() => (ident: string) => _.findIndex(activeToggles.value, (e: string) => e === ident) < 0)
+  const isEnabled = computed(
+    () => (ident: string) => _.findIndex(settingToggles.value, (e: string) => e === ident) >= 0,
+  )
+  const isDisabled = computed(
+    () => (ident: string) => _.findIndex(settingToggles.value, (e: string) => e === ident) < 0,
+  )
 
   watch(
     thresholds,
@@ -26,18 +28,19 @@ export const useSettingsStore = defineStore('settings', () => {
 
   watch(thumbnailQuality, (val: Object) => LocalStorage.setItem('thumbnailQuality', val))
 
-  function initialize(localStorage: any) {
+  function initialize() {
     // console.debug(' ...initializing settingsStore', '✅')
-    const fts: string | undefined = localStorage.getItem('settings')
+    const fts: string | undefined = LocalStorage.getItem('settings') as string | undefined
     if (fts) {
       //console.debug(` ...determining activeToggles from '${fts}'`)
-      activeToggles.value = _.map(fts.split(','), (e: any) => e.trim())
+      settingToggles.value = _.map(fts.split(','), (e: any) => e.trim())
+      //console.debug('activeToggles', settingToggles.value)
     }
-    const ths = localStorage.getItem('thresholds')
+    const ths = LocalStorage.getItem('thresholds') as { min: number; max: number }
     if (ths) {
       thresholds.value = ths
     }
-    const tnq = localStorage.getItem('thumbnailQuality')
+    const tnq = LocalStorage.getItem('thumbnailQuality') as number
     if (tnq) {
       thumbnailQuality.value = tnq
     }
@@ -45,14 +48,15 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function setFeatureToggle(ident: string, setActive: boolean) {
     console.log('setting activeToggles', ident, setActive)
-    const index = activeToggles.value.indexOf(ident)
+    const index = settingToggles.value.indexOf(ident)
     if (index >= 0 && !setActive) {
-      activeToggles.value.splice(index, 1)
+      settingToggles.value.splice(index, 1)
     } else if (index < 0 && setActive) {
-      activeToggles.value.push(ident)
+      settingToggles.value.push(ident)
     }
-    LocalStorage.setItem('settings', _.join(activeToggles.value, ','))
+    // TODO 'settings' vs 'ui.activeFeatures'
+    LocalStorage.setItem('settings', _.join(settingToggles.value, ','))
   }
 
-  return { initialize, activeToggles, setFeatureToggle, isEnabled, isDisabled, thresholds, thumbnailQuality }
+  return { initialize, setFeatureToggle, isEnabled, isDisabled, thresholds, thumbnailQuality }
 })
