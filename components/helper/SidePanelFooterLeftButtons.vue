@@ -52,12 +52,12 @@
           :size="buttonSize"
           tooltip="Show a tree view of your tabs" />
 
-        <SidePanelFooterViewMenuItem
-          v-if="useFeaturesStore().hasFeature(FeatureIdent.NOTES)"
-          :side-panel-view="SidePanelViews.NOTES_VIEW"
-          label="Notes for tabsets"
-          icon="o_note"
-          :size="buttonSize" />
+        <!--        <SidePanelFooterViewMenuItem-->
+        <!--          v-if="useFeaturesStore().hasFeature(FeatureIdent.NOTES)"-->
+        <!--          :side-panel-view="SidePanelViews.NOTES_VIEW"-->
+        <!--          label="Notes for tabsets"-->
+        <!--          icon="o_note"-->
+        <!--          :size="buttonSize" />-->
 
         <!--        <div>-->
         <!--          <q-item @click="showHistory()" dense clickable v-close-popup v-if="$q.platform.is.chrome">-->
@@ -161,7 +161,7 @@
   </span>
 
   <q-btn
-    v-if="useTabsetsStore().getCurrentTabs.length > 0 && useTabsetsStore().getCurrentTabset?.folderActive === undefined"
+    v-if="showToggleDetailLevelBtn()"
     :icon="currentTabset?.details === 'MAXIMAL' ? 'compress' : 'expand'"
     flat
     color="primary"
@@ -188,6 +188,7 @@ import SidePanelFooterLeftButton from 'src/ui/components/SidePanelFooterLeftButt
 import SidePanelFooterViewMenuItem from 'src/ui/components/SidePanelFooterViewMenuItem.vue'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   showSuggestionIcon: { type: Boolean, required: true },
@@ -257,6 +258,11 @@ const toggleDetails = () => {
     useTabsetsStore().saveTabset(currentTabset.value)
   }
 }
+
+const showToggleDetailLevelBtn = () =>
+  useRoute().fullPath === '/sidepanel' &&
+  useTabsetsStore().getCurrentTabs.length > 0 &&
+  useTabsetsStore().getCurrentTabset?.folderActive === undefined
 </script>
 
 <script setup lang="ts"></script>

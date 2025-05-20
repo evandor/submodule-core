@@ -6,7 +6,7 @@
         <!--        {{ portName }}: {{ currentChromeTab?.url }}-->
       </div>
       <div class="col ellipsis text-caption q-mt-none q-mr-sm text-right">
-        <q-icon name="close" @click="closeComment()" size="xs" class="cursor-pointer"></q-icon>
+        <q-icon name="close" @click="closeOverlay()" size="xs" class="cursor-pointer"></q-icon>
       </div>
     </div>
     <div class="row q-ma-sm text-right cursor-pointer">
@@ -28,6 +28,8 @@ import { useQuasar } from 'quasar'
 import BexFunctions from 'src/core/communication/BexFunctions'
 import SnapshotViewHelper from 'src/core/pages/sidepanel/helper/SnapshotViewHelper.vue'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
+import { useNotificationHandler } from 'src/core/services/ErrorHandler'
+import { useUtils } from 'src/core/services/Utils'
 import { SaveMHtmlCommand } from 'src/snapshots/commands/SaveMHtmlCommand'
 import { BlobMetadata } from 'src/snapshots/models/BlobMetadata'
 import { useSnapshotsStore } from 'src/snapshots/stores/SnapshotsStore'
@@ -37,8 +39,10 @@ import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
-import { ref, watchEffect } from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
+
+const { sendMsg } = useUtils()
 
 const portName = ref('---')
 const currentSpace = ref('---')
@@ -52,14 +56,21 @@ const mds = ref<BlobMetadata[]>([])
 const $q = useQuasar()
 const route = useRoute()
 
+const { handleError } = useNotificationHandler()
+
 const props = defineProps<{ tabId: string }>()
 
 const callerPortName = route.query.portName as string
 console.log('route', route.query.portName)
 
+onMounted(() => {
+  console.log('onMounted')
+})
+
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 watchEffect(async () => {
   const ts: [Tabset[], Tab | undefined] = useTabsetsStore().getParentChainForTabId(props.tabId)
+  console.log('watching effect', ts)
   if (!ts[1]) {
     //console.log('****3 checking tab done** ---')
     tab.value = undefined
@@ -67,6 +78,7 @@ watchEffect(async () => {
   }
   tab.value = ts[1]
   mds.value = await useSnapshotsStore().metadataFor(tab.value.id)
+  mds.value = mds.value.sort((a: BlobMetadata, b: BlobMetadata) => b.created - a.created)
   console.log('got', mds.value)
 })
 
@@ -110,33 +122,35 @@ watchEffect(() => {
 //   console.log('got', mds.value)
 // })
 
-const closeComment = () => {
-  $q.bex.log('hier closeComment')
-  //window.parent.document.getElementById('tabset-nav-iframe')?.height = '500px';
-  //BexFunctions.bexSendWithRetry($q, 'close-comment-request', callerPortName)
+const closeOverlay = () => {
   BexFunctions.bexSendWithRetry($q, 'close-overlay', callerPortName, {
     name: 'snapshots',
   })
-  // $q.bex
-  //   .send({
-  //     event: 'close-comment-request',
-  //     to: callerPortName,
-  //   })
-  //   .then((res: any) => console.log('got res', res))
 }
 
 const save = () => {
   console.log(`got ${tab.value?.id} and ${tab.value?.url}`)
   if (tab.value?.id && tab.value.url) {
-    useCommandExecutor().executeFromUi(new SaveMHtmlCommand(tab.value.id, tab.value.url))
+    closeOverlay()
+    // BexFunctions.bexSendWithRetry($q, 'start-spinner', 'app', {
+    //   name: 'snapshots',
+    // })
+    sendMsg('start-spinner-save-snapshot')
+
+    // BexFunctions.broadcast($q, 'start-spinner', {
+    //   name: 'snapshots',
+    // })
+
+    useCommandExecutor()
+      .executeFromUi(new SaveMHtmlCommand(tab.value.id, tab.value.url))
+      .finally(() => {
+        sendMsg('stop-spinner-save-snapshot')
+      })
+  } else {
+    // TODO does not work here (in NavigationPage Iframe)
+    handleError('could not create Snapshot')
   }
 }
 
 const openSnapshot = (md: BlobMetadata) => {}
 </script>
-
-<style scoped>
-.html {
-  background-color: green;
-}
-</style>

@@ -8,6 +8,7 @@ export type BexEvent =
   | 'open-snapshots-request'
   | 'close-comment-request'
   | 'close-overlay'
+  | 'start-spinner'
   | 'reload-current-tabset'
 
 export function useUtils() {
@@ -289,7 +290,6 @@ export function useUtils() {
       handle(defaultLog, 'log', args)
     }
     console.warn = function (...args) {
-      uiStore.increaseWarningCount()
       handle(warnLog, 'warn', args)
     }
     console.error = function (...args) {

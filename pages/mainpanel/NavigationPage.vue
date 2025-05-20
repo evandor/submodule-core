@@ -60,22 +60,37 @@
             @click.stop="showInReadingMode()">
             <q-tooltip :delay="1000">Open Reading Mode</q-tooltip>
           </q-icon>
-          <q-icon
-            name="save"
-            @click="save()"
-            size="xs"
-            class="cursor-pointer q-mr-sm"
-            :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
-            <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
-          </q-icon>
-          <q-icon
-            name="edit_note"
+
+          <template v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML) && !pageCaptureInProgress">
+            <span>
+              <q-btn
+                icon="save"
+                @click="openSnapshotOverlay()"
+                outline
+                size="xs"
+                class="cursor-pointer q-px-md q-mr-sm"
+                color="primary">
+                <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
+                <q-badge v-if="snapshotsSize > 0" floating color="warning" size="xs" text-color="primary">{{
+                  snapshotsSize
+                }}</q-badge>
+              </q-btn>
+            </span>
+          </template>
+          <q-spinner
+            v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML) && pageCaptureInProgress"
+            class="q-mr-sm"
+            color="primary" />
+
+          <q-btn
+            icon="edit_note"
             @click="openNote()"
-            size="sm"
-            class="cursor-pointer q-mr-sm"
-            :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
+            outline
+            size="xs"
+            class="cursor-pointer q-px-md q-mr-sm"
+            color="primary">
             <q-tooltip :delay="1000">Create or Edit Notes for this page</q-tooltip>
-          </q-icon>
+          </q-btn>
 
           <q-icon
             v-if="!badgeNotShownYet()"
@@ -84,7 +99,6 @@
             size="xs"
             class="cursor-pointer q-mr-sm"
             :color="tab && tab.note && tab.note.length >= 5 ? 'primary' : 'grey'">
-            <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
           </q-icon>
 
           <q-badge color="blue" class="q-ml-sm" style="width: 50px; height: 17px">
@@ -143,11 +157,13 @@ import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
+import { useSnapshotsStore } from 'src/snapshots/stores/SnapshotsStore'
 import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
 import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
+import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -160,6 +176,8 @@ const large = ref(false)
 const tab = ref<Tab | undefined>(undefined)
 const parentChain = ref<[Tabset[], Tab | undefined]>([[] as Tabset[], undefined])
 const tags = ref<string[]>([])
+const pageCaptureInProgress = ref(false)
+const snapshotsSize = ref(0)
 
 const $q = useQuasar()
 const route = useRoute()
@@ -168,6 +186,14 @@ const { sendMsg } = useUtils()
 const callerPortName = route.query.portName as string
 
 const currentTabId = LocalStorage.getItem('ui.currentTab.id') as string | undefined
+
+const updateSnapshotSize = async () => {
+  if (tab.value) {
+    console.log('updateSnapshot', tab.value.id)
+    const mds = await useSnapshotsStore().metadataFor(tab.value.id)
+    snapshotsSize.value = mds.length
+  }
+}
 
 watchEffect(() => {
   if (currentTabId && !tab.value) {
@@ -185,11 +211,23 @@ watchEffect(() => {
     } else {
       tags.value = []
     }
+
+    updateSnapshotSize()
   }
 })
 
 watchEffect(() => {
   portName.value = $q.bex.portName
+})
+
+watchEffect(() => {
+  const loading = useUiStore().pageCaptureLoading
+  console.log('loading', loading)
+  pageCaptureInProgress.value = loading
+  if (!loading) {
+    console.log('hier')
+    updateSnapshotSize()
+  }
 })
 
 const openNote = () => {
@@ -202,7 +240,7 @@ const openNote = () => {
   })
 }
 
-const save = () => {
+const openSnapshotOverlay = () => {
   BexFunctions.bexSendWithRetry($q, 'open-viewport', callerPortName, {
     name: 'snapshots',
     page: `overlay/snapshots/${tab.value?.id}`,

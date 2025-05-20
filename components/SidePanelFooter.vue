@@ -167,16 +167,14 @@
                 icon="o_open_in_new"
                 label="Issues" />
 
-              <template>
-                <q-separator />
+              <q-separator />
 
-                <ContextMenuItem
-                  v-close-popup
-                  @was-clicked="stashDialog()"
-                  color="warning"
-                  icon="sym_o_new_window"
-                  label="Stash..." />
-              </template>
+              <ContextMenuItem
+                v-close-popup
+                @was-clicked="stashDialog()"
+                color="warning"
+                icon="sym_o_new_window"
+                label="Stash..." />
 
               <q-separator />
 
@@ -205,7 +203,6 @@ import { useContentStore } from 'src/content/stores/contentStore'
 import ContextMenuItem from 'src/core/components/helper/ContextMenuItem.vue'
 import SidePanelFooterLeftButtons from 'src/core/components/helper/SidePanelFooterLeftButtons.vue'
 import SidePanelStatsMarkupTable from 'src/core/components/helper/SidePanelStatsMarkupTable.vue'
-import { ExecutionResult } from 'src/core/domain/ExecutionResult'
 import { ToastType } from 'src/core/models/Toast'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useUtils } from 'src/core/services/Utils'
@@ -217,17 +214,13 @@ import SuggestionDialog from 'src/suggestions/dialogues/SuggestionDialog.vue'
 import { Suggestion } from 'src/suggestions/domain/models/Suggestion'
 import { useSuggestionsStore } from 'src/suggestions/stores/suggestionsStore'
 import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
-import { CreateTabsetCommand } from 'src/tabsets/commands/CreateTabsetCommand'
+import { CreateStashCommand } from 'src/tabsets/commands/CreateStashCommand'
 import { GithubReadEventsCommand } from 'src/tabsets/commands/github/GithubReadEventsCommand'
-import { RestoreTabsetCommand } from 'src/tabsets/commands/RestoreTabset'
 import SidePanelMessagesMarkup from 'src/tabsets/components/helper/SidePanelMessagesMarkup.vue'
 import SidePanelTabsetListMarkup from 'src/tabsets/components/helper/SidePanelTabsetListMarkup.vue'
 import StartSessionDialog from 'src/tabsets/dialogues/StartSessionDialog.vue'
-import { SaveOrReplaceResult } from 'src/tabsets/models/SaveOrReplaceResult'
 import { Tab, TabSnippet } from 'src/tabsets/models/Tab'
 import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
-import { TabsetType } from 'src/tabsets/models/Tabset'
-import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsetsUiStore } from 'src/tabsets/stores/tabsetsUiStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
@@ -531,25 +524,8 @@ const stashDialog = () => {
   $q.dialog({
     component: StartSessionDialog,
   }).onOk((callback: { oldSessionName: string; collection: string }) => {
-    console.log('callback', callback)
-    const tabsToUse = useTabsStore2().browserTabs
-    useCommandExecutor()
-      .execute(new CreateTabsetCommand(callback.oldSessionName, tabsToUse))
-      .then((res: ExecutionResult<SaveOrReplaceResult>) => {
-        console.log('res', res.result.tabset)
-        const ts = res.result.tabset
-        ts.type = TabsetType.SESSION
-        useTabsetsStore().saveTabset(ts)
-        BrowserApi.closeAllTabs(false)
-      })
-      .then(() => {
-        const tabsetId = callback.collection ? callback.collection['value' as keyof object] : undefined
-        //useCommandExecutor().executeFromUi(new CreateTabsetCommand(callback['sessionName' as keyof object], []))
-        if (tabsetId) {
-          useTabsetService().selectTabset(tabsetId)
-          useCommandExecutor().execute(new RestoreTabsetCommand(tabsetId, undefined, false))
-        }
-      })
+    useCommandExecutor().executeFromUi(new CreateStashCommand(callback.oldSessionName, callback.collection))
+    router.push('/sidepanel/sessions')
   })
 }
 </script>

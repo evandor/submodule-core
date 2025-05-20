@@ -47,7 +47,6 @@
               <div class="text-bold ellipsis">
                 <template v-if="currentTabset">
                   <q-select
-                    v-if="showTabsetSelection()"
                     :style="tabsetColorStyle()"
                     filled
                     transition-show="scale"
@@ -75,10 +74,6 @@
                       </q-item>
                     </template>
                   </q-select>
-                  <div v-else>
-                    <!--                    <div class="text-caption q-ml-md">{{ title() }}</div>-->
-                    <div class="q-ml-md q-mt-sm">{{ currentTabset.name }}</div>
-                  </div>
                 </template>
                 <template v-else>
                   <q-spinner color="primary" size="1em" />
@@ -168,6 +163,7 @@ const tabsets = ref<Tabset[]>([])
 
 const tabsetSelectionModel = ref<SelectOption | undefined>(undefined)
 const tabsetSelectionOptions = ref<SelectOption[]>([])
+const stashedTabs = ref(false)
 
 let showSearchAction = !useUiStore().quickAccessFor('search')
 
@@ -191,11 +187,15 @@ watchEffect(() => {
   tabsets.value = [...useTabsetsStore().tabsets.values()] as Tabset[]
   const useSpaces = useFeaturesStore().hasFeature(FeatureIdent.SPACES)
   const space = useSpacesStore().space
+
+  stashedTabs.value = tabsets.value.filter((ts: Tabset) => ts.type === TabsetType.SESSION).length > 0
+
   tabsetSelectionOptions.value = tabsets.value
     .filter((ts: Tabset) =>
       useFeaturesStore().hasFeature(FeatureIdent.ARCHIVE_TABSET) ? ts.status !== TabsetStatus.ARCHIVED : true,
     )
     .filter((ts: Tabset) => ts.type !== TabsetType.SPECIAL)
+    .filter((ts: Tabset) => ts.type !== TabsetType.SESSION)
     .filter((ts: Tabset) => ts.id !== currentTabset.value?.id)
     .filter((ts: Tabset) => {
       if (useSpaces && space) {
@@ -223,19 +223,17 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
   }
 
-  tabsetSelectionOptions.value.push({ label: 'Create Tabset', value: 'create-tabset', icon: 'o_add' })
+  tabsetSelectionOptions.value.push({ label: 'Create Tabset', value: 'create-tabset', icon: 'sym_o_lock_reset' })
 
-  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
-    if (tabsetSelectionOptions.value.length > 1) {
-      tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
-    }
-    tabsetSelectionOptions.value.push({ label: 'Select Space...', value: 'select-space', icon: 'o_space_dashboard' })
+  if (stashedTabs.value) {
+    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+    tabsetSelectionOptions.value.push({ label: 'Stashed Tabs', value: 'stashed-tabs', icon: 'o_add' })
   }
 
-  // tabsetSelectionModel.value = {
-  //   label: currentTabset.value?.name || '?',
-  //   value: currentTabset.value?.id || '-',
-  // }
+  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
+    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+    tabsetSelectionOptions.value.push({ label: 'Select Space...', value: 'select-space', icon: 'o_space_dashboard' })
+  }
 })
 
 watchEffect(() => {
@@ -314,6 +312,10 @@ const switchTabset = async (tabset: object) => {
     }
     return
   }
+  if (tsId === 'stashed-tabs') {
+    router.push('/sidepanel/sessions')
+    return
+  }
   if (tsId === '') {
     await router.push('/sidepanel/collections')
     return
@@ -331,8 +333,6 @@ const tabsetSelectLabel = () => {
   }
   return 'Tabset'
 }
-
-const showTabsetSelection = () => true
 
 const delayedRemoval = () => {
   setTimeout(() => (showSearchAction = false), 500)

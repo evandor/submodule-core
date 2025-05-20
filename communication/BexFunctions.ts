@@ -93,8 +93,8 @@ class BexFunctions {
         payload,
       })
       .catch((err: any) => {
-        console.warn('err', typeof err, err)
-        console.log('port list is', $q.bex.portList)
+        // console.warn('err', typeof err, err)
+        // console.log('port list is', $q.bex.portList)
         $q.bex.connectToBackground().then(() => {
           $q.bex.send({
             event: eventName,
@@ -103,6 +103,18 @@ class BexFunctions {
           })
         })
       })
+  }
+
+  broadcast = ($q: QVueGlobals, eventName: BexEvent, payload: object = {}) => {
+    console.log(` --> Broadcasting event '${eventName}'  with payload ${JSON.stringify(payload)}`)
+    $q.bex.portList.forEach((portName: string) => {
+      console.log(` --> Broadcasting to portName '${portName}'`)
+      $q.bex.send({
+        event: eventName,
+        to: portName,
+        payload,
+      })
+    })
   }
 }
 
