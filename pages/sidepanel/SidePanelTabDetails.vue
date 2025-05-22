@@ -83,7 +83,7 @@
 
       <div class="col-3 text-left">
         <q-btn
-          v-if="useFeaturesStore().hasFeature(FeatureIdent.DEV_MODE)"
+          v-if="useSettingsStore().has('DEV_MODE')"
           @click="showTabDetails"
           round
           size="11px"
@@ -148,7 +148,7 @@
             <div class="col-7 text-right text-caption">{{ tab?.activatedCount }}x</div>
           </div>
 
-          <template v-if="useFeaturesStore().hasFeature(FeatureIdent.DEV_MODE)">
+          <template v-if="useSettingsStore().has('DEV_MODE')">
             <div class="row q-mx-sm">
               <div class="col-12 text-caption text-bold q-px-xl">
                 <hr />
@@ -325,7 +325,6 @@
 import { formatDistance } from 'date-fns'
 import _ from 'lodash'
 import { useQuasar } from 'quasar'
-import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { STRIP_CHARS_IN_USER_INPUT } from 'src/boot/constants'
 import { TabReferenceType } from 'src/content/models/TabReference'
 import TabDetailsSearchIndex from 'src/core/pages/sidepanel/helper/TabDetailsSearchIndex.vue'
@@ -333,7 +332,7 @@ import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useNotificationHandler } from 'src/core/services/ErrorHandler'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
-import { useFeaturesStore } from 'src/features/stores/featuresStore'
+import { useSettingsStore } from 'src/core/stores/settingsStore'
 import { RequestInfo } from 'src/requests/models/RequestInfo'
 import { useRequestsService } from 'src/requests/services/RequestsService'
 import NavigationService from 'src/services/NavigationService'

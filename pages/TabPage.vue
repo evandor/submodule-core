@@ -283,7 +283,7 @@
     </div>
   </div>
 
-  <div v-else-if="tab === 'debug' && useFeaturesStore().hasFeature(FeatureIdent.DEV_MODE)">
+  <div v-else-if="tab === 'debug' && useSettingsStore().has('DEV_MODE')">
     <div class="q-pa-md q-gutter-sm">
       <q-banner rounded>The tabs internal representation</q-banner>
       <vue-json-pretty
@@ -306,10 +306,9 @@ import { onMounted, reactive, ref, watchEffect } from 'vue'
 import VueJsonPretty from 'vue-json-pretty'
 import { useRoute } from 'vue-router'
 import 'vue-json-pretty/lib/styles.css'
-import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { ContentItem } from 'src/content/models/ContentItem'
+import { useSettingsStore } from 'src/core/stores/settingsStore'
 import Analytics from 'src/core/utils/google-analytics'
-import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { Tab } from 'src/tabsets/models/Tab'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 

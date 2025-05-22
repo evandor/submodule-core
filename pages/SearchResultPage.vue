@@ -28,6 +28,7 @@
   <div class="row fit greyBorderTop"></div>
 
   <InfoMessageWidget
+    class="q-ma-md"
     :probability="1"
     ident="searchResults_info"
     hint="Please note that only pages you've visted with Tabsets are contained in the search index." />

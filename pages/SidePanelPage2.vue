@@ -34,6 +34,13 @@
               @tabs-found="(n: number) => (filteredTabsCount = n)"
               @folders-found="(n: number) => (filteredFoldersCount = n)" />
           </template>
+
+          <template v-if="useSettingsStore().has('DEBUG_MODE')">
+            <div class="q-ma-md text-caption" style="font-size: smaller">
+              {{ useContentStore().getCurrentTabUrl }}<br />
+              {{ useContentStore().getCurrentTabContent?.length }}
+            </div>
+          </template>
         </div>
       </template>
 
@@ -58,6 +65,7 @@
 <script lang="ts" setup>
 import _ from 'lodash'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
+import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
 import FirstToolbarHelper2 from 'src/core/pages/sidepanel/helper/FirstToolbarHelper2.vue'
 import SearchToolbarHelper from 'src/core/pages/sidepanel/helper/SearchToolbarHelper.vue'
@@ -65,6 +73,7 @@ import SidePanelPageContent from 'src/core/pages/SidePanelPageContent.vue'
 import SidePanelPageContentExpand from 'src/core/pages/SidePanelPageContentExpand.vue'
 import StartingHint from 'src/core/pages/widgets/StartingHint.vue'
 import { useUtils } from 'src/core/services/Utils'
+import { useSettingsStore } from 'src/core/stores/settingsStore'
 import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
@@ -190,13 +199,17 @@ const onMessageListener = (message: any) => {
   console.log(' <<< message', message)
   if (message.name === 'feature-activated') {
     useFeaturesStore().activateFeature(message.data.feature)
+  } else if (message.name === 'feature-deactivated') {
+    useFeaturesStore().deactivateFeature(message.data.feature)
+  } else if (message.name === 'setting-activated') {
+    useSettingsStore().setToggle(message.data.setting, true)
+  } else if (message.name === 'setting-deactivated') {
+    useSettingsStore().setToggle(message.data.setting, false)
   } else if (message.name === 'show-ignored') {
     useTabsetsStore().selectCurrentTabset('IGNORED')
     router.push('/sidepanel')
   } else if (message.name === 'text-selection') {
     console.log('message', message)
-  } else if (message.name === 'feature-deactivated') {
-    useFeaturesStore().deactivateFeature(message.data.feature)
   } else if (message.name === 'tabsets-imported') {
     useSpacesStore().reload()
     useTabsetService().init()
