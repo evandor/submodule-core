@@ -102,6 +102,13 @@ class Analytics {
                 params,
               },
             ],
+            // user_location: {
+            //   // city: 'Mountain View',
+            //   // region_id: 'US-CA',
+            //   country_id: 'DE',
+            //   // subcontinent_id: '021',
+            //   // continent_id: '019',
+            // },
           }),
         },
       )

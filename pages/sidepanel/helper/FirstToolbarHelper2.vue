@@ -14,13 +14,19 @@
           <q-menu v-if="currentTabset">
             <q-list style="min-width: 200px" dense>
               <!--              <CreateTabsetAction :tabset="currentTabset" level="root" />-->
-              <EditTabsetAction :tabset="currentTabset" level="root" />
-              <SearchAction :tabset="currentTabset" level="root" v-if="showSearchAction" @clicked="delayedRemoval()" />
-              <CreateSubfolderAction :tabset="currentTabset" level="root" />
-              <OpenAllInMenuAction :tabset="currentTabset" level="root" />
+              <EditTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />
+              <SearchAction
+                :tabset="currentTabset"
+                level="root"
+                v-if="showSearchAction"
+                @clicked="delayedRemoval()"
+                element="contextmenu" />
+              <!--              <CreateSubfolderAction :tabset="currentTabset" level="root" element="contextmenu" />-->
+              <OpenAllInMenuAction :tabset="currentTabset" level="root" element="contextmenu" />
               <ShowGalleryAction
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
                 :tabset="currentTabset"
+                element="contextmenu"
                 level="root" />
               <!--              <CreateNoteAction-->
               <!--                :tabset="currentTabset"-->
@@ -29,19 +35,18 @@
               <CreatePageAction
                 :tabset="currentTabset"
                 level="root"
-                v-if="useFeaturesStore().hasFeature(FeatureIdent.PAGES)" />
+                v-if="useFeaturesStore().hasFeature(FeatureIdent.PAGES)"
+                element="contextmenu" />
               <ArchiveTabsetAction
                 :tabset="currentTabset"
                 level="root"
+                element="contextmenu"
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.ARCHIVE_TABSET)" />
-              <DeleteTabsetAction :tabset="currentTabset" level="root" />
+              <DeleteTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />
             </q-list>
           </q-menu>
         </div>
-        <div
-          :class="fabNeedsMoreSpace ? 'col-8' : 'col-9'"
-          class="q-ma-none q-pa-none q-px-sm text-center"
-          style="border: 0 solid red">
+        <div class="col-9 q-ma-none q-pa-none q-px-sm text-center" style="border: 0 solid red">
           <div class="col-12 text-subtitle1">
             <div class="q-ml-xs q-mt-none">
               <div class="text-bold ellipsis">
@@ -88,12 +93,11 @@
           v-if="!useUiStore().appLoading"
           style="border: 0 solid green">
           <slot name="iconsRight">
-            <SidePanelToolbarFab
+            <SidePanelToolbarFab2
               v-if="currentChromeTab && currentTabset && currentTabset.type !== TabsetType.SPECIAL"
               @button-clicked="(args: ActionHandlerButtonClickedHolder) => handleButtonClicked(currentTabset!, args)"
               :currentChromeTab="currentChromeTab"
-              :tabset="currentTabset"
-              @extra-space-needed="(res: boolean) => (fabNeedsMoreSpace = res)" />
+              :tabset="currentTabset" />
             <transition
               v-else-if="!currentTabset || currentTabset.type !== TabsetType.SPECIAL"
               appear
@@ -118,10 +122,9 @@ import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { useActionHandlers } from 'src/tabsets/actionHandling/ActionHandlers'
 import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/model/ActionHandlerButtonClickedHolder'
-import SidePanelToolbarFab from 'src/tabsets/actionHandling/SidePanelToolbarFab.vue'
+import SidePanelToolbarFab2 from 'src/tabsets/actionHandling/SidePanelToolbarFab2.vue'
 import ArchiveTabsetAction from 'src/tabsets/actions/ArchiveTabsetAction.vue'
 import CreatePageAction from 'src/tabsets/actions/CreatePageAction.vue'
-import CreateSubfolderAction from 'src/tabsets/actions/CreateSubfolderAction.vue'
 import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
 import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
 import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
@@ -157,7 +160,6 @@ const currentChromeTab = ref<chrome.tabs.Tab | undefined>(undefined)
 const overlap = ref(0.5)
 const overlapTooltip = ref('')
 const showWatermark = ref(false)
-const fabNeedsMoreSpace = ref(false)
 const watermark = ref('')
 const tabsets = ref<Tabset[]>([])
 

@@ -36,9 +36,15 @@
           </template>
 
           <template v-if="useSettingsStore().has('DEBUG_MODE')">
-            <div class="q-ma-md text-caption" style="font-size: smaller">
-              {{ useContentStore().getCurrentTabUrl }}<br />
-              {{ useContentStore().getCurrentTabContent?.length }}
+            <div class="row q-pa-none q-ma-none">
+              <div
+                class="col-12 q-pa-none q-mx-md q-mt-md q-mb-none text-caption ellipsis-2-lines"
+                style="font-size: smaller">
+                {{ useContentStore().getCurrentTabUrl }}
+              </div>
+              <div class="col-12 q-pa-none q-mx-md q-my-none text-caption" style="font-size: smaller">
+                {{ useContentStore().getCurrentTabContent?.length }}
+              </div>
             </div>
           </template>
         </div>
@@ -351,6 +357,10 @@ const setPaddingTop = () => {
     }
   }
   //paddingTop.value = showSearchToolbarHelper.value ? 'padding-top: 80px' : 'padding-top: 48px'
+}
+
+const clickedSomewhere = () => {
+  console.log('clicked!!')
 }
 
 setPaddingTop()
