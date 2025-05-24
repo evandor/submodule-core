@@ -36,7 +36,7 @@
           </template>
 
           <template v-if="useSettingsStore().has('DEBUG_MODE')">
-            <div class="row q-pa-none q-ma-none">
+            <div class="row q-pa-none q-ma-none fit">
               <div
                 class="col-12 q-pa-none q-mx-md q-mt-md q-mb-none text-caption ellipsis-2-lines"
                 style="font-size: smaller">
