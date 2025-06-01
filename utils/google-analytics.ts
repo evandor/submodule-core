@@ -75,6 +75,11 @@ class Analytics {
 
   // Fires an event with optional params. Event names must only include letters and underscores.
   async fireEvent(name: string, params: any = {}) {
+    if (process.env.DEV) {
+      console.log('not firing event (dev environment)', name, params)
+      return
+    }
+
     // Configure session id and engagement time if not present, for more details see:
     // https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#recommended_parameters_for_reports
     if (!params.session_id) {
@@ -123,6 +128,10 @@ class Analytics {
 
   // Fire a page view event.
   async firePageViewEvent(pageTitle: string, pageLocation: string, additionalParams = {}) {
+    if (process.env.DEV) {
+      console.log('not firing page view event (dev environment)', pageTitle, pageLocation, additionalParams)
+      return
+    }
     const location = pageLocation.indexOf('#') >= 0 ? pageLocation.split('#')[1] : pageLocation
     return this.fireEvent('page_view', {
       page_title: pageTitle,
@@ -133,6 +142,10 @@ class Analytics {
 
   // Fire an error event.
   async fireErrorEvent(error: any, additionalParams = {}) {
+    if (process.env.DEV) {
+      console.log('not firing error view event (dev environment)', error, additionalParams)
+      return
+    }
     // Note: 'error' is a reserved event name and cannot be used
     // see https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=gtag#reserved_names
     return this.fireEvent('extension_error', {

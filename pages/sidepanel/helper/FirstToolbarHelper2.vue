@@ -23,6 +23,7 @@
                 element="contextmenu" />
               <!--              <CreateSubfolderAction :tabset="currentTabset" level="root" element="contextmenu" />-->
               <OpenAllInMenuAction :tabset="currentTabset" level="root" element="contextmenu" />
+              <ShareTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />
               <ShowGalleryAction
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
                 :tabset="currentTabset"
@@ -129,6 +130,7 @@ import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
 import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
 import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
 import SearchAction from 'src/tabsets/actions/SearchAction.vue'
+import ShareTabsetAction from 'src/tabsets/actions/ShareTabsetAction.vue'
 import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
@@ -179,6 +181,10 @@ const redirectOnEmpty = () => {
     if (useTabsetsStore().tabsets.size === 0) {
       console.log('redirecting to /sidepanel/welcome')
       router.push('/sidepanel/welcome')
+    } else {
+      console.log('setting current tabset to first one')
+      const firstTabset = [...useTabsetsStore().tabsets.values()][0]!
+      useTabsetsStore().selectCurrentTabset(firstTabset.id)
     }
   }, 1000)
 }
@@ -240,6 +246,7 @@ watchEffect(() => {
 
 watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
+  console.log('---got current tabset', currentTabset.value)
   if (currentTabset.value) {
     tabsetSelectionModel.value = {
       label: currentTabset.value?.name || '?',

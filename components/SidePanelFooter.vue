@@ -22,6 +22,8 @@
       </Transition>
     </template>
 
+    <SidePanelSharedInfoMarkup />
+
     <template v-if="useFeaturesStore().hasFeature(FeatureIdent.TABSET_LIST) && useUiStore().showTabsetList">
       <SidePanelTabsetListMarkup />
     </template>
@@ -230,7 +232,7 @@
           flat
           color="blue"
           :size="getButtonSize()"
-          @click="toggleShowLogin()">
+          @click="gotoLoginPage()">
           <q-tooltip class="tooltip_small">Log in or Sign up</q-tooltip>
         </q-btn>
       </div>
@@ -263,6 +265,7 @@ import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetComman
 import { CreateStashCommand } from 'src/tabsets/commands/CreateStashCommand'
 import { GithubReadEventsCommand } from 'src/tabsets/commands/github/GithubReadEventsCommand'
 import SidePanelMessagesMarkup from 'src/tabsets/components/helper/SidePanelMessagesMarkup.vue'
+import SidePanelSharedInfoMarkup from 'src/tabsets/components/helper/SidePanelSharedInfoMarkup.vue'
 import SidePanelTabsetListMarkup from 'src/tabsets/components/helper/SidePanelTabsetListMarkup.vue'
 import StartSessionDialog from 'src/tabsets/dialogues/StartSessionDialog.vue'
 import { Tab, TabSnippet } from 'src/tabsets/models/Tab'
@@ -294,7 +297,6 @@ const transitionGraceTime = ref(false)
 const showWindowTable = ref(false)
 const showStatsTable = ref(false)
 const ignored = ref('')
-const showLogin = ref(false)
 const randomKey = ref<string>(uid())
 const progressValue = ref<number>(0.0)
 const progressLabel = ref<string>('')
@@ -315,10 +317,6 @@ watchEffect(() => {
       showWindowTable.value = useWindowsStore().windowForId(windowId, 'SidePanelFooter2')?.open || false
     }
   }
-})
-
-watchEffect(() => {
-  showLogin.value = useUiStore().showLoginTable
 })
 
 watchEffect(() => {
@@ -473,7 +471,7 @@ const toastBannerClass = () => {
   }
 }
 
-const toggleShowLogin = () => (showLogin.value = !showLogin.value)
+const gotoLoginPage = () => router.push('/sidepanel/login')
 
 const toggleShowWindowTable = async () => {
   showWindowTable.value = !showWindowTable.value
