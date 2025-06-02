@@ -14,7 +14,7 @@
           <q-menu v-if="currentTabset">
             <q-list style="min-width: 200px" dense>
               <!--              <CreateTabsetAction :tabset="currentTabset" level="root" />-->
-              <EditTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />
+              <!--              <EditTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />-->
               <SearchAction
                 :tabset="currentTabset"
                 level="root"
@@ -43,7 +43,7 @@
                 level="root"
                 element="contextmenu"
                 v-if="useFeaturesStore().hasFeature(FeatureIdent.ARCHIVE_TABSET)" />
-              <DeleteTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />
+              <!--              <DeleteTabsetAction :tabset="currentTabset" level="root" element="contextmenu" />-->
             </q-list>
           </q-menu>
         </div>
@@ -66,9 +66,13 @@
                     <template v-slot:option="scope">
                       <q-item v-bind="scope.itemProps">
                         <template v-if="scope.opt.label.length > 0">
-                          <!--                          <q-item-section style="max-width: 20px">-->
-                          <!--                            <q-icon size="xs" :name="scope.opt.icon" v-if="scope.opt.icon" />-->
-                          <!--                          </q-item-section>-->
+                          <q-item-section style="max-width: 20px" v-if="scope.opt.label !== 'Switch to'">
+                            <q-icon
+                              size="xs"
+                              :color="scope.opt.icon_color ? scope.opt.icon_color : 'primary'"
+                              :name="scope.opt.icon"
+                              v-if="scope.opt.icon" />
+                          </q-item-section>
                           <q-item-section>
                             <q-item-label>{{ scope.opt.label }}</q-item-label>
                             <q-item-label caption>{{ scope.opt.description }}</q-item-label>
@@ -126,14 +130,14 @@ import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/mod
 import SidePanelToolbarFab2 from 'src/tabsets/actionHandling/SidePanelToolbarFab2.vue'
 import ArchiveTabsetAction from 'src/tabsets/actions/ArchiveTabsetAction.vue'
 import CreatePageAction from 'src/tabsets/actions/CreatePageAction.vue'
-import DeleteTabsetAction from 'src/tabsets/actions/DeleteTabsetAction.vue'
-import EditTabsetAction from 'src/tabsets/actions/EditTabsetAction.vue'
 import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
 import SearchAction from 'src/tabsets/actions/SearchAction.vue'
 import ShareTabsetAction from 'src/tabsets/actions/ShareTabsetAction.vue'
 import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
+import DeleteTabsetDialog from 'src/tabsets/dialogues/DeleteTabsetDialog.vue'
+import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
 import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
 import { Tabset, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -145,7 +149,13 @@ import { inject, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
-type SelectOption = { label: string; value: string; disable?: boolean; icon?: string }
+type SelectOption = {
+  label: string
+  value: string
+  disable?: boolean
+  icon?: string
+  icon_color?: string
+}
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -204,7 +214,7 @@ watchEffect(() => {
     )
     .filter((ts: Tabset) => ts.type !== TabsetType.SPECIAL)
     .filter((ts: Tabset) => ts.type !== TabsetType.SESSION)
-    .filter((ts: Tabset) => ts.id !== currentTabset.value?.id)
+    //.filter((ts: Tabset) => ts.id !== currentTabset.value?.id)
     .filter((ts: Tabset) => {
       if (useSpaces && space) {
         return ts.spaces.indexOf(space.id) >= 0
@@ -222,16 +232,36 @@ watchEffect(() => {
     })
     .sort((a: SelectOption, b: SelectOption) => a.label.toLowerCase().localeCompare(b.label.toLowerCase()))
 
+  if (tabsetSelectionOptions.value.length == 1) {
+    tabsetSelectionOptions.value = []
+  }
+  if (tabsetSelectionOptions.value.length > 1) {
+    tabsetSelectionOptions.value.unshift({ label: 'Switch to', value: '', disable: true, icon: 'switch_horiz' })
+  }
+
   if (tabsetSelectionOptions.value.length > 10) {
     tabsetSelectionOptions.value = tabsetSelectionOptions.value.slice(0, 10)
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
     tabsetSelectionOptions.value.push({ label: 'show all...', value: '' })
-  } else if (tabsetSelectionOptions.value.length > 1) {
+  } else if (tabsetSelectionOptions.value.length > 4) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
     tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
   }
 
-  tabsetSelectionOptions.value.push({ label: 'Create Tabset', value: 'create-tabset', icon: 'sym_o_lock_reset' })
+  if (tabsets.value.length > 1) {
+    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+  }
+
+  tabsetSelectionOptions.value.push({ label: 'Edit Tabset', value: 'edit-tabset', icon: 'o_edit' })
+  tabsetSelectionOptions.value.push({ label: 'Create new Tabset', value: 'create-tabset', icon: 'o_add' })
+
+  tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+  tabsetSelectionOptions.value.push({
+    label: 'Delete Tabset',
+    value: 'delete-tabset',
+    icon: 'o_delete',
+    icon_color: 'negative',
+  })
 
   if (stashedTabs.value) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -319,6 +349,31 @@ const switchTabset = async (tabset: object) => {
       label: currentTabset.value?.name || '?',
       value: currentTabset.value?.id || '-',
     }
+    return
+  }
+  if (tsId === 'edit-tabset' && currentTabset.value) {
+    $q.dialog({
+      component: EditTabsetDialog,
+      componentProps: {
+        tabsetId: currentTabset.value.id,
+        tabsetName: currentTabset.value.name,
+        tabsetColor: currentTabset.value.color,
+        window: currentTabset.value.window,
+        details: currentTabset.value.details || useUiStore().listDetailLevel,
+        fromPanel: true,
+      },
+    })
+    return
+  }
+  if (tsId === 'delete-tabset' && currentTabset.value) {
+    $q.dialog({
+      component: DeleteTabsetDialog,
+      componentProps: {
+        tabsetId: currentTabset.value.id,
+        tabsetName: currentTabset.value.name,
+        tabsCount: currentTabset.value.tabs.length,
+      },
+    })
     return
   }
   if (tsId === 'stashed-tabs') {
