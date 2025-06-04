@@ -169,14 +169,16 @@
                 icon="o_open_in_new"
                 label="Issues" />
 
-              <q-separator />
+              <template v-if="useFeaturesStore().hasFeature(FeatureIdent.STASHING)">
+                <q-separator />
 
-              <ContextMenuItem
-                v-close-popup
-                @was-clicked="stashDialog()"
-                color="warning"
-                icon="sym_o_new_window"
-                label="Stash..." />
+                <ContextMenuItem
+                  v-close-popup
+                  @was-clicked="stashDialog()"
+                  color="warning"
+                  icon="sym_o_new_window"
+                  label="Stash..." />
+              </template>
 
               <q-separator />
 

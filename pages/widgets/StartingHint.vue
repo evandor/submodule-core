@@ -1,21 +1,58 @@
 <template>
   <transition appear enter-active-class="animated fadeIn slower delay-5s" leave-active-class="animated fadeOut">
-    <div class="q-ma-sm q-mt-xl">
-      <div class="row items-center text-grey-5 q-mb-sm">how to start?</div>
+    <div class="q-ma-sm q-mt-xl" v-if="!hide">
+      <div class="row items-center text-grey-5 q-mb-sm">Welcome to your first Tabset<br />Get started by...</div>
       <div class="box" style="min-width: 300px">
-        <q-list>
+        <q-list class="q-my-md">
           <q-item clickable @click="useUiStore().startButtonAnimation('addtab')">
             <q-item-section avatar>
-              <q-btn outline label="..." size="xs" class="q-mx-none q-px-sm" />
+              <q-btn fab-mini padding="xs" icon="o_add" round size="xs" color="warning" />
             </q-item-section>
 
             <q-item-section>
-              <q-item-label>Add Tab (or other action)</q-item-label>
+              <q-item-label>Adding a new Tab</q-item-label>
               <q-item-label caption
                 >Context sensitive menu, e.g. to add the current tab to your tabsets collection.
               </q-item-label>
             </q-item-section>
           </q-item>
+
+          <transition
+            v-show="showTabs"
+            appear
+            enter-active-class="animated fadeIn slower delay-1s"
+            leave-active-class="animated fadeOut">
+            <q-item clickable @click="useUiStore().startButtonAnimation('tabsList')">
+              <q-item-section avatar>
+                <!--                <SidePanelToolbarButton icon="playlist_add" class="q-ml-sm" />-->
+                <q-img :src="favicon()" width="26px" class="q-ml-xs" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label><span>Open saved Tabs</span></q-item-label>
+                <q-item-label caption><span>Click a tab in the tabset view to open it</span> </q-item-label>
+              </q-item-section>
+            </q-item>
+          </transition>
+
+          <transition
+            v-show="showMenu"
+            appear
+            enter-active-class="animated fadeIn slower delay-1s"
+            leave-active-class="animated fadeOut">
+            <q-item clickable @click="useUiStore().startButtonAnimation('menu')">
+              <q-item-section avatar>
+                <SidePanelToolbarButton icon="menu" class="q-ml-sm" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label><span>Additional Features</span></q-item-label>
+                <q-item-label caption
+                  ><span>Use this menu to access other featurs like search, open-all in, ...</span>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </transition>
 
           <transition
             v-show="showSettings"
@@ -24,36 +61,15 @@
             leave-active-class="animated fadeOut">
             <q-item clickable @click="useUiStore().startButtonAnimation('settings')">
               <q-item-section avatar>
-                <SidePanelToolbarButton icon="o_settings" />
+                <SidePanelToolbarButton icon="o_settings" class="q-ml-sm" />
               </q-item-section>
 
               <q-item-section>
                 <q-item-label>Settings</q-item-label>
-                <q-item-label caption>Click here to activate more features</q-item-label>
+                <q-item-label caption>Click here to fine-tune settings and activate more features</q-item-label>
               </q-item-section>
             </q-item>
           </transition>
-
-          <!--          <template v-if="useTabsStore2().browserTabs.length > 4">-->
-          <!--            <transition-->
-          <!--              v-show="showOpenTabs"-->
-          <!--              appear-->
-          <!--              enter-active-class="animated fadeIn slower delay-1s"-->
-          <!--              leave-active-class="animated fadeOut">-->
-          <!--              <q-item clickable @click="useUiStore().startButtonAnimation('tabsList')">-->
-          <!--                <q-item-section avatar>-->
-          <!--                  <SidePanelToolbarButton icon="playlist_add" />-->
-          <!--                </q-item-section>-->
-
-          <!--                <q-item-section>-->
-          <!--                  <q-item-label><span>Open Tabs View</span></q-item-label>-->
-          <!--                  <q-item-label caption-->
-          <!--                    ><span>Click to show the tabs currently open in your browser</span>-->
-          <!--                  </q-item-label>-->
-          <!--                </q-item-section>-->
-          <!--              </q-item>-->
-          <!--            </transition>-->
-          <!--          </template>-->
 
           <transition
             v-show="showBookmarks"
@@ -70,6 +86,7 @@
               <q-item-section avatar>
                 <SidePanelToolbarButton
                   icon="bookmark"
+                  class="q-ml-sm"
                   :color="useFeaturesStore().hasFeature(FeatureIdent.BOOKMARKS) ? 'primary' : 'grey-6'" />
               </q-item-section>
 
@@ -87,32 +104,52 @@
               </q-item-section>
             </q-item>
           </transition>
+
+          <transition appear enter-active-class="animated fadeIn slower delay-1s" leave-active-class="animated fadeOut">
+            <q-item clickable @click="hideStartingHint()">
+              <q-item-section>
+                <q-item-label class="text-center text-caption cursor-pointer text-blue-8">Hide </q-item-label>
+              </q-item-section>
+            </q-item>
+          </transition>
         </q-list>
       </div>
-      <div class="row q-mt-lg">
-        <div
-          class="col text-body2 text-blue-8 text-center cursor-pointer q-mb-sm"
-          @click="useNavigationService().browserTabFor('https://docs.tabsets.net/glossary')">
-          Glossary
-        </div>
-      </div>
+      <!--      <div class="row q-mt-lg">-->
+      <!--        <div-->
+      <!--          class="col text-body2 text-blue-8 text-center cursor-pointer q-mb-sm"-->
+      <!--          @click="useNavigationService().browserTabFor('https://docs.tabsets.net/glossary')">-->
+      <!--          Glossary-->
+      <!--        </div>-->
+      <!--      </div>-->
     </div>
   </transition>
 </template>
 
 <script lang="ts" setup>
+import { LocalStorage } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import SidePanelToolbarButton from 'src/core/components/SidePanelToolbarButton.vue'
-import { useNavigationService } from 'src/core/services/NavigationService'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref } from 'vue'
 
 const showSettings = ref(false)
-const showOpenTabs = ref(false)
+const showTabs = ref(false)
+const showMenu = ref(false)
 const showBookmarks = ref(false)
+const showHideButton = ref(false)
 
-setTimeout(() => (showSettings.value = true), 4 * 1000)
-// setTimeout(() => (showOpenTabs.value = true), 7 * 1000)
-setTimeout(() => (showBookmarks.value = true), 7 * 1000)
+const hide = ref(false)
+
+setTimeout(() => (showTabs.value = true), 4 * 1000)
+setTimeout(() => (showMenu.value = true), 7 * 1000)
+setTimeout(() => (showSettings.value = true), 10 * 1000)
+setTimeout(() => (showBookmarks.value = true), 13 * 1000)
+setTimeout(() => (showHideButton.value = true), 15 * 1000)
+
+const favicon = () => chrome.runtime.getURL('icons/favicon-64x64.png')
+const hideStartingHint = () => {
+  LocalStorage.setItem('ui.hideStartingHint', true)
+  hide.value = true
+}
 </script>

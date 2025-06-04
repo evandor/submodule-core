@@ -70,6 +70,7 @@
 
 <script lang="ts" setup>
 import _ from 'lodash'
+import { LocalStorage } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
@@ -334,7 +335,10 @@ onUnmounted(() => {
   }
 })
 
-const showStartingHint = () => !useUiStore().appLoading && useTabsetsStore().allTabsCount === 0
+const showStartingHint = () =>
+  !useUiStore().appLoading &&
+  currentTabset.value?.name === 'My first Tabset' &&
+  !LocalStorage.getItem('ui.hideStartingHint')
 
 const termChanged = (a: { term: string }) => (filter.value = a.term)
 

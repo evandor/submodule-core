@@ -10,7 +10,10 @@
       </div>
       <div class="row q-ma-none q-pa-none">
         <div class="col-1 q-ma-none q-pa-none q-ml-md q-mt-xs" style="border: 0 solid red; max-width: 24px">
-          <q-icon name="menu" class="cursor-pointer" />
+          <q-icon
+            name="menu"
+            class="cursor-pointer"
+            :class="{ shakeWithColor: animateMenuButton, 'cursor-pointer': true }" />
           <q-menu v-if="currentTabset">
             <q-list style="min-width: 200px" dense>
               <!--              <CreateTabsetAction :tabset="currentTabset" level="root" />-->
@@ -174,6 +177,7 @@ const overlapTooltip = ref('')
 const showWatermark = ref(false)
 const watermark = ref('')
 const tabsets = ref<Tabset[]>([])
+const animateMenuButton = ref(false)
 
 const tabsetSelectionModel = ref<SelectOption | undefined>(undefined)
 const tabsetSelectionOptions = ref<SelectOption[]>([])
@@ -272,6 +276,10 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
     tabsetSelectionOptions.value.push({ label: 'Select Space...', value: 'select-space', icon: 'o_space_dashboard' })
   }
+})
+
+watchEffect(() => {
+  animateMenuButton.value = useUiStore().animateMenuButton
 })
 
 watchEffect(() => {
