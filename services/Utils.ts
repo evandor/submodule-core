@@ -251,6 +251,7 @@ export function useUtils() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const addListenerOnce = <T extends Function>(browserEvent: chrome.events.Event<T>, listener: T) => {
     if (!browserEvent.hasListener(listener)) {
+      //console.log('adding listener', listener)
       browserEvent.addListener(listener)
     }
   }

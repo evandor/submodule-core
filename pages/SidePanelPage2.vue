@@ -58,7 +58,7 @@
       position="top"
       class="darkInDarkMode brightInBrightMode"
       :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
-      <FirstToolbarHelper2 :showSearchBox="showSearchBox" @tabset-changed="tabsetChanged()" />
+      <FirstToolbarHelper2 :element="'contextmenu'" @tabset-changed="tabsetChanged()" />
       <SearchToolbarHelper
         v-if="showSearchToolbarHelper"
         @on-term-changed="(val) => termChanged(val)"

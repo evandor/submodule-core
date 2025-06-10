@@ -13,7 +13,7 @@
           :indent="25">
           <template #default="{ node, stat }">
             <q-icon :name="openIndicatorIcon(stat)" @click="stat.open = !stat.open" />
-            <span class="mtl-ml cursor-pointer" @click="handleTreeClick(node, '/sidepanel')">
+            <span class="mtl-ml cursor-pointer" @click="handleTreeClick(node, '/popup')">
               <q-icon
                 v-if="node.level == 0 && node.type === TabsetType.SESSION"
                 name="sym_o_new_window"
@@ -74,7 +74,7 @@ const currentTabset = ref<Tabset | undefined>(undefined)
 const filter = ref<string | undefined>(undefined)
 
 onMounted(() => {
-  Analytics.firePageViewEvent('SidePanelCollectionsPage', document.location.href)
+  Analytics.firePageViewEvent('PopupCollectionsPage', document.location.href)
 })
 
 watchEffect(() => {

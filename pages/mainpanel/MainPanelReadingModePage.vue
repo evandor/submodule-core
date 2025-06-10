@@ -50,6 +50,7 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar'
 import { TabReference, TabReferenceType } from 'src/content/models/TabReference'
+import { useContentStore } from 'src/content/stores/contentStore'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'
@@ -63,7 +64,7 @@ const { sanitizeAsText } = useUtils()
 const $q = useQuasar()
 const route = useRoute()
 
-const tabId = route.params.tabId as string
+const tabId = route.params.tabId as string | undefined
 
 //const tab = ref(useTabsStore().getTab(tabId))
 const tab = ref<Tab>()
@@ -79,28 +80,36 @@ onMounted(() => {
 })
 
 watchEffect(() => {
-  const res = useTabsetsStore().getTabAndTabsetId(tabId)
-  if (res && res.tab) {
-    tab.value = res.tab
-    const tabRefs: TabReference[] = res.tab.tabReferences.filter((r) => r.type === TabReferenceType.READING_MODE)
-    if (tabRefs.length > 0) {
-      const article = tabRefs[0]!.data[0]
-      originalUrl.value = tabRefs[0]!.href || ''
-
-      if (article) {
-        title.value = sanitizeAsText(article['title' as keyof object])
-        excerpt.value = sanitizeAsText(article['excerpt' as keyof object])
-        content.value = sanitizeAsText(article['content' as keyof object])
-        byline.value = sanitizeAsText(article['byline' as keyof object])
-        siteName.value = sanitizeAsText(article['siteName' as keyof object])
+  let article: object | undefined = undefined
+  console.log('hier')
+  if (!tabId) {
+    article = useContentStore().articleSnapshot
+  } else {
+    const res = useTabsetsStore().getTabAndTabsetId(tabId)
+    if (res && res.tab) {
+      tab.value = res.tab
+      const tabRefs: TabReference[] = res.tab.tabReferences.filter((r) => r.type === TabReferenceType.READING_MODE)
+      if (tabRefs.length > 0) {
+        originalUrl.value = tabRefs[0]!.href || ''
+        article = tabRefs[0]!.data[0]
       }
     }
+  }
+  if (article) {
+    title.value = sanitizeAsText(article['title' as keyof object])
+    excerpt.value = sanitizeAsText(article['excerpt' as keyof object])
+    content.value = sanitizeAsText(article['content' as keyof object])
+    byline.value = sanitizeAsText(article['byline' as keyof object])
+    siteName.value = sanitizeAsText(article['siteName' as keyof object])
   }
 })
 
 const openOriginal = () => useNavigationService().browserTabFor(originalUrl.value)
 
 const remove = () => {
+  if (!tabId) {
+    return
+  }
   const tabAndTabsetId = useTabsetsStore().getTabAndTabsetId(tabId)
   if (tabAndTabsetId) {
     tabAndTabsetId.tab.tabReferences = tabAndTabsetId.tab.tabReferences.filter(

@@ -10,7 +10,7 @@
 
     <!-- place QPageSticky at end of page -->
     <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
-      <FirstToolbarHelper2 title="Messages">
+      <FirstToolbarHelper2 title="Messages" :element="'contextmenu'">
         <template v-slot:iconsRight>
           <SidePanelToolbarTabNavigationHelper />
 

@@ -23,16 +23,16 @@ export function useNavigationService() {
 
       LocalStorage.setItem('ui.currentTab.id', tabId)
 
-      const toolbar = LocalStorage.getItem('ui.toolbar.integration')
-      //console.log('checking toolbar integration', createdTab?.id, toolbar)
-      if (createdTab?.id && (toolbar === 'tabsets' || toolbar === null)) {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: createdTab.id },
-            files: ['tabsets-toolbar-contentscript.js'],
-          })
-          .catch((err) => console.log('executeScript error:', err))
-      }
+      // const toolbar = LocalStorage.getItem('ui.toolbar.integration')
+      // //console.log('checking toolbar integration', createdTab?.id, toolbar)
+      // if (createdTab?.id && (toolbar === 'tabsets' || toolbar === null)) {
+      //   chrome.scripting
+      //     .executeScript({
+      //       target: { tabId: createdTab.id },
+      //       files: ['tabsets-toolbar-contentscript.js'],
+      //     })
+      //     .catch((err) => console.log('executeScript error:', err))
+      // }
 
       return Promise.resolve(createdTab)
     }

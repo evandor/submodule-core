@@ -1,5 +1,5 @@
 <template>
-  <!-- FirstToolbarHelper2 -->
+  <!-- PopupToolbar -->
   <q-toolbar class="q-pa-none q-pl-none q-pr-none q-pb-none" :style="offsetTop()" style="border: 0 solid black">
     <q-toolbar-title>
       <div v-if="showWatermark" id="watermark">{{ watermark }}</div>
@@ -8,50 +8,16 @@
           <q-tooltip class="tooltip-small">{{ overlapTooltip }}</q-tooltip>
         </q-linear-progress>
       </div>
-      <div class="row q-ma-none q-pa-none">
-        <div class="col-1 q-ma-none q-pa-none q-mr-md q-mt-xs" style="border: 0 solid red; max-width: 24px">
+      <div class="row">
+        <div class="col-1 q-ma-none q-pa-none q-mr-md q-mt-xs" style="border: 0 solid red; max-width: 32px">
           <q-btn
-            icon="menu"
+            icon="open_in_new"
             flat
-            :disabled="props.disable"
+            :disabled="props.disable || sidepanelEnabled"
             size="md"
-            class="cursor-pointer"
-            :class="{ shakeWithColor: animateMenuButton, 'cursor-pointer': true }" />
-          <q-menu v-if="currentTabset">
-            <q-list style="min-width: 200px" dense>
-              <!--              <CreateTabsetAction :tabset="currentTabset" level="root" />-->
-              <!--              <EditTabsetAction :tabset="currentTabset" level="root" :element="props.element" />-->
-              <SearchAction
-                :tabset="currentTabset"
-                level="root"
-                v-if="showSearchAction"
-                @clicked="delayedRemoval()"
-                :element="props.element" />
-              <!--              <CreateSubfolderAction :tabset="currentTabset" level="root" :element="props.element" />-->
-              <OpenAllInMenuAction :tabset="currentTabset" level="root" :element="props.element" />
-              <ShareTabsetAction :tabset="currentTabset" level="root" :element="props.element" />
-              <ShowGalleryAction
-                v-if="useFeaturesStore().hasFeature(FeatureIdent.GALLERY)"
-                :tabset="currentTabset"
-                :element="props.element"
-                level="root" />
-              <!--              <CreateNoteAction-->
-              <!--                :tabset="currentTabset"-->
-              <!--                level="root"-->
-              <!--                v-if="useSettingsStore().has('DEV_MODE')" />-->
-              <CreatePageAction
-                :tabset="currentTabset"
-                level="root"
-                v-if="useFeaturesStore().hasFeature(FeatureIdent.PAGES)"
-                :element="props.element" />
-              <ArchiveTabsetAction
-                :tabset="currentTabset"
-                level="root"
-                :element="props.element"
-                v-if="useFeaturesStore().hasFeature(FeatureIdent.ARCHIVE_TABSET)" />
-              <!--              <DeleteTabsetAction :tabset="currentTabset" level="root" :element="props.element" />-->
-            </q-list>
-          </q-menu>
+            style="max-width: 32px"
+            @click="openSidepanel()"
+            class="cursor-pointer" />
         </div>
         <div class="col-9 q-ma-none q-pa-none q-px-sm text-center" style="border: 0 solid red">
           <div class="col-12 text-subtitle1">
@@ -105,19 +71,18 @@
           v-if="!useUiStore().appLoading"
           style="border: 0 solid green">
           <slot name="iconsRight">
-            <SidePanelToolbarFab2
-              v-if="currentChromeTab && currentTabset && currentTabset.type !== TabsetType.SPECIAL"
-              @button-clicked="(args: ActionHandlerButtonClickedHolder) => handleButtonClicked(currentTabset!, args)"
-              :currentChromeTab="currentChromeTab"
-              :disable="props.disable"
-              :tabset="currentTabset" />
-            <transition
-              v-else-if="!currentTabset || currentTabset.type !== TabsetType.SPECIAL"
-              appear
-              enter-active-class="animated fadeIn slower delay-5s"
-              leave-active-class="animated fadeOut">
-              <q-btn icon="add" label="tab" size="sm" class="q-mr-md" @click="addUrlDialog()" />
-            </transition>
+            <q-btn
+              padding="xs"
+              fab-mini
+              icon="add"
+              color="warning"
+              unelevated
+              size="12px"
+              class="cursor-pointer q-ma-none q-pa-none">
+              <q-tooltip class="tooltip-small" style="width: 130px" anchor="top left" :delay="800"
+                >Click to show options</q-tooltip
+              >
+            </q-btn>
           </slot>
         </div>
       </div>
@@ -135,15 +100,7 @@ import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { useActionHandlers } from 'src/tabsets/actionHandling/ActionHandlers'
 import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/model/ActionHandlerButtonClickedHolder'
-import SidePanelToolbarFab2 from 'src/tabsets/actionHandling/SidePanelToolbarFab2.vue'
-import ArchiveTabsetAction from 'src/tabsets/actions/ArchiveTabsetAction.vue'
-import CreatePageAction from 'src/tabsets/actions/CreatePageAction.vue'
-import OpenAllInMenuAction from 'src/tabsets/actions/OpenAllInMenuAction.vue'
-import SearchAction from 'src/tabsets/actions/SearchAction.vue'
-import ShareTabsetAction from 'src/tabsets/actions/ShareTabsetAction.vue'
-import ShowGalleryAction from 'src/tabsets/actions/ShowGalleryAction.vue'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
-import AddUrlDialog from 'src/tabsets/dialogues/AddUrlDialog.vue'
 import DeleteTabsetDialog from 'src/tabsets/dialogues/DeleteTabsetDialog.vue'
 import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
 import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
@@ -172,7 +129,7 @@ const emits = defineEmits(['tabset-changed'])
 const $q = useQuasar()
 const router = useRouter()
 
-type Props = { element: 'contextmenu' | 'btn' | 'popup'; disable?: boolean }
+type Props = { disable?: boolean }
 
 const props = withDefaults(defineProps<Props>(), {
   disable: false,
@@ -189,6 +146,7 @@ const showWatermark = ref(false)
 const watermark = ref('')
 const tabsets = ref<Tabset[]>([])
 const animateMenuButton = ref(false)
+const sidepanelEnabled = ref(false)
 
 const tabsetSelectionModel = ref<SelectOption | undefined>(undefined)
 const tabsetSelectionOptions = ref<SelectOption[]>([])
@@ -267,19 +225,7 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
   }
 
-  if (props.element !== 'popup') {
-    tabsetSelectionOptions.value.push({ label: 'Edit Tabset', value: 'edit-tabset', icon: 'o_edit' })
-    tabsetSelectionOptions.value.push({ label: 'Create new Tabset', value: 'create-tabset', icon: 'o_add' })
-    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
-    tabsetSelectionOptions.value.push({
-      label: 'Delete Tabset',
-      value: 'delete-tabset',
-      icon: 'o_delete',
-      icon_color: 'negative',
-    })
-  } else {
-    tabsetSelectionOptions.value.push({ label: 'Mange Tabsets', value: 'popup-manage-tabsets', icon: 'o_edit' })
-  }
+  tabsetSelectionOptions.value.push({ label: 'Mange Tabsets', value: 'popup-manage-tabsets', icon: 'o_edit' })
 
   if (stashedTabs.value) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -349,8 +295,6 @@ const handleButtonClicked = async (tabset: Tabset, args: ActionHandlerButtonClic
 }
 
 const offsetTop = () => ($q.platform.is.capacitor || $q.platform.is.cordova ? 'margin-top:40px;' : '')
-
-const addUrlDialog = () => $q.dialog({ component: AddUrlDialog })
 
 const switchTabset = async (tabset: object) => {
   const tsId = tabset['value' as keyof object]
@@ -437,21 +381,26 @@ const tabsetColorStyle = () => {
         ';border-radius:3px'
     : ''
 }
+
+chrome.runtime.getContexts({}, (ctxs: object[]) => {
+  //console.log('ctxs', ctxs)
+  sidepanelEnabled.value = ctxs.filter((c: object) => 'SIDE_PANEL' === c['contextType' as keyof object]).length > 0
+  // console.log('sidepanelEnabled', sidepanelEnabled.value)
+})
+const openSidepanel = async () => {
+  if (chrome.sidePanel) {
+    console.log('setting sidepanel to open')
+    const ts: chrome.tabs.Tab[] = await chrome.tabs.query({ active: true, currentWindow: true })
+    // @ts-expect-error TODO
+    await chrome.sidePanel.open({ windowId: ts[0].windowId })
+    await chrome.sidePanel
+      .setOptions({
+        path: 'www/index.html',
+        enabled: true,
+      })
+      .then(() => {
+        sidepanelEnabled.value = !sidepanelEnabled.value
+      })
+  }
+}
 </script>
-
-<style scoped>
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 3.5s ease;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
-}
-
-.q-list--dense > .q-item,
-.q-item--dense {
-  min-height: 32px;
-}
-</style>

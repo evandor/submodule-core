@@ -1,0 +1,383 @@
+<template>
+  <!-- PopupPage -->
+  <q-page class="darkInDarkMode brightInBrightMode" :style="paddingTop" style="min-width: 400px; max-height: 700px">
+    <offline-info />
+
+    <div class="wrap" v-if="useUiStore().appLoading">
+      <div class="loading">
+        <div class="bounceball q-mr-lg"></div>
+        <div class="text">{{ useUiStore().appLoading }}</div>
+      </div>
+    </div>
+
+    <div class="row q-ma-sm darkInDarkMode brightInBrightMode">
+      <div class="col-2 q-ma-sm">
+        <q-img v-if="thumbnail" :src="thumbnail" no-native-menu />
+        <q-img v-else :src="browserTab?.favIconUrl" no-native-menu />
+      </div>
+      <div class="col q-ma-sm">
+        <div class="column">
+          <div class="col">
+            {{ browserTab?.title }}
+          </div>
+          <div class="col ellipsis-3-lines text-body2">{{ language }}: {{ description }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
+      <div class="col-2 q-mx-sm text-right text-caption">URL</div>
+      <div class="col q-mx-md">
+        <q-input v-model="url" type="text" autogrow dense class="text-body2" filled></q-input>
+      </div>
+    </div>
+
+    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
+      <div class="col-2 q-mx-sm text-right text-caption">Comment</div>
+      <div class="col q-mx-md">
+        <q-input v-model="comment" type="text" autogrow dense class="text-body2" filled></q-input>
+      </div>
+    </div>
+
+    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
+      <div class="col-2 q-mx-sm text-right text-caption">Tags</div>
+      <div class="col q-mx-md">
+        <q-select
+          input-class="q-ma-none q-pa-none"
+          borderless
+          dense
+          options-dense
+          v-model="tags"
+          use-input
+          use-chips
+          multiple
+          hide-dropdown-icon
+          input-debounce="0"
+          new-value-mode="add-unique"
+          @update:model-value="(val) => updatedTags(val)" />
+      </div>
+    </div>
+    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
+      <div class="col-2 q-mx-sm text-right text-caption">Actions</div>
+      <div class="col q-mx-md">
+        <q-btn icon="o_article" size="sm" flat @click="openAsArticle()" />
+        <q-btn
+          v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML)"
+          icon="save"
+          outline
+          size="xs"
+          class="cursor-pointer q-px-md q-mr-sm"
+          color="primary">
+          <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
+          <!--          <q-badge v-if="snapshotsSize > 0" floating color="warning" size="xs" text-color="primary">{{-->
+          <!--            snapshotsSize-->
+          <!--          }}</q-badge>-->
+        </q-btn>
+      </div>
+    </div>
+
+    <template v-if="useSettingsStore().has('DEBUG_MODE')">
+      <div class="row q-pa-none q-ma-none fit">
+        <div
+          class="col-12 q-pa-none q-mx-md q-mt-md q-mb-none text-caption ellipsis-2-lines"
+          style="font-size: smaller">
+          {{ browserTab?.url }}
+        </div>
+        <div class="col-12 q-pa-none q-mx-md q-my-none text-caption" style="font-size: smaller">
+          {{ useContentStore().getCurrentTabContent?.length }}
+        </div>
+        <div class="col-12 q-pa-none q-mx-md q-my-none text-caption" style="font-size: smaller">
+          {{ useContentStore().currentTabFavIcon }}<br />
+          <!-- {{ text }}<br />-->
+          <!--          <hr />-->
+          <!--          {{ browserTab }}<br />-->
+        </div>
+      </div>
+    </template>
+
+    <q-page-sticky
+      expand
+      position="top"
+      class="darkInDarkMode brightInBrightMode"
+      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
+      <PopupToolbar @tabset-changed="tabsetChanged()" :disable="false" />
+    </q-page-sticky>
+  </q-page>
+</template>
+
+<script lang="ts" setup>
+import _ from 'lodash'
+import { LocalStorage } from 'quasar'
+import { FeatureIdent } from 'src/app/models/FeatureIdent'
+import { useContentStore } from 'src/content/stores/contentStore'
+import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
+// import { classification } from 'src/core/hf/PipelineSingleton'
+import PopupToolbar from 'src/core/pages/popup/PopupToolbar.vue'
+import { useNavigationService } from 'src/core/services/NavigationService'
+import { useUtils } from 'src/core/services/Utils'
+import { useSettingsStore } from 'src/core/stores/settingsStore'
+import ContentUtils from 'src/core/utils/ContentUtils'
+import Analytics from 'src/core/utils/google-analytics'
+import { useFeaturesStore } from 'src/features/stores/featuresStore'
+import { useSpacesStore } from 'src/spaces/stores/spacesStore'
+import { Tab } from 'src/tabsets/models/Tab'
+import { Tabset, TabsetStatus } from 'src/tabsets/models/Tabset'
+import { useTabsetService } from 'src/tabsets/services/TabsetService2'
+import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
+import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
+import { useThumbnailsService } from 'src/thumbnails/services/ThumbnailsService'
+import { UiDensity, useUiStore } from 'src/ui/stores/uiStore'
+import { useAuthStore } from 'stores/authStore'
+import { onMounted, provide, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
+
+const { inBexMode } = useUtils()
+
+const router = useRouter()
+
+const showStartingHint = ref(true)
+const thumbnail = ref<string | undefined>(useTabsStore2().currentChromeTab?.favIconUrl)
+const tabsets = ref<Tabset[]>([])
+const currentTabset = ref<Tabset | undefined>(undefined)
+const browserTab = ref<chrome.tabs.Tab | undefined>(undefined)
+const tab = ref<Tab | undefined>(undefined)
+const tabsetsLastUpdate = ref(0)
+const paddingTop = ref('padding-top: 80px')
+const uiDensity = ref<UiDensity>(useUiStore().uiDensity)
+const alreadyInTabset = ref<boolean>(false)
+const containedInTsCount = ref(0)
+const comment = ref('')
+const text = ref<string | undefined>(undefined)
+const tags = ref<string[]>([])
+
+const url = ref<string | undefined>(undefined)
+const description = ref<string | undefined>(undefined)
+
+const language = ref<string | undefined>(undefined)
+
+provide('ui.density', uiDensity)
+
+function updateOnlineStatus(e: any) {
+  const { type } = e
+  useUiStore().networkOnline = type === 'online'
+}
+
+onMounted(() => {
+  window.addEventListener('offline', (e) => updateOnlineStatus(e))
+  window.addEventListener('online', (e) => updateOnlineStatus(e))
+
+  Analytics.firePageViewEvent('PopupPage', document.location.href)
+
+  //switch early
+  if (!LocalStorage.getItem('ui.hideWelcomePage')) {
+    useRouter().push('/popup/welcome')
+  }
+})
+
+watchEffect(() => {
+  showStartingHint.value =
+    !useUiStore().appLoading &&
+    currentTabset.value?.name === 'My first Tabset' &&
+    !LocalStorage.getItem('ui.hideStartingHint')
+})
+
+watchEffect(() => {
+  // if (currentTabId && !tab.value) {
+  //   parentChain.value = useTabsetsStore().getParentChainForTabId(currentTabId)
+  //   if (!parentChain.value[1]) {
+  //     tab.value = undefined
+  //     return
+  //   }
+  //   tab.value = parentChain.value[1]
+  //   rootTabset.value = parentChain.value[0][0]
+
+  // if (tab.value.tags.constructor === Array) {
+  //   tags.value = [...new Set(tab.value.tags)]
+  //   Tab.setTags(tab.value, tags.value)
+  // } else {
+  tags.value = []
+  // }
+
+  // updateSnapshotSize()
+  //}
+})
+
+watchEffect(() => {
+  currentTabset.value = useTabsetsStore().getCurrentTabset
+  browserTab.value = useTabsStore2().currentChromeTab
+  if (browserTab.value) {
+    url.value = browserTab.value.url
+    alreadyInTabset.value = useTabsetService().urlExistsInCurrentTabset(browserTab.value.url)
+    const tabsets = useTabsetService().tabsetsFor(browserTab.value.url!)
+    containedInTsCount.value = tabsets.length
+    if (currentTabset.value && browserTab.value && browserTab.value.url) {
+      tab.value = currentTabset.value.tabs.find((t: Tab) => t.url === browserTab.value!.url)
+    } else {
+      //var t = tabsets.map((ts: Tabset) => ts.tabs)
+    }
+  }
+})
+
+watchEffect(() => {
+  const article = useContentStore().currentTabArticle
+  if (article) {
+    //console.log('article', article)
+    const articleContent = ContentUtils.html2text(article['content' as keyof object])
+    //console.log('articleContent', articleContent)
+    text.value = articleContent
+
+    if (useFeaturesStore().hasFeature(FeatureIdent.AI) && text.value && text.value.trim().length > 10) {
+      //classification(text.value).then((res: any) => console.log('hier!!!', res))
+      try {
+        // @ts-expect-error xxx
+        Summarizer.create().then((summarizer: any) => {
+          summarizer.summarize(text.value).then((results: string) => {
+            console.log(results)
+            text.value = results
+          })
+        })
+      } catch (e) {
+        console.log('error with language detection')
+      }
+    }
+  }
+})
+
+watchEffect(() => {
+  const metas = useContentStore().currentTabMetas
+  console.log('metas', metas)
+  if (metas['description' as keyof object]) {
+    description.value = metas['description' as keyof object] as string | undefined
+    if (useFeaturesStore().hasFeature(FeatureIdent.AI) && description.value && description.value.trim().length > 10) {
+      try {
+        // @ts-expect-error xxx
+        LanguageDetector.create().then((detector: any) => {
+          detector.detect(description.value).then((results: any[]) => {
+            for (const result of results) {
+              console.log(result.detectedLanguage, result.confidence)
+            }
+            if (results.length > 0) {
+              language.value = results[0].detectedLanguage
+              tags.value.push(results[0].detectedLanguage)
+            }
+          })
+        })
+      } catch (e) {
+        console.log('error with language detection')
+      }
+    }
+  }
+})
+
+watchEffect(() => {
+  currentTabset.value = useTabsetsStore().getCurrentTabset
+})
+
+watchEffect(() => {
+  tabsetsLastUpdate.value = useTabsetsStore().lastUpdate
+})
+
+watchEffect(() => {
+  if (tab.value) {
+    useThumbnailsService()
+      .getThumbnailFor(tab.value.id, useAuthStore().user.uid)
+      .then((data) => {
+        if (data) {
+          console.log('setting thumbnail to ', data)
+          thumbnail.value = data
+        } else {
+          //thumbnail.value = ''
+        }
+      })
+    // TabsetService.getContentFor(tab.value as Tab).then((data) => {
+    //   if (data) {
+    //     content.value = data['content' as keyof object]
+    //     //metas.value = data['metas' as keyof object]
+    //     metaRows.value = []
+    //     _.forEach(Object.keys(data['metas' as keyof object]), (k: any) => {
+    //       //console.log("k", k, data.metas[k])
+    //       metaRows.value.push({
+    //         name: k,
+    //         value: data['metas' as keyof object][k],
+    //       })
+    //     })
+    //     metaRows.value = _.sortBy(metaRows.value, (s: any) => s['name' as keyof object])
+    //   }
+    // })
+    // useSnapshotsService()
+    //   .getMetadataFor(tab.value.id)
+    //   .then((mds: BlobMetadata[]) => {
+    //     htmls.value = mds
+    //   })
+  }
+})
+
+const getTabsetOrder = [
+  function (o: Tabset) {
+    return !o || o.status === TabsetStatus.FAVORITE ? 0 : 1
+  },
+  function (o: Tabset) {
+    return o.name?.toLowerCase()
+  },
+]
+
+function determineTabsets() {
+  return _.sortBy(
+    _.filter(
+      [...useTabsetsStore().tabsets.values()] as Tabset[],
+      (ts: Tabset) =>
+        ts.status !== TabsetStatus.DELETED && ts.status !== TabsetStatus.HIDDEN && ts.status !== TabsetStatus.ARCHIVED,
+    ),
+    getTabsetOrder,
+    ['asc'],
+  )
+}
+
+watchEffect(() => {
+  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
+    const currentSpace = useSpacesStore().space
+    tabsets.value = _.sortBy(
+      _.filter([...useTabsetsStore().tabsets.values()] as Tabset[], (ts: Tabset) => {
+        if (currentSpace) {
+          if (ts.spaces.indexOf(currentSpace.id) < 0) {
+            return false
+          }
+        }
+        return (
+          ts.status !== TabsetStatus.DELETED && ts.status !== TabsetStatus.HIDDEN && ts.status !== TabsetStatus.ARCHIVED
+        )
+      }),
+      getTabsetOrder,
+      ['asc'],
+    )
+  } else {
+    tabsets.value = determineTabsets()
+  }
+})
+
+const tabsetChanged = () => {
+  currentTabset.value = useTabsetsStore().getCurrentTabset
+}
+
+const updatedTags = (val: string[]) => {
+  console.log('updating tag', val, useTabsetsStore().getCurrentTabset)
+  if (tab.value) {
+    // tab.value.tags = val
+    // useTabsetService()
+    //   .saveCurrentTabset()
+    //   .then(() => {
+    //     sendMsg('refresh-store')
+    //     // all those did not work:
+    //     // chrome.runtime.sendMessage(null, { message: 'refresh-store' }, function (response) {...
+    //     // BexFunctions.bexSendWithRetry($q, 'reload-current-tabset', 'background')
+    //     // useTabsetsStore().reloadTabset(currentTabset.value!.id)
+    //   })
+    //   .catch((err) => console.error(err))
+  }
+}
+
+const openAsArticle = () =>
+  useNavigationService().browserTabFor(chrome.runtime.getURL(`/www/index.html#/mainpanel/readingmode`))
+</script>
+
+<style lang="scss" src="src/pages/css/sidePanelPage2.scss" />

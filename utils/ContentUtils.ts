@@ -72,6 +72,35 @@ class ContentUtils {
     return tokenSet
   }
 
+  html2text(html: string): string {
+    //console.log("got html", html)
+    const text = convert(html, {
+      wordwrap: 130,
+    })
+    //console.log('got text', text)
+    const text2 = text.replace(/\[[^\]].*/g, '').replaceAll('*', '')
+    //console.log("got text2", text2)
+    const tokens = text2
+      .replaceAll('\\n', ' ')
+      .replaceAll('[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}', ' ')
+      .replaceAll('[\u00AD\u002D\u2011]', ' ')
+      .replaceAll('\n', ' ')
+      .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>»«{}\[\]\\\/]/gi, ' ')
+    //.split(' ')
+    // console.log("got token", tokens)
+    // let res = ''
+    // const tokenSet = new Set()
+    // tokens.forEach((t: string) => {
+    //   if (t.length >= 4 && t.length <= 24) {
+    //     res += t + ' '
+    //     tokenSet.add(t.toLowerCase())
+    //   }
+    // })
+    // // console.log("got token2", tokenSet)
+    // return tokenSet
+    return tokens
+  }
+
   async imageUrlToBase64(url: string) {
     const data = await fetch(url)
     const blob = await data.blob()

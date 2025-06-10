@@ -203,7 +203,9 @@
 
     <!-- place QPageSticky at end of page -->
     <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
-      <FirstToolbarHelper2 :title="'Project ' + useTabsetsStore().currentTabsetName || 'Tabsets'" />
+      <FirstToolbarHelper2
+        :element="'contextmenu'"
+        :title="'Project ' + useTabsetsStore().currentTabsetName || 'Tabsets'" />
     </q-page-sticky>
   </q-page>
 </template>
