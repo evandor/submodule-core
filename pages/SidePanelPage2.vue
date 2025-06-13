@@ -315,6 +315,14 @@ const onMessageListener = (message: any) => {
     console.log('refresh-store message received')
     const tabsetId = useTabsetsStore().getCurrentTabset!.id
     useTabsetService().reloadTabset(tabsetId, 'SidePanelPage2')
+  } else if (message.name === 'progress-indicator') {
+    if (message.percent) {
+      useUiStore().setProgress(message.percent, message.label)
+    }
+    if (message.status === 'done') {
+      useUiStore().stopProgress()
+    }
+    //sendResponse("ui store progress set to " + uiStore.progress)
   } else {
     console.log('got unmatched message', message)
   }

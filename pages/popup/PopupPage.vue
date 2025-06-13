@@ -226,19 +226,69 @@ watchEffect(() => {
     //console.log('articleContent', articleContent)
     text.value = articleContent
 
+    console.log(':::', text.value)
     if (useFeaturesStore().hasFeature(FeatureIdent.AI) && text.value && text.value.trim().length > 10) {
-      //classification(text.value).then((res: any) => console.log('hier!!!', res))
-      try {
-        // @ts-expect-error xxx
-        Summarizer.create().then((summarizer: any) => {
-          summarizer.summarize(text.value).then((results: string) => {
-            console.log(results)
-            text.value = results
-          })
-        })
-      } catch (e) {
-        console.log('error with language detection')
+      const message = {
+        action: 'classify',
+        text: text.value,
       }
+
+      // Send this message to the service worker.
+      chrome.runtime.sendMessage(message, (response) => {
+        // Handle results returned by the service worker (`background.js`) and update the popup's UI.
+        //outputElement.innerText = JSON.stringify(response, null, 2);
+
+        console.log('====>', response)
+      })
+
+      // const data = {
+      //   text: text.value,
+      //   candidates: ['news'],
+      // }
+      // console.log('about to apply KI logic on meta description...', data)
+      // //sendMsg('zero-shot-classification', data)
+      //
+      // chrome.runtime.sendMessage(
+      //   {
+      //     name: 'zero-shot-classification',
+      //     data: data,
+      //   },
+      //   (callback: any) => {
+      //     console.log('got callback!', callback)
+      //     if (chrome.runtime.lastError) {
+      //       /* ignore */
+      //     }
+      //     const tabsetScores: object[] = []
+      //     // if (callback.scores) {
+      //     //   callback.scores.forEach((score: number, index: number) => {
+      //     //     console.log("got score", score)
+      //     //     if (score > .1) {
+      //     //       tabsetScores.push({
+      //     //         score: score,
+      //     //         candidateName: candidates[index].name,
+      //     //         candidateId: candidates[index].id
+      //     //       })
+      //     //     }
+      //     //   })
+      //     //   // force reload in other pages (like CurrentTabElementHelper)
+      //     //   // TODO check
+      //     //   //useTabsStore().setCurrentChromeTab(tab)
+      //     // }
+      //   },
+      // )
+
+      // classification(text.value).then((res: any) => console.log('hier!!!', res))
+      // try {
+      //   // @ts-expect-error xxx
+      //   Summarizer.create().then((summarizer: any) => {
+      //     summarizer.summarize(text.value).then((results: string) => {
+      //       console.log(results)
+      //       text.value = results
+      //     })
+      //   })
+      // } catch (e) {
+      //   console.log('error with language detection')
+      // }
     }
   }
 })

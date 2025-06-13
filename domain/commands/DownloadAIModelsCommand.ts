@@ -5,6 +5,15 @@ export class DownloadAIModelsCommand implements Command<boolean> {
   constructor() {}
 
   async execute(): Promise<ExecutionResult<boolean>> {
+    console.log('about to send msg init-ai-module')
+    chrome.runtime.sendMessage({ name: 'init-ai-module' }, (callback: any) => {
+      if (chrome.runtime.lastError) {
+        console.warn('got error', chrome.runtime.lastError)
+      } else {
+        console.log('callback: ', callback)
+      }
+    })
+
     if (!('LanguageDetector' in self)) {
       console.log('no language detector available')
       return Promise.reject('LanguageDetector not available')
