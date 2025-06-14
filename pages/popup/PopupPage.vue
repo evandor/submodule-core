@@ -20,7 +20,7 @@
           <div class="col">
             {{ browserTab?.title }}
           </div>
-          <div class="col ellipsis-3-lines text-body2">{{ language }}: {{ description }}</div>
+          <div class="col ellipsis-3-lines text-body2">{{ description }}</div>
         </div>
       </div>
     </div>
@@ -226,21 +226,35 @@ watchEffect(() => {
     //console.log('articleContent', articleContent)
     text.value = articleContent
 
-    console.log(':::', text.value)
     if (useFeaturesStore().hasFeature(FeatureIdent.AI) && text.value && text.value.trim().length > 10) {
-      const message = {
-        action: 'classify',
-        text: text.value,
+      console.log(':::', text.value)
+      const data = {
+        text: 'ich bin ein kurzer Text mit Nachrichen',
+        candidates: ['news', 'shopping'],
       }
 
-      // Send this message to the service worker.
-      chrome.runtime.sendMessage(message, (response) => {
-        // Handle results returned by the service worker (`background.js`) and update the popup's UI.
-        //outputElement.innerText = JSON.stringify(response, null, 2);
-
-        console.log('====>', response)
-      })
-
+      chrome.runtime.sendMessage(
+        {
+          name: 'zero-shot-classification',
+          data: data,
+        },
+        (callback: any) => {
+          console.log('got callback!!', callback)
+          if (chrome.runtime.lastError) {
+            /* ignore */
+          }
+          if (callback) {
+            const labels: string[] = callback['labels'] as string[]
+            const scores: number[] = callback['scores'] as number[]
+            console.log('adding tags for ', labels, scores)
+            labels.forEach((label: string, index: number) => {
+              if (scores[index]! >= 0.5) {
+                tags.value.push(label)
+              }
+            })
+          }
+        },
+      )
       // const data = {
       //   text: text.value,
       //   candidates: ['news'],
@@ -276,7 +290,6 @@ watchEffect(() => {
       //     // }
       //   },
       // )
-
       // classification(text.value).then((res: any) => console.log('hier!!!', res))
       // try {
       //   // @ts-expect-error xxx
@@ -299,6 +312,37 @@ watchEffect(() => {
   if (metas['description' as keyof object]) {
     description.value = metas['description' as keyof object] as string | undefined
     if (useFeaturesStore().hasFeature(FeatureIdent.AI) && description.value && description.value.trim().length > 10) {
+      console.log(':::', description.value)
+      const data = {
+        text: 'ich bin ein Text',
+        candidates: ['news', 'shopping'],
+      }
+
+      chrome.runtime.sendMessage(
+        {
+          name: 'zero-shot-classification',
+          data: data,
+        },
+        (callback: any) => {
+          console.log('got callback!!', callback)
+          if (chrome.runtime.lastError) {
+            /* ignore */
+          }
+          if (callback) {
+            const labels: string[] = callback['labels'] as string[]
+            const scores: number[] = callback['scores'] as number[]
+            console.log('adding tags for ', labels, scores)
+            if (labels.length > 0) {
+              labels.forEach((label: string, index: number) => {
+                if (scores[index]! >= 0.5) {
+                  tags.value.push(label)
+                }
+              })
+            }
+          }
+        },
+      )
+
       try {
         // @ts-expect-error xxx
         LanguageDetector.create().then((detector: any) => {
