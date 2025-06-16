@@ -332,7 +332,7 @@ watchEffect(() => {
             const labels: string[] = callback['labels'] as string[]
             const scores: number[] = callback['scores'] as number[]
             console.log('adding tags for ', labels, scores)
-            if (labels.length > 0) {
+            if (labels && labels.length > 0) {
               labels.forEach((label: string, index: number) => {
                 if (scores[index]! >= 0.5) {
                   tags.value.push(label)
