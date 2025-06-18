@@ -3,27 +3,22 @@
   <q-toolbar class="q-pa-none q-pl-none q-pr-none q-pb-none" :style="offsetTop()" style="border: 0 solid black">
     <q-toolbar-title>
       <div v-if="showWatermark" id="watermark">{{ watermark }}</div>
-      <div class="row q-ma-none q-pa-none" v-if="useUiStore().overlapIndicator">
-        <q-linear-progress :value="overlap" size="2px" :style="overlapStyle(uiDensity)">
-          <q-tooltip class="tooltip-small">{{ overlapTooltip }}</q-tooltip>
-        </q-linear-progress>
-      </div>
       <div class="row">
-        <div class="col-1 q-ma-none q-pa-none q-mr-md q-mt-xs" style="border: 0 solid red; max-width: 32px">
+        <div class="col-2 q-ma-none q-pa-none" style="border: 0 solid red">
           <q-btn
             icon="open_in_new"
             flat
             :disabled="props.disable || sidepanelEnabled"
             size="md"
             style="max-width: 32px"
-            @click="openSidepanel()"
+            @click="openBrowserSidepanel()"
             class="cursor-pointer" />
         </div>
-        <div class="col-9 q-ma-none q-pa-none q-px-sm text-center" style="border: 0 solid red">
+        <div class="col-8 q-ma-none q-pa-none q-px-sm text-center" style="border: 0 solid red">
           <div class="col-12 text-subtitle1">
             <div class="q-ml-xs q-mt-none">
               <div class="text-bold ellipsis">
-                <template v-if="currentTabset">
+                <template v-if="currentTabset && mode == 'default'">
                   <q-select
                     :style="tabsetColorStyle()"
                     filled
@@ -58,6 +53,16 @@
                     </template>
                   </q-select>
                 </template>
+                <template v-else-if="mode == 'add-tabset'">
+                  <transition appear enter-active-class="animated fadeInDown" leave-active-class="animated fadeInUp">
+                    <q-input
+                      @blur="blurNewTabset()"
+                      autofocus
+                      v-model="newTabsetName"
+                      dense
+                      label="Add new Collection" />
+                  </transition>
+                </template>
                 <template v-else>
                   <q-spinner color="primary" size="1em" />
                 </template>
@@ -67,21 +72,30 @@
         </div>
 
         <div
-          class="col text-subtitle1 text-right q-ma-none q-pa-none q-pr-sm q-pt-xs"
+          class="col text-subtitle1 text-right q-ma-none q-pa-none"
           v-if="!useUiStore().appLoading"
           style="border: 0 solid green">
           <slot name="iconsRight">
             <q-btn
-              padding="xs"
-              fab-mini
-              icon="add"
+              v-if="mode === 'default'"
+              label="Add"
+              :disable="props.tab !== undefined && props.tab.url === props.url"
               color="warning"
               unelevated
-              size="12px"
-              class="cursor-pointer q-ma-none q-pa-none">
-              <q-tooltip class="tooltip-small" style="width: 130px" anchor="top left" :delay="800"
-                >Click to show options</q-tooltip
-              >
+              size="15px"
+              @click="addTab()"
+              class="cursor-pointer q-px-md">
+            </q-btn>
+            <q-btn
+              v-if="mode === 'add-tabset'"
+              :disable="newTabsetName?.trim().length == 0"
+              icon="o_keyboard_return"
+              color="warning"
+              unelevated
+              size="15px"
+              @click="addTabset()"
+              @keydown.enter.prevent="addTabset()"
+              class="cursor-pointer q-px-md">
             </q-btn>
           </slot>
         </div>
@@ -91,26 +105,28 @@
 </template>
 
 <script lang="ts" setup>
-import { useQuasar } from 'quasar'
+import { uid, useQuasar } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { SidePanelViews } from 'src/app/models/SidePanelViews'
-import { ExecutionResult } from 'src/core/domain/ExecutionResult'
+import { ExecutionFailureResult, ExecutionResult } from 'src/core/domain/ExecutionResult'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
+import { useUtils } from 'src/core/services/Utils'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
-import { useActionHandlers } from 'src/tabsets/actionHandling/ActionHandlers'
-import { ActionHandlerButtonClickedHolder } from 'src/tabsets/actionHandling/model/ActionHandlerButtonClickedHolder'
+import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
+import { CreateTabsetCommand } from 'src/tabsets/commands/CreateTabsetCommand'
 import { SelectTabsetCommand } from 'src/tabsets/commands/SelectTabsetCommand'
 import DeleteTabsetDialog from 'src/tabsets/dialogues/DeleteTabsetDialog.vue'
 import EditTabsetDialog from 'src/tabsets/dialogues/EditTabsetDialog.vue'
 import NewTabsetDialog from 'src/tabsets/dialogues/NewTabsetDialog.vue'
+import { SaveOrReplaceResult } from 'src/tabsets/models/SaveOrReplaceResult'
+import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset, TabsetStatus, TabsetType } from 'src/tabsets/models/Tabset'
-import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { useWindowsStore } from 'src/windows/stores/windowsStore'
-import { inject, ref, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -123,13 +139,14 @@ type SelectOption = {
 }
 
 const { t } = useI18n({ useScope: 'global' })
+const { openSidepanel } = useUtils()
 
-const emits = defineEmits(['tabset-changed'])
+const emits = defineEmits(['tabset-changed', 'add-tabset'])
 
 const $q = useQuasar()
 const router = useRouter()
 
-type Props = { disable?: boolean }
+type Props = { tab: Tab | undefined; url: string | undefined; disable?: boolean }
 
 const props = withDefaults(defineProps<Props>(), {
   disable: false,
@@ -139,7 +156,7 @@ const showFilter = ref(false)
 const windowLocation = ref('')
 const annimateNewTabsetButton = ref(false)
 const currentTabset = ref<Tabset | undefined>(undefined)
-const currentChromeTab = ref<chrome.tabs.Tab | undefined>(undefined)
+const currentBrowserTab = ref<chrome.tabs.Tab | undefined>(undefined)
 const overlap = ref(0.5)
 const overlapTooltip = ref('')
 const showWatermark = ref(false)
@@ -152,27 +169,11 @@ const tabsetSelectionModel = ref<SelectOption | undefined>(undefined)
 const tabsetSelectionOptions = ref<SelectOption[]>([])
 const stashedTabs = ref(false)
 
-let showSearchAction = !useUiStore().quickAccessFor('search')
-
-const uiDensity = inject('ui.density')
+const mode = ref<'default' | 'add-tabset'>('default')
+const newTabsetName = ref<string | undefined>(undefined)
+const addTabsetRef = ref<HTMLElement>(null as unknown as HTMLElement)
 
 windowLocation.value = window.location.href
-
-const redirectOnEmpty = () => {
-  setTimeout(() => {
-    // redirect to welcome page if there are not tabsets
-    if (useTabsetsStore().tabsets.size === 0) {
-      console.log('redirecting to /sidepanel/welcome')
-      router.push('/sidepanel/welcome')
-    } else {
-      console.log('setting current tabset to first one')
-      const firstTabset = [...useTabsetsStore().tabsets.values()][0]!
-      useTabsetsStore().selectCurrentTabset(firstTabset.id)
-    }
-  }, 1000)
-}
-
-// redirectOnEmpty()
 
 watchEffect(() => {
   tabsets.value = [...useTabsetsStore().tabsets.values()] as Tabset[]
@@ -225,7 +226,8 @@ watchEffect(() => {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
   }
 
-  tabsetSelectionOptions.value.push({ label: 'Mange Tabsets', value: 'popup-manage-tabsets', icon: 'o_edit' })
+  tabsetSelectionOptions.value.push({ label: 'Add Collection', value: 'add-tabset', icon: 'o_add' })
+  tabsetSelectionOptions.value.push({ label: 'Manage Tabsets', value: 'popup-manage-tabsets', icon: 'o_edit' })
 
   if (stashedTabs.value) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -257,14 +259,9 @@ watchEffect(() => {
   }
 })
 
-const overlapStyle = (d: any) => {
-  const res = 'color: hsl(' + Math.round(120 * overlap.value) + ' 80% 50%); position: absolute; top: 0px;'
-  return res + (d === 'dense' ? '' : 'position: absolute; top:-15px')
-}
-
 watchEffect(() => {
   const windowId = useWindowsStore().currentBrowserWindow?.id || 0
-  currentChromeTab.value = useTabsStore2().getCurrentChromeTab(windowId) || useTabsStore2().currentChromeTab
+  currentBrowserTab.value = useTabsStore2().getCurrentChromeTab(windowId) || useTabsStore2().currentChromeTab
 })
 
 watchEffect(() => {
@@ -279,20 +276,6 @@ watchEffect(() => {
   showWatermark.value = useUiStore().getWatermark().length > 0
   watermark.value = useUiStore().getWatermark()
 })
-
-watchEffect(() => {
-  showSearchAction = !useUiStore().quickAccessFor('search') && useTabsetsStore().allTabsCount > 0
-})
-
-function getActiveFolder(tabset: Tabset) {
-  return tabset.folderActive ? useTabsetService().findFolder([tabset], tabset.folderActive) : undefined
-}
-
-const handleButtonClicked = async (tabset: Tabset, args: ActionHandlerButtonClickedHolder, folder?: Tabset) => {
-  const useFolder: Tabset | undefined = folder ? folder : getActiveFolder(tabset)
-  console.log(`button clicked: tsId=${tabset.id}, folderId=${useFolder?.id}, args=...`)
-  await useActionHandlers(undefined).handleClick(tabset, currentChromeTab.value!, args, useFolder)
-}
 
 const offsetTop = () => ($q.platform.is.capacitor || $q.platform.is.cordova ? 'margin-top:40px;' : '')
 
@@ -335,6 +318,10 @@ const switchTabset = async (tabset: object) => {
     router.push('/popup/tabsets')
     return
   }
+  if (tsId === 'add-tabset') {
+    mode.value = 'add-tabset'
+    return
+  }
   if (tsId === 'delete-tabset' && currentTabset.value) {
     $q.dialog({
       component: DeleteTabsetDialog,
@@ -368,10 +355,6 @@ const tabsetSelectLabel = () => {
   return 'Tabset'
 }
 
-const delayedRemoval = () => {
-  setTimeout(() => (showSearchAction = false), 500)
-}
-
 const tabsetColorStyle = () => {
   return currentTabset.value && currentTabset.value.color
     ? 'border-left: 3px solid ' +
@@ -387,19 +370,67 @@ chrome.runtime.getContexts({}, (ctxs: object[]) => {
   sidepanelEnabled.value = ctxs.filter((c: object) => 'SIDE_PANEL' === c['contextType' as keyof object]).length > 0
   // console.log('sidepanelEnabled', sidepanelEnabled.value)
 })
-const openSidepanel = async () => {
-  if (chrome.sidePanel) {
-    console.log('setting sidepanel to open')
-    const ts: chrome.tabs.Tab[] = await chrome.tabs.query({ active: true, currentWindow: true })
-    // @ts-expect-error TODO
-    await chrome.sidePanel.open({ windowId: ts[0].windowId })
-    await chrome.sidePanel
-      .setOptions({
-        path: 'www/index.html',
-        enabled: true,
+
+const openBrowserSidepanel = async () => {
+  openSidepanel().then(() => {
+    sidepanelEnabled.value = !sidepanelEnabled.value
+  })
+  // if (chrome.sidePanel) {
+  //   console.log('setting sidepanel to open')
+  //   const ts: chrome.tabs.Tab[] = await chrome.tabs.query({ active: true, currentWindow: true })
+  //   // @ts-expect-error TODO
+  //   await chrome.sidePanel.open({ windowId: ts[0].windowId })
+  //   await chrome.sidePanel
+  //     .setOptions({
+  //       path: 'www/index.html',
+  //       enabled: true,
+  //     })
+  //     .then(() => {
+  //       sidepanelEnabled.value = !sidepanelEnabled.value
+  //     })
+  // }
+}
+const addTab = () => {
+  console.log('hier', currentBrowserTab.value)
+  if (currentBrowserTab.value) {
+    const newTab: Tab = new Tab(uid(), currentBrowserTab.value)
+    useCommandExecutor()
+      .executeFromUi(new AddTabToTabsetCommand(newTab, currentTabset.value)) //, props.folder?.id))
+      .then((res: ExecutionResult<any>) => {
+        console.log('res', typeof res)
+        if (res instanceof ExecutionFailureResult) {
+        } else {
+          setTimeout(() => {
+            window.close()
+          }, 2000)
+        }
       })
-      .then(() => {
-        sidepanelEnabled.value = !sidepanelEnabled.value
+    //window.close()
+  }
+  //handleError('current browser tab not set!')
+}
+
+const blurNewTabset = () => {
+  setTimeout(() => {
+    if (!newTabsetName.value || newTabsetName.value.length == 0) {
+      mode.value = 'default'
+      tabsetSelectionModel.value = {
+        label: currentTabset.value?.name || '?',
+        value: currentTabset.value?.id || '-',
+      }
+    }
+  }, 500)
+}
+
+const addTabset = () => {
+  console.log('adding tabset', newTabsetName.value)
+  if (newTabsetName.value && newTabsetName.value.trim().length > 0) {
+    useCommandExecutor()
+      .executeFromUi(new CreateTabsetCommand(newTabsetName.value))
+      .then((res: ExecutionResult<SaveOrReplaceResult>) => {
+        newTabsetName.value = undefined
+        mode.value = 'default'
+        useTabsetsStore().selectCurrentTabset(res.result.tabset.id)
       })
   }
 }

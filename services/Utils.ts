@@ -360,6 +360,23 @@ export function useUtils() {
     return JSON.stringify(obj, replacer, 2)
   }
 
+  async function openSidepanel(): Promise<any> {
+    if (chrome.sidePanel) {
+      console.log('setting sidepanel to open')
+
+      const ts: chrome.tabs.Tab[] = await chrome.tabs.query({ active: true, currentWindow: true })
+      // @ts-expect-error TODO
+      await chrome.sidePanel.open({ windowId: ts[0].windowId })
+      // await chrome.sidePanel.open({ tabId: tabId })
+
+      return await chrome.sidePanel.setOptions({
+        path: 'www/index.html',
+        enabled: true,
+      })
+    }
+    return Promise.reject('chrome.sidePanel not defined')
+  }
+
   return {
     formatDate,
     createDataTestIdentifier,
@@ -382,5 +399,6 @@ export function useUtils() {
     formatReadingTime,
     closeWindow,
     getMinimalJSON,
+    openSidepanel,
   }
 }

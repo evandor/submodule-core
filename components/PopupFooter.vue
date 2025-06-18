@@ -1,17 +1,33 @@
 <template>
   <q-footer class="q-pa-none q-mt-sm darkInDarkMode brightInBrightMode" style="border-top: 1px solid lightgrey">
-    <div class="row fit q-ma-none q-pa-none">
-      <div class="col-6">
-        <q-btn v-if="!sidepanelEnabled" label="open sidepanel" @click="setSidepanel(true)" dense flat />
-        <!--        <q-btn v-else label="close sidepanel" @click="setSidepanel(false)" dense flat />-->
-      </div>
-      <div class="col text-right" v-if="useUiStore().appLoading">&nbsp;</div>
-      <div v-else class="col text-right">*</div>
+    <template v-if="checkToasts()">
+      <Transition name="fade" appear>
+        <q-banner
+          inline-actions
+          dense
+          rounded
+          style="font-size: smaller; text-align: center"
+          :class="toastBannerClass()">
+          {{ useUiStore().toasts[0]?.msg }}
+          <template v-slot:action v-if="useUiStore().toasts[0]?.actions[0]">
+            <q-btn
+              flat
+              :label="useUiStore().toasts[0]!.actions[0].label"
+              @click="useUiStore().callUndoActionFromCurrentToast()" />
+          </template>
+        </q-banner>
+      </Transition>
+    </template>
+
+    <div v-else class="row fit q-ma-none q-pa-none">
+      <div class="col-6"></div>
+      <div class="col text-right"></div>
     </div>
   </q-footer>
 </template>
 
 <script setup lang="ts">
+import { ToastType } from 'src/core/models/Toast'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref } from 'vue'
 
@@ -40,20 +56,40 @@ if (chrome.sidePanel) {
   // // })
 }
 
-const setSidepanel = async (open: boolean) => {
-  if (chrome.sidePanel) {
-    console.log('setting sidepanel to ', open)
-    const ts: chrome.tabs.Tab[] = await chrome.tabs.query({ active: true, currentWindow: true })
-    // @ts-expect-error TODO
-    await chrome.sidePanel.open({ windowId: ts[0].windowId })
-    await chrome.sidePanel
-      .setOptions({
-        path: 'www/index.html',
-        enabled: open,
-      })
-      .then(() => {
-        sidepanelEnabled.value = !sidepanelEnabled.value
-      })
+const checkToasts = () => {
+  if (useUiStore().toasts.length > 0) {
+    const useDelay = 3000
+    useUiStore().delayedToastRemoval(useDelay)
+    // const oldShowButton = showSuggestionButton.value
+    // const oldDoShowButton = doShowSuggestionButton.value
+    // transitionGraceTime.value = true
+    // showSuggestionButton.value = false
+    // doShowSuggestionButton.value = false
+    // setTimeout(() => {
+    //   if (useUiStore().toasts.length === 0) {
+    //     // only if all toasts are gone
+    //     transitionGraceTime.value = false
+    //     showSuggestionButton.value = oldShowButton
+    //     doShowSuggestionButton.value = oldDoShowButton
+    //   }
+    // }, useDelay + 1100) // must be higher than css value in fade-leave-active
+
+    return true
+  }
+  return false
+}
+
+const toastBannerClass = () => {
+  const defaults = ' text-white q-py-none'
+  switch (useUiStore().toasts[0]?.type) {
+    case ToastType.INFO:
+      return 'bg-positive' + defaults
+    case ToastType.WARNING:
+      return 'bg-warning' + defaults
+    case ToastType.ERROR:
+      return 'bg-negative' + defaults
+    default:
+      return 'bg-negative' + defaults
   }
 }
 </script>

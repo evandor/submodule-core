@@ -1,6 +1,9 @@
 <template>
   <!-- PopupPage -->
-  <q-page class="darkInDarkMode brightInBrightMode" :style="paddingTop" style="min-width: 400px; max-height: 700px">
+  <q-page
+    class="darkInDarkMode brightInBrightMode"
+    :style="paddingTop"
+    style="min-width: 400px; min-height: 420px; max-height: 700px">
     <offline-info />
 
     <div class="wrap" v-if="useUiStore().appLoading">
@@ -15,7 +18,7 @@
         <q-img v-if="thumbnail" :src="thumbnail" no-native-menu />
         <q-img v-else :src="browserTab?.favIconUrl" no-native-menu />
       </div>
-      <div class="col q-ma-sm">
+      <div class="col q-mx-sm">
         <div class="column">
           <div class="col">
             {{ browserTab?.title }}
@@ -25,39 +28,40 @@
       </div>
     </div>
 
-    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
-      <div class="col-2 q-mx-sm text-right text-caption">URL</div>
-      <div class="col q-mx-md">
-        <q-input v-model="url" type="text" autogrow dense class="text-body2" filled></q-input>
+    <div class="row q-my-xs" v-if="tab && tab.url !== url">
+      <div class="col text-right text-caption text-grey-8 q-mx-md">
+        {{ timeInfoLabel }}
       </div>
     </div>
 
-    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
-      <div class="col-2 q-mx-sm text-right text-caption">Comment</div>
-      <div class="col q-mx-md">
-        <q-input v-model="comment" type="text" autogrow dense class="text-body2" filled></q-input>
-      </div>
-    </div>
+    <PopupInputLine title="URL">
+      <q-input v-model="url" type="text" autogrow dense class="text-body2" filled></q-input>
+    </PopupInputLine>
 
-    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
-      <div class="col-2 q-mx-sm text-right text-caption">Tags</div>
-      <div class="col q-mx-md">
-        <q-select
-          input-class="q-ma-none q-pa-none"
-          borderless
-          dense
-          options-dense
-          v-model="tags"
-          use-input
-          use-chips
-          multiple
-          hide-dropdown-icon
-          input-debounce="0"
-          new-value-mode="add-unique"
-          @update:model-value="(val) => updatedTags(val)" />
-      </div>
-    </div>
-    <div class="row q-my-xs darkInDarkMode brightInBrightMode">
+    <PopupInputLine title="Comment">
+      <q-input v-model="comment" type="text" autogrow dense class="text-body2" filled></q-input>
+    </PopupInputLine>
+
+    <PopupInputLine title="Tags">
+      <q-select
+        input-class="q-ma-none q-pa-none"
+        borderless
+        filled
+        dense
+        options-dense
+        v-model="tags"
+        use-input
+        use-chips
+        multiple
+        hide-dropdown-icon
+        input-debounce="0"
+        new-value-mode="add-unique"
+        @update:model-value="(val) => updatedTags(val)" />
+    </PopupInputLine>
+
+    <PopupInputLine title="Collection"> </PopupInputLine>
+
+    <div class="row q-my-xs darkInDarkMode brightInBrightMode" v-if="false">
       <div class="col-2 q-mx-sm text-right text-caption">Actions</div>
       <div class="col q-mx-md">
         <q-btn icon="o_article" size="sm" flat @click="openAsArticle()" />
@@ -75,6 +79,8 @@
         </q-btn>
       </div>
     </div>
+
+    <PopupToolbar @tabset-changed="tabsetChanged()" :tab :url :disable="false" />
 
     <template v-if="useSettingsStore().has('DEBUG_MODE')">
       <div class="row q-pa-none q-ma-none fit">
@@ -95,26 +101,25 @@
       </div>
     </template>
 
-    <q-page-sticky
-      expand
-      position="top"
-      class="darkInDarkMode brightInBrightMode"
-      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
-      <PopupToolbar @tabset-changed="tabsetChanged()" :disable="false" />
-    </q-page-sticky>
+    <!--    <q-page-sticky-->
+    <!--      expand-->
+    <!--      position="top"-->
+    <!--      class="darkInDarkMode brightInBrightMode"-->
+    <!--      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">-->
+    <!--      <PopupToolbar @tabset-changed="tabsetChanged()" :tab :url :disable="false" />-->
+    <!--    </q-page-sticky>-->
   </q-page>
 </template>
 
 <script lang="ts" setup>
 import _ from 'lodash'
-import { LocalStorage } from 'quasar'
+import { date, LocalStorage } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
-// import { classification } from 'src/core/hf/PipelineSingleton'
+import PopupInputLine from 'src/core/pages/popup/PopupInputLine.vue'
 import PopupToolbar from 'src/core/pages/popup/PopupToolbar.vue'
 import { useNavigationService } from 'src/core/services/NavigationService'
-import { useUtils } from 'src/core/services/Utils'
 import { useSettingsStore } from 'src/core/stores/settingsStore'
 import ContentUtils from 'src/core/utils/ContentUtils'
 import Analytics from 'src/core/utils/google-analytics'
@@ -131,10 +136,6 @@ import { useAuthStore } from 'stores/authStore'
 import { onMounted, provide, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
-const { inBexMode } = useUtils()
-
-const router = useRouter()
-
 const showStartingHint = ref(true)
 const thumbnail = ref<string | undefined>(useTabsStore2().currentChromeTab?.favIconUrl)
 const tabsets = ref<Tabset[]>([])
@@ -142,7 +143,7 @@ const currentTabset = ref<Tabset | undefined>(undefined)
 const browserTab = ref<chrome.tabs.Tab | undefined>(undefined)
 const tab = ref<Tab | undefined>(undefined)
 const tabsetsLastUpdate = ref(0)
-const paddingTop = ref('padding-top: 80px')
+const paddingTop = ref('padding-top: 10px')
 const uiDensity = ref<UiDensity>(useUiStore().uiDensity)
 const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
@@ -154,6 +155,7 @@ const url = ref<string | undefined>(undefined)
 const description = ref<string | undefined>(undefined)
 
 const language = ref<string | undefined>(undefined)
+const timeInfoLabel = ref('')
 
 provide('ui.density', uiDensity)
 
@@ -212,6 +214,9 @@ watchEffect(() => {
     containedInTsCount.value = tabsets.length
     if (currentTabset.value && browserTab.value && browserTab.value.url) {
       tab.value = currentTabset.value.tabs.find((t: Tab) => t.url === browserTab.value!.url)
+      if (tab.value) {
+        timeInfoLabel.value = 'Saved ' + date.formatDate(tab.value.created, 'DD.MM.YY HH:mm')
+      }
     } else {
       //var t = tabsets.map((ts: Tabset) => ts.tabs)
     }
@@ -227,7 +232,7 @@ watchEffect(() => {
     text.value = articleContent
 
     if (useFeaturesStore().hasFeature(FeatureIdent.AI) && text.value && text.value.trim().length > 10) {
-      console.log(':::', text.value)
+      console.log('::::', text.value)
       const data = {
         text: 'ich bin ein kurzer Text mit Nachrichen',
         candidates: ['news', 'shopping'],
@@ -377,7 +382,7 @@ watchEffect(() => {
       .getThumbnailFor(tab.value.id, useAuthStore().user.uid)
       .then((data) => {
         if (data) {
-          console.log('setting thumbnail to ', data)
+          //console.log('setting thumbnail to ', data)
           thumbnail.value = data
         } else {
           //thumbnail.value = ''
