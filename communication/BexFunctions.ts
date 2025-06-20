@@ -5,6 +5,7 @@ import { useContentService } from 'src/content/services/ContentService'
 import { useContentStore } from 'src/content/stores/contentStore'
 import { BexEvent } from 'src/core/services/Utils'
 import ContentUtils from 'src/core/utils/ContentUtils'
+import { PageData } from 'src/tabsets/models/PageData'
 import { Tab } from 'src/tabsets/models/Tab'
 import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -37,30 +38,30 @@ class BexFunctions {
     from: string
     to: string
     event: string
-    payload: object
+    payload: PageData
   }) => {
-    console.log(`[BEX-APP] ${event} <<< html#:${((payload['html' as keyof object] as string) || '').length}`)
-
-    const theUrl = payload['url' as keyof object] as string
+    console.log(
+      `[BEX-APP] ${event} <<< html#:${payload.html.length}, metas#:${Object.keys(payload.metas).length}, url:${payload.url.length > 25 ? payload.url.substring(0, 22) + '...' : payload.url}`,
+    )
 
     // updating (transient) content in contentStore
-    useContentStore().setCurrentTabUrl(theUrl)
-    useContentStore().setCurrentTabContent(payload['html' as keyof object])
-    useContentStore().setCurrentTabMetas(payload['metas' as keyof object])
+    useContentStore().setCurrentTabUrl(payload.url)
+    useContentStore().setCurrentTabContent(payload.html)
+    useContentStore().setCurrentTabMetas(payload.metas)
 
     // update (persistent) content in content db if exists
-    const existing: ContentItem | undefined = await useContentService().getContentFor(theUrl)
+    const existing: ContentItem | undefined = await useContentService().getContentFor(payload.url)
     if (existing) {
       const tokens = ContentUtils.html2tokens(payload['html' as keyof object] || '')
       useContentService()
-        .saveContent(existing.id, theUrl, [...tokens].join(' '), payload['metas' as keyof object], 'title...', [])
+        .saveContent(existing.id, payload.url, [...tokens].join(' '), payload['metas' as keyof object], 'title...', [])
         .catch((err: any) => console.log('err', err))
     }
 
     // update existing tabs with this url
     const newTabReferences: TabReference[] = useContentStore().getCurrentTabReferences
     useTabsetsStore()
-      .tabsForUrl(theUrl)
+      .tabsForUrl(payload.url)
       .forEach((tabAndTsId: TabAndTabsetId) => {
         const ts = useTabsetsStore().getTabset(tabAndTsId.tabsetId)
         if (ts) {

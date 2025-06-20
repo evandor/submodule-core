@@ -21,15 +21,27 @@
 
     <div v-else class="row fit q-ma-none q-pa-none">
       <div class="col-6"></div>
-      <div class="col text-right"></div>
+      <div class="col text-right">
+        <q-btn
+          v-if="!sidepanelEnabled"
+          icon="open_in_new"
+          flat
+          size="md"
+          style="max-width: 32px"
+          @click="openBrowserSidepanel()"
+          class="cursor-pointer" />
+      </div>
     </div>
   </q-footer>
 </template>
 
 <script setup lang="ts">
 import { ToastType } from 'src/core/models/Toast'
+import { useUtils } from 'src/core/services/Utils'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref } from 'vue'
+
+const { openSidepanel } = useUtils()
 
 const sidepanelEnabled = ref(false)
 
@@ -91,5 +103,12 @@ const toastBannerClass = () => {
     default:
       return 'bg-negative' + defaults
   }
+}
+
+const openBrowserSidepanel = async () => {
+  openSidepanel().then(() => {
+    sidepanelEnabled.value = !sidepanelEnabled.value
+    window.close()
+  })
 }
 </script>

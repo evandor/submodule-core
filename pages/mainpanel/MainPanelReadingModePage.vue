@@ -81,9 +81,10 @@ onMounted(() => {
 
 watchEffect(() => {
   let article: object | undefined = undefined
-  console.log('hier')
   if (!tabId) {
     article = useContentStore().articleSnapshot
+    //article = useContentStore().currentTabArticle
+    console.log('hier', tabId, article)
   } else {
     const res = useTabsetsStore().getTabAndTabsetId(tabId)
     if (res && res.tab) {

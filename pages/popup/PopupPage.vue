@@ -3,15 +3,12 @@
   <q-page
     class="darkInDarkMode brightInBrightMode"
     :style="paddingTop"
-    style="min-width: 400px; min-height: 420px; max-height: 700px">
+    style="min-width: 400px; min-height: 380px; max-height: 700px">
     <offline-info />
 
-    <div class="wrap" v-if="useUiStore().appLoading">
-      <div class="loading">
-        <div class="bounceball q-mr-lg"></div>
-        <div class="text">{{ useUiStore().appLoading }}</div>
-      </div>
-    </div>
+    <PopupInputLine title="Tabsets" class="q-mt-md">
+      <PopupCollectionSelector @tabset-changed="tabsetChanged()" :tab :url />
+    </PopupInputLine>
 
     <div class="row q-ma-sm darkInDarkMode brightInBrightMode">
       <div class="col-2 q-ma-sm">
@@ -28,18 +25,26 @@
       </div>
     </div>
 
-    <div class="row q-my-xs" v-if="tab && tab.url !== url">
+    <div class="row q-my-xs" v-if="tab && tab.url == url">
       <div class="col text-right text-caption text-grey-8 q-mx-md">
         {{ timeInfoLabel }}
       </div>
     </div>
 
-    <PopupInputLine title="URL">
-      <q-input v-model="url" type="text" autogrow dense class="text-body2" filled></q-input>
+    <PopupInputLine title="URL" class="q-mt-md">
+      <q-input
+        v-model="url"
+        type="text"
+        dense
+        filled
+        class="text-body2 ellipsis"
+        :autogrow="urlActive"
+        @click="urlActive = true"
+        @blur="urlActive = false"></q-input>
     </PopupInputLine>
 
-    <PopupInputLine title="Comment">
-      <q-input v-model="comment" type="text" autogrow dense class="text-body2" filled></q-input>
+    <PopupInputLine title="Note">
+      <q-input v-model="note" type="text" autogrow dense class="text-body2" filled></q-input>
     </PopupInputLine>
 
     <PopupInputLine title="Tags">
@@ -59,28 +64,37 @@
         @update:model-value="(val) => updatedTags(val)" />
     </PopupInputLine>
 
-    <PopupInputLine title="Collection"> </PopupInputLine>
-
-    <div class="row q-my-xs darkInDarkMode brightInBrightMode" v-if="false">
-      <div class="col-2 q-mx-sm text-right text-caption">Actions</div>
-      <div class="col q-mx-md">
-        <q-btn icon="o_article" size="sm" flat @click="openAsArticle()" />
+    <div class="row q-my-xs darkInDarkMode brightInBrightMode" style="border: 0 solid blue">
+      <div class="col-2 q-ml-xs q-mt-sm text-right text-caption text-grey-8" style="border: 0 solid red"></div>
+      <div class="col q-mx-md text-right" style="border: 0 solid red">
         <q-btn
-          v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML)"
-          icon="save"
+          style="width: 100px"
           outline
-          size="xs"
-          class="cursor-pointer q-px-md q-mr-sm"
-          color="primary">
-          <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
-          <!--          <q-badge v-if="snapshotsSize > 0" floating color="warning" size="xs" text-color="primary">{{-->
-          <!--            snapshotsSize-->
-          <!--          }}</q-badge>-->
+          label="Add"
+          color="primary"
+          unelevated
+          size="15px"
+          @click="addTab"
+          class="cursor-pointer q-px-md">
         </q-btn>
       </div>
     </div>
 
-    <PopupToolbar @tabset-changed="tabsetChanged()" :tab :url :disable="false" />
+    <PopupInputLine title="Actions" class="q-mt-md" v-if="tab">
+      <q-btn icon="o_article" size="sm" outline @click="openAsArticle()" color="grey-7" class="q-mt-xs" />
+      <q-btn
+        v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML)"
+        icon="save"
+        outline
+        size="xs"
+        class="cursor-pointer q-px-md q-mr-sm"
+        color="primary">
+        <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
+        <!--          <q-badge v-if="snapshotsSize > 0" floating color="warning" size="xs" text-color="primary">{{-->
+        <!--            snapshotsSize-->
+        <!--          }}</q-badge>-->
+      </q-btn>
+    </PopupInputLine>
 
     <template v-if="useSettingsStore().has('DEBUG_MODE')">
       <div class="row q-pa-none q-ma-none fit">
@@ -101,30 +115,33 @@
       </div>
     </template>
 
-    <!--    <q-page-sticky-->
-    <!--      expand-->
-    <!--      position="top"-->
-    <!--      class="darkInDarkMode brightInBrightMode"-->
-    <!--      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">-->
-    <!--      <PopupToolbar @tabset-changed="tabsetChanged()" :tab :url :disable="false" />-->
-    <!--    </q-page-sticky>-->
+    <q-page-sticky
+      expand
+      position="top"
+      class="darkInDarkMode brightInBrightMode"
+      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
+      <PopupToolbar @tabset-changed="tabsetChanged()" :tab :url :disable="false" />
+    </q-page-sticky>
   </q-page>
 </template>
 
 <script lang="ts" setup>
 import _ from 'lodash'
-import { date, LocalStorage } from 'quasar'
+import { date, LocalStorage, uid } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
+import PopupCollectionSelector from 'src/core/pages/popup/PopupCollectionSelector.vue'
 import PopupInputLine from 'src/core/pages/popup/PopupInputLine.vue'
 import PopupToolbar from 'src/core/pages/popup/PopupToolbar.vue'
+import { useCommandExecutor } from 'src/core/services/CommandExecutor'
 import { useNavigationService } from 'src/core/services/NavigationService'
 import { useSettingsStore } from 'src/core/stores/settingsStore'
 import ContentUtils from 'src/core/utils/ContentUtils'
 import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
+import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
 import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset, TabsetStatus } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -143,15 +160,19 @@ const currentTabset = ref<Tabset | undefined>(undefined)
 const browserTab = ref<chrome.tabs.Tab | undefined>(undefined)
 const tab = ref<Tab | undefined>(undefined)
 const tabsetsLastUpdate = ref(0)
-const paddingTop = ref('padding-top: 10px')
+const paddingTop = ref('padding-top: 80px')
 const uiDensity = ref<UiDensity>(useUiStore().uiDensity)
 const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
-const comment = ref('')
+const note = ref('')
 const text = ref<string | undefined>(undefined)
 const tags = ref<string[]>([])
 
+let initialNote = ''
+
 const url = ref<string | undefined>(undefined)
+const urlActive = ref(false)
+
 const description = ref<string | undefined>(undefined)
 
 const language = ref<string | undefined>(undefined)
@@ -177,6 +198,20 @@ onMounted(() => {
 })
 
 watchEffect(() => {
+  if (tab.value && note.value !== initialNote) {
+    timeInfoLabel.value = 'updating...'
+    setTimeout(() => {
+      if (currentTabset.value) {
+        tab.value!.note = note.value
+        tab.value!.updated = new Date().getTime()
+        useTabsetsStore().saveTabset(currentTabset.value)
+        timeInfoLabel.value = 'Updated ' + date.formatDate(tab.value!.updated, 'DD.MM.YY HH:mm')
+      }
+    }, 1000)
+  }
+})
+
+watchEffect(() => {
   showStartingHint.value =
     !useUiStore().appLoading &&
     currentTabset.value?.name === 'My first Tabset' &&
@@ -184,24 +219,7 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  // if (currentTabId && !tab.value) {
-  //   parentChain.value = useTabsetsStore().getParentChainForTabId(currentTabId)
-  //   if (!parentChain.value[1]) {
-  //     tab.value = undefined
-  //     return
-  //   }
-  //   tab.value = parentChain.value[1]
-  //   rootTabset.value = parentChain.value[0][0]
-
-  // if (tab.value.tags.constructor === Array) {
-  //   tags.value = [...new Set(tab.value.tags)]
-  //   Tab.setTags(tab.value, tags.value)
-  // } else {
   tags.value = []
-  // }
-
-  // updateSnapshotSize()
-  //}
 })
 
 watchEffect(() => {
@@ -216,6 +234,8 @@ watchEffect(() => {
       tab.value = currentTabset.value.tabs.find((t: Tab) => t.url === browserTab.value!.url)
       if (tab.value) {
         timeInfoLabel.value = 'Saved ' + date.formatDate(tab.value.created, 'DD.MM.YY HH:mm')
+        initialNote = tab.value.note
+        note.value = tab.value.note
       }
     } else {
       //var t = tabsets.map((ts: Tabset) => ts.tabs)
@@ -226,7 +246,7 @@ watchEffect(() => {
 watchEffect(() => {
   const article = useContentStore().currentTabArticle
   if (article) {
-    //console.log('article', article)
+    console.log('article', article)
     const articleContent = ContentUtils.html2text(article['content' as keyof object])
     //console.log('articleContent', articleContent)
     text.value = articleContent
@@ -475,8 +495,20 @@ const updatedTags = (val: string[]) => {
   }
 }
 
-const openAsArticle = () =>
-  useNavigationService().browserTabFor(chrome.runtime.getURL(`/www/index.html#/mainpanel/readingmode`))
+const openAsArticle = () => {
+  if (tab.value) {
+    useNavigationService().browserTabFor(
+      chrome.runtime.getURL(`/www/index.html#/mainpanel/readingmode/${tab.value.id}`),
+    )
+  }
+}
+const addTab = () => {
+  console.log('hier', browserTab.value)
+  if (browserTab.value) {
+    const newTab: Tab = new Tab(uid(), browserTab.value)
+    useCommandExecutor().executeFromUi(new AddTabToTabsetCommand(newTab, currentTabset.value)) //, props.folder?.id))
+  }
+}
 </script>
 
 <style lang="scss" src="src/pages/css/sidePanelPage2.scss" />

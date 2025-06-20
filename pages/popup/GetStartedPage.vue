@@ -4,23 +4,13 @@
     <offline-info />
 
     <StartingHintPopup @hidden="goto('/popup')" />
-
-    <q-page-sticky
-      expand
-      position="top"
-      class="darkInDarkMode brightInBrightMode"
-      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
-      <FirstToolbarHelper2 element="popup" :disable="true" />
-    </q-page-sticky>
   </q-page>
 </template>
 
 <script lang="ts" setup>
 import { LocalStorage } from 'quasar'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
-import FirstToolbarHelper2 from 'src/core/pages/sidepanel/helper/FirstToolbarHelper2.vue'
 import StartingHintPopup from 'src/core/pages/widgets/StartingHintPopup.vue'
-import { useUtils } from 'src/core/services/Utils'
 import Analytics from 'src/core/utils/google-analytics'
 import { Tab } from 'src/tabsets/models/Tab'
 import { Tabset } from 'src/tabsets/models/Tabset'
@@ -30,8 +20,6 @@ import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { UiDensity, useUiStore } from 'src/ui/stores/uiStore'
 import { onMounted, provide, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-
-const { inBexMode } = useUtils()
 
 const router = useRouter()
 
@@ -47,11 +35,6 @@ const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
 
 provide('ui.density', uiDensity)
-
-function updateOnlineStatus(e: any) {
-  const { type } = e
-  useUiStore().networkOnline = type === 'online'
-}
 
 onMounted(() => {
   Analytics.firePageViewEvent('GetStartedPage', document.location.href)
@@ -86,10 +69,6 @@ watchEffect(() => {
 watchEffect(() => {
   tabsetsLastUpdate.value = useTabsetsStore().lastUpdate
 })
-
-const tabsetChanged = () => {
-  currentTabset.value = useTabsetsStore().getCurrentTabset
-}
 
 const goto = (path: string) => router.push(path)
 </script>
