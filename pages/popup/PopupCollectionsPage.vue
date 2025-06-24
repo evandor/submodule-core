@@ -39,10 +39,12 @@
       </div>
     </div>
 
-    <!-- place QPageSticky at end of page -->
-    <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
-      <SidePanelCollectionsPageToolbar />
-      <SearchToolbarHelper @on-term-changed="(val) => filterTermChanged(val)" />
+    <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode q-ma-none q-ml-md">
+      <PopupToolbar title="Collections">
+        <template v-slot:left>
+          <q-icon name="o_keyboard_return" class="cursor-pointer" @click="router.push('/popup')" />
+        </template>
+      </PopupToolbar>
     </q-page-sticky>
   </q-page>
 </template>
@@ -50,7 +52,6 @@
 <script lang="ts" setup>
 import { Draggable } from '@he-tree/vue'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
-import SidePanelCollectionsPageToolbar from 'src/core/pages/sidepanel/helper/SidePanelCollectionsPageToolbar.vue'
 import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
@@ -60,7 +61,7 @@ import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import '@he-tree/vue/style/default.css'
 import { NodeTreeObject, useTabsetsFunctions } from 'src/core/pages/common/useTabsetsFunctions'
-import SearchToolbarHelper from 'src/core/pages/sidepanel/helper/SearchToolbarHelper.vue'
+import PopupToolbar from 'src/core/pages/popup/PopupToolbar.vue'
 import Highlight from 'src/tabsets/widgets/Highlight.vue'
 
 const router = useRouter()
@@ -104,8 +105,6 @@ const topLevelSubfolderExist = () =>
   treeData.value
     ? treeData.value.findIndex((nto: NodeTreeObject) => nto.children && nto.children.length > 0) >= 0
     : false
-
-const filterTermChanged = (val: { term: string }) => (filter.value = val.term)
 </script>
 
 <style lang="scss">

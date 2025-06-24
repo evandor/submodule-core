@@ -24,7 +24,17 @@
       <div class="col text-right">
         <q-btn
           v-if="!sidepanelEnabled"
+          icon="o_settings"
+          color="grey"
+          flat
+          size="md"
+          style="max-width: 32px"
+          @click="goto('/popup/settings')"
+          class="cursor-pointer" />
+        <q-btn
+          v-if="!sidepanelEnabled"
           icon="open_in_new"
+          color="grey"
           flat
           size="md"
           style="max-width: 32px"
@@ -40,9 +50,11 @@ import { ToastType } from 'src/core/models/Toast'
 import { useUtils } from 'src/core/services/Utils'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const { openSidepanel } = useUtils()
 
+const router = useRouter()
 const sidepanelEnabled = ref(false)
 
 if (chrome.sidePanel) {
@@ -111,4 +123,6 @@ const openBrowserSidepanel = async () => {
     window.close()
   })
 }
+
+const goto = (path: string) => router.push(path)
 </script>

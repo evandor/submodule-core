@@ -1,17 +1,22 @@
 <template>
-  <q-page class="darkInDarkMode brightInBrightMode" style="padding-top: 90px">
-    <div>hi</div>
+  <!-- PopupCollectionPage -->
+  <q-page class="darkInDarkMode brightInBrightMode" :style="paddingTop" style="min-width: 400px; max-height: 700px">
+    <div class="q-ma-sm">
+      <SidePanelPageContentExpand v-if="currentTabset" :tabset="currentTabset" />
+    </div>
 
-    <!-- place QPageSticky at end of page -->
-    <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode">
-      <SidePanelCollectionsPageToolbar />
+    <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode q-ma-none q-ml-md">
+      <PopupToolbar :title="currentTabset?.name || '???'">
+        <template v-slot:left>
+          <q-icon name="o_keyboard_return" class="cursor-pointer" @click="router.push('/popup')" />
+        </template>
+      </PopupToolbar>
     </q-page-sticky>
   </q-page>
 </template>
 
 <script lang="ts" setup>
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
-import SidePanelCollectionsPageToolbar from 'src/core/pages/sidepanel/helper/SidePanelCollectionsPageToolbar.vue'
 import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useSpacesStore } from 'src/spaces/stores/spacesStore'
@@ -21,16 +26,18 @@ import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import '@he-tree/vue/style/default.css'
 import { NodeTreeObject, useTabsetsFunctions } from 'src/core/pages/common/useTabsetsFunctions'
+import PopupToolbar from 'src/core/pages/popup/PopupToolbar.vue'
+import SidePanelPageContentExpand from 'src/core/pages/SidePanelPageContentExpand.vue'
 
 const router = useRouter()
 
-const { ondrop2, removeNonMatches, openIndicatorIcon, handleTreeClick, getTreeData, tabsetsForSpace } =
-  useTabsetsFunctions()
+const { ondrop2, removeNonMatches, getTreeData, tabsetsForSpace } = useTabsetsFunctions()
 
 const tabsets = ref<Tabset[]>([])
 const treeData = ref<NodeTreeObject[]>()
 const currentTabset = ref<Tabset | undefined>(undefined)
 const filter = ref<string | undefined>(undefined)
+const paddingTop = ref('padding-top: 50px')
 
 onMounted(() => {
   Analytics.firePageViewEvent('PopupCollectionsPage', document.location.href)

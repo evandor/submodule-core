@@ -1,16 +1,24 @@
 <template>
   <!-- PopupPage -->
-  <q-page
-    class="darkInDarkMode brightInBrightMode"
-    :style="paddingTop"
-    style="min-width: 400px; min-height: 380px; max-height: 700px">
+  <q-page class="darkInDarkMode brightInBrightMode" :style="paddingTop" style="min-width: 400px; max-height: 700px">
     <offline-info />
 
-    <PopupInputLine title="Tabsets" class="q-mt-md">
-      <PopupCollectionSelector @tabset-changed="tabsetChanged()" :tab :url />
+    <PopupInputLine title="Collection" class="q-mt-md">
+      <PopupCollectionSelector
+        @tabset-changed="tabsetChanged()"
+        :show-tabs-count="!currentTabsetHasFolders"
+        :url="pageModel.url" />
     </PopupInputLine>
 
-    <div class="row q-ma-sm darkInDarkMode brightInBrightMode">
+    <PopupInputLine title="Folder" v-if="showFolders()">
+      <PopupFolderSelector
+        @tabset-changed="tabsetChanged()"
+        :show-tabs-count="currentTabsetHasFolders"
+        :currentTabset="currentTabset!" />
+    </PopupInputLine>
+
+    <!-- Icon, title and description -->
+    <div class="row q-ma-sm darkInDarkMode brightInBrightMode q-mt-md">
       <div class="col-2 q-ma-sm">
         <q-img v-if="thumbnail" :src="thumbnail" no-native-menu />
         <q-img v-else :src="browserTab?.favIconUrl" no-native-menu />
@@ -18,35 +26,37 @@
       <div class="col q-mx-sm">
         <div class="column">
           <div class="col">
-            {{ browserTab?.title }}
+            <AutogrowInput
+              v-model="pageModel.title"
+              :input-class="'text-bold'"
+              :class="'ellipsis'"
+              :filled="false"
+              data-testid="pageModelTitle" />
           </div>
-          <div class="col ellipsis-3-lines text-body2">{{ description }}</div>
+          <div class="col ellipsis-3-lines text-body2">{{ pageModel.description }}</div>
+          <!--          <AutogrowInput v-model="pageModel.description" :class="'ellipsis-3-lines'" />-->
         </div>
       </div>
     </div>
 
-    <div class="row q-my-xs" v-if="tab && tab.url == url">
-      <div class="col text-right text-caption text-grey-8 q-mx-md">
-        {{ timeInfoLabel }}
+    <!-- info label: created, updated, ... -->
+    <div class="row q-my-xs" v-if="tab && tab.url == pageModel.url">
+      <div class="col text-right text-caption text-grey-8 q-mx-md cursor-pointer" @click="interateThroughInfo">
+        {{ infoLabel }}
       </div>
     </div>
 
+    <!-- URL -->
     <PopupInputLine title="URL" class="q-mt-md">
-      <q-input
-        v-model="url"
-        type="text"
-        dense
-        filled
-        class="text-body2 ellipsis"
-        :autogrow="urlActive"
-        @click="urlActive = true"
-        @blur="urlActive = false"></q-input>
+      <AutogrowInput v-model="pageModel.url" :class="'ellipsis'" :filled="true" data-testid="pageModelUrl" />
     </PopupInputLine>
 
+    <!-- Note -->
     <PopupInputLine title="Note">
-      <q-input v-model="note" type="text" autogrow dense class="text-body2" filled></q-input>
+      <AutogrowInput v-model="pageModel.note" :class="'ellipsis'" :filled="true" data-testid="pageModelNote" />
     </PopupInputLine>
 
+    <!-- Tags -->
     <PopupInputLine title="Tags">
       <q-select
         input-class="q-ma-none q-pa-none"
@@ -54,7 +64,7 @@
         filled
         dense
         options-dense
-        v-model="tags"
+        v-model="pageModel.tags"
         use-input
         use-chips
         multiple
@@ -64,28 +74,12 @@
         @update:model-value="(val) => updatedTags(val)" />
     </PopupInputLine>
 
-    <div class="row q-my-xs darkInDarkMode brightInBrightMode" style="border: 0 solid blue">
-      <div class="col-2 q-ml-xs q-mt-sm text-right text-caption text-grey-8" style="border: 0 solid red"></div>
-      <div class="col q-mx-md text-right" style="border: 0 solid red">
-        <q-btn
-          style="width: 100px"
-          outline
-          label="Add"
-          color="primary"
-          unelevated
-          size="15px"
-          @click="addTab"
-          class="cursor-pointer q-px-md">
-        </q-btn>
-      </div>
-    </div>
-
-    <PopupInputLine title="Actions" class="q-mt-md" v-if="tab">
+    <!-- Actions -->
+    <PopupInputLine title="Actions" class="q-mt-xs" v-if="tab">
       <q-btn icon="o_article" size="sm" outline @click="openAsArticle()" color="grey-7" class="q-mt-xs" />
       <q-btn
         v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML)"
         icon="save"
-        outline
         size="xs"
         class="cursor-pointer q-px-md q-mr-sm"
         color="primary">
@@ -95,6 +89,36 @@
         <!--          }}</q-badge>-->
       </q-btn>
     </PopupInputLine>
+
+    <!-- buttons -->
+    <div class="row q-my-md darkInDarkMode brightInBrightMode" style="border: 0 solid blue">
+      <div class="col-2 q-ml-xs q-mt-sm text-right text-caption text-grey-8" style="border: 0 solid red"></div>
+      <div class="col q-mx-md text-right" style="border: 0 solid red">
+        <q-btn
+          v-if="!tab || tab.url !== pageModel.url"
+          style="width: 100px"
+          dense
+          label="Add"
+          color="primary"
+          unelevated
+          size="15px"
+          @click="addTab"
+          class="cursor-pointer q-px-md">
+        </q-btn>
+        <q-btn
+          v-else
+          style="width: 100px"
+          outline
+          dense
+          label="Delete"
+          color="negative"
+          unelevated
+          size="15px"
+          @click="deleteTab"
+          class="cursor-pointer q-px-md">
+        </q-btn>
+      </div>
+    </div>
 
     <template v-if="useSettingsStore().has('DEBUG_MODE')">
       <div class="row q-pa-none q-ma-none fit">
@@ -115,23 +139,20 @@
       </div>
     </template>
 
-    <q-page-sticky
-      expand
-      position="top"
-      class="darkInDarkMode brightInBrightMode"
-      :class="uiDensity === 'dense' ? 'q-mx-none' : 'q-ma-md'">
-      <PopupToolbar @tabset-changed="tabsetChanged()" :tab :url :disable="false" />
+    <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode q-ma-none q-ml-md">
+      <PopupToolbar title="Tabsets" />
     </q-page-sticky>
   </q-page>
 </template>
 
 <script lang="ts" setup>
-import _ from 'lodash'
 import { date, LocalStorage, uid } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
+import AutogrowInput from 'src/core/pages/popup/helper/AutogrowInput.vue'
 import PopupCollectionSelector from 'src/core/pages/popup/PopupCollectionSelector.vue'
+import PopupFolderSelector from 'src/core/pages/popup/PopupFolderSelector.vue'
 import PopupInputLine from 'src/core/pages/popup/PopupInputLine.vue'
 import PopupToolbar from 'src/core/pages/popup/PopupToolbar.vue'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
@@ -140,57 +161,57 @@ import { useSettingsStore } from 'src/core/stores/settingsStore'
 import ContentUtils from 'src/core/utils/ContentUtils'
 import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
-import { useSpacesStore } from 'src/spaces/stores/spacesStore'
 import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
+import { DeleteTabCommand } from 'src/tabsets/commands/DeleteTabCommand'
 import { Tab } from 'src/tabsets/models/Tab'
-import { Tabset, TabsetStatus } from 'src/tabsets/models/Tabset'
+import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 import { useTabsStore2 } from 'src/tabsets/stores/tabsStore2'
 import { useThumbnailsService } from 'src/thumbnails/services/ThumbnailsService'
 import { UiDensity, useUiStore } from 'src/ui/stores/uiStore'
 import { useAuthStore } from 'stores/authStore'
-import { onMounted, provide, ref, watchEffect } from 'vue'
+import { onMounted, provide, reactive, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 
-const showStartingHint = ref(true)
 const thumbnail = ref<string | undefined>(useTabsStore2().currentChromeTab?.favIconUrl)
-const tabsets = ref<Tabset[]>([])
 const currentTabset = ref<Tabset | undefined>(undefined)
 const browserTab = ref<chrome.tabs.Tab | undefined>(undefined)
 const tab = ref<Tab | undefined>(undefined)
 const tabsetsLastUpdate = ref(0)
-const paddingTop = ref('padding-top: 80px')
+const paddingTop = ref('padding-top: 40px')
 const uiDensity = ref<UiDensity>(useUiStore().uiDensity)
 const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
-const note = ref('')
 const text = ref<string | undefined>(undefined)
 const tags = ref<string[]>([])
 
+const infoModes = ['saved', 'updated', 'count', 'lastActive']
+const infoMode = ref<string>(infoModes[0]!)
+
+const pageModel = reactive<{
+  url: string
+  note: string
+  tags: string[]
+  title: string | undefined
+  description: string | undefined
+}>({
+  url: '',
+  note: '',
+  tags: [],
+  title: undefined,
+  description: undefined,
+})
+
 let initialNote = ''
 
-const url = ref<string | undefined>(undefined)
-const urlActive = ref(false)
-
-const description = ref<string | undefined>(undefined)
-
 const language = ref<string | undefined>(undefined)
-const timeInfoLabel = ref('')
+const infoLabel = ref('')
 
 provide('ui.density', uiDensity)
 
-function updateOnlineStatus(e: any) {
-  const { type } = e
-  useUiStore().networkOnline = type === 'online'
-}
-
 onMounted(() => {
-  window.addEventListener('offline', (e) => updateOnlineStatus(e))
-  window.addEventListener('online', (e) => updateOnlineStatus(e))
-
   Analytics.firePageViewEvent('PopupPage', document.location.href)
-
   //switch early
   if (!LocalStorage.getItem('ui.hideWelcomePage')) {
     useRouter().push('/popup/welcome')
@@ -198,44 +219,56 @@ onMounted(() => {
 })
 
 watchEffect(() => {
-  if (tab.value && note.value !== initialNote) {
-    timeInfoLabel.value = 'updating...'
+  if (!tab.value) {
+    return
+  }
+  console.log('mode set to ', infoMode.value)
+  switch (infoMode.value) {
+    case 'saved':
+      infoLabel.value = 'Saved ' + date.formatDate(tab.value.created, 'DD.MM.YY HH:mm')
+      break
+    case 'updated':
+      infoLabel.value = 'Updated ' + date.formatDate(tab.value.updated, 'DD.MM.YY HH:mm')
+      break
+    case 'count':
+      infoLabel.value = `Opened ${tab.value.activatedCount}x`
+      break
+    case 'lastActive':
+      infoLabel.value = 'Updated ' + date.formatDate(tab.value.lastActive, 'DD.MM.YY HH:mm')
+      break
+  }
+})
+
+watchEffect(() => {
+  if (tab.value && pageModel.note !== initialNote) {
+    infoLabel.value = 'updating...'
     setTimeout(() => {
       if (currentTabset.value) {
-        tab.value!.note = note.value
+        tab.value!.note = pageModel.note
         tab.value!.updated = new Date().getTime()
         useTabsetsStore().saveTabset(currentTabset.value)
-        timeInfoLabel.value = 'Updated ' + date.formatDate(tab.value!.updated, 'DD.MM.YY HH:mm')
+        infoLabel.value = 'Updated ' + date.formatDate(tab.value!.updated, 'DD.MM.YY HH:mm')
       }
     }, 1000)
   }
 })
 
 watchEffect(() => {
-  showStartingHint.value =
-    !useUiStore().appLoading &&
-    currentTabset.value?.name === 'My first Tabset' &&
-    !LocalStorage.getItem('ui.hideStartingHint')
-})
-
-watchEffect(() => {
-  tags.value = []
-})
-
-watchEffect(() => {
   currentTabset.value = useTabsetsStore().getCurrentTabset
   browserTab.value = useTabsStore2().currentChromeTab
   if (browserTab.value) {
-    url.value = browserTab.value.url
+    //url.value = browserTab.value.url
+    pageModel.url = browserTab.value.url || 'https://'
+    pageModel.title = browserTab.value.title
     alreadyInTabset.value = useTabsetService().urlExistsInCurrentTabset(browserTab.value.url)
     const tabsets = useTabsetService().tabsetsFor(browserTab.value.url!)
     containedInTsCount.value = tabsets.length
     if (currentTabset.value && browserTab.value && browserTab.value.url) {
       tab.value = currentTabset.value.tabs.find((t: Tab) => t.url === browserTab.value!.url)
       if (tab.value) {
-        timeInfoLabel.value = 'Saved ' + date.formatDate(tab.value.created, 'DD.MM.YY HH:mm')
+        infoLabel.value = 'Saved ' + date.formatDate(tab.value.created, 'DD.MM.YY HH:mm')
         initialNote = tab.value.note
-        note.value = tab.value.note
+        pageModel.note = tab.value.note
       }
     } else {
       //var t = tabsets.map((ts: Tabset) => ts.tabs)
@@ -274,59 +307,12 @@ watchEffect(() => {
             console.log('adding tags for ', labels, scores)
             labels.forEach((label: string, index: number) => {
               if (scores[index]! >= 0.5) {
-                tags.value.push(label)
+                pageModel.tags.push(label)
               }
             })
           }
         },
       )
-      // const data = {
-      //   text: text.value,
-      //   candidates: ['news'],
-      // }
-      // console.log('about to apply KI logic on meta description...', data)
-      // //sendMsg('zero-shot-classification', data)
-      //
-      // chrome.runtime.sendMessage(
-      //   {
-      //     name: 'zero-shot-classification',
-      //     data: data,
-      //   },
-      //   (callback: any) => {
-      //     console.log('got callback!', callback)
-      //     if (chrome.runtime.lastError) {
-      //       /* ignore */
-      //     }
-      //     const tabsetScores: object[] = []
-      //     // if (callback.scores) {
-      //     //   callback.scores.forEach((score: number, index: number) => {
-      //     //     console.log("got score", score)
-      //     //     if (score > .1) {
-      //     //       tabsetScores.push({
-      //     //         score: score,
-      //     //         candidateName: candidates[index].name,
-      //     //         candidateId: candidates[index].id
-      //     //       })
-      //     //     }
-      //     //   })
-      //     //   // force reload in other pages (like CurrentTabElementHelper)
-      //     //   // TODO check
-      //     //   //useTabsStore().setCurrentChromeTab(tab)
-      //     // }
-      //   },
-      // )
-      // classification(text.value).then((res: any) => console.log('hier!!!', res))
-      // try {
-      //   // @ts-expect-error xxx
-      //   Summarizer.create().then((summarizer: any) => {
-      //     summarizer.summarize(text.value).then((results: string) => {
-      //       console.log(results)
-      //       text.value = results
-      //     })
-      //   })
-      // } catch (e) {
-      //   console.log('error with language detection')
-      // }
     }
   }
 })
@@ -335,9 +321,13 @@ watchEffect(() => {
   const metas = useContentStore().currentTabMetas
   console.log('metas', metas)
   if (metas['description' as keyof object]) {
-    description.value = metas['description' as keyof object] as string | undefined
-    if (useFeaturesStore().hasFeature(FeatureIdent.AI) && description.value && description.value.trim().length > 10) {
-      console.log(':::', description.value)
+    pageModel.description = (metas['description' as keyof object] as string | undefined) || ''
+    if (
+      useFeaturesStore().hasFeature(FeatureIdent.AI) &&
+      pageModel.description &&
+      pageModel.description.trim().length > 10
+    ) {
+      console.log(':::', pageModel.description)
       const data = {
         text: 'ich bin ein Text',
         candidates: ['news', 'shopping'],
@@ -371,7 +361,7 @@ watchEffect(() => {
       try {
         // @ts-expect-error xxx
         LanguageDetector.create().then((detector: any) => {
-          detector.detect(description.value).then((results: any[]) => {
+          detector.detect(pageModel.description).then((results: any[]) => {
             for (const result of results) {
               console.log(result.detectedLanguage, result.confidence)
             }
@@ -408,75 +398,10 @@ watchEffect(() => {
           //thumbnail.value = ''
         }
       })
-    // TabsetService.getContentFor(tab.value as Tab).then((data) => {
-    //   if (data) {
-    //     content.value = data['content' as keyof object]
-    //     //metas.value = data['metas' as keyof object]
-    //     metaRows.value = []
-    //     _.forEach(Object.keys(data['metas' as keyof object]), (k: any) => {
-    //       //console.log("k", k, data.metas[k])
-    //       metaRows.value.push({
-    //         name: k,
-    //         value: data['metas' as keyof object][k],
-    //       })
-    //     })
-    //     metaRows.value = _.sortBy(metaRows.value, (s: any) => s['name' as keyof object])
-    //   }
-    // })
-    // useSnapshotsService()
-    //   .getMetadataFor(tab.value.id)
-    //   .then((mds: BlobMetadata[]) => {
-    //     htmls.value = mds
-    //   })
   }
 })
 
-const getTabsetOrder = [
-  function (o: Tabset) {
-    return !o || o.status === TabsetStatus.FAVORITE ? 0 : 1
-  },
-  function (o: Tabset) {
-    return o.name?.toLowerCase()
-  },
-]
-
-function determineTabsets() {
-  return _.sortBy(
-    _.filter(
-      [...useTabsetsStore().tabsets.values()] as Tabset[],
-      (ts: Tabset) =>
-        ts.status !== TabsetStatus.DELETED && ts.status !== TabsetStatus.HIDDEN && ts.status !== TabsetStatus.ARCHIVED,
-    ),
-    getTabsetOrder,
-    ['asc'],
-  )
-}
-
-watchEffect(() => {
-  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
-    const currentSpace = useSpacesStore().space
-    tabsets.value = _.sortBy(
-      _.filter([...useTabsetsStore().tabsets.values()] as Tabset[], (ts: Tabset) => {
-        if (currentSpace) {
-          if (ts.spaces.indexOf(currentSpace.id) < 0) {
-            return false
-          }
-        }
-        return (
-          ts.status !== TabsetStatus.DELETED && ts.status !== TabsetStatus.HIDDEN && ts.status !== TabsetStatus.ARCHIVED
-        )
-      }),
-      getTabsetOrder,
-      ['asc'],
-    )
-  } else {
-    tabsets.value = determineTabsets()
-  }
-})
-
-const tabsetChanged = () => {
-  currentTabset.value = useTabsetsStore().getCurrentTabset
-}
+const tabsetChanged = () => (currentTabset.value = useTabsetsStore().getCurrentTabset)
 
 const updatedTags = (val: string[]) => {
   console.log('updating tag', val, useTabsetsStore().getCurrentTabset)
@@ -504,11 +429,34 @@ const openAsArticle = () => {
 }
 const addTab = () => {
   console.log('hier', browserTab.value)
+  // validation?
   if (browserTab.value) {
     const newTab: Tab = new Tab(uid(), browserTab.value)
+    newTab.url = pageModel.url
+    newTab.note = pageModel.note
+    newTab.description = pageModel.description || ''
+    newTab.tags = pageModel.tags
     useCommandExecutor().executeFromUi(new AddTabToTabsetCommand(newTab, currentTabset.value)) //, props.folder?.id))
   }
 }
+
+const deleteTab = () => {
+  if (tab.value && currentTabset.value) {
+    useCommandExecutor().executeFromUi(new DeleteTabCommand(tab.value, currentTabset.value))
+  }
+}
+
+const interateThroughInfo = () => {
+  const currentIndex = infoModes.indexOf(infoMode.value)
+  const nextIndex = (currentIndex + 1) % infoModes.length
+  infoMode.value = infoModes[nextIndex]!
+}
+
+const currentTabsetHasFolders = () =>
+  currentTabset.value && currentTabset.value.folders && currentTabset.value.folders.length > 0
+
+const showFolders = () =>
+  useFeaturesStore().hasFeature(FeatureIdent.FOLDER) && currentTabsetHasFolders() && currentTabset
 </script>
 
-<style lang="scss" src="src/pages/css/sidePanelPage2.scss" />
+<!--<style lang="scss" src="src/pages/css/sidePanelPage2.scss" />-->

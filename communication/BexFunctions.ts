@@ -41,13 +41,17 @@ class BexFunctions {
     payload: PageData
   }) => {
     console.log(
-      `[BEX-APP] ${event} <<< html#:${payload.html.length}, metas#:${Object.keys(payload.metas).length}, url:${payload.url.length > 25 ? payload.url.substring(0, 22) + '...' : payload.url}`,
+      `[BEX-APP] ${event} <<< html#:${payload.html.length}, metas#:${Object.keys(payload.metas).length}, url:${payload.url?.length || 0 > 25 ? payload.url?.substring(0, 22) + '...' : payload.url}`,
     )
 
     // updating (transient) content in contentStore
     useContentStore().setCurrentTabUrl(payload.url)
     useContentStore().setCurrentTabContent(payload.html)
     useContentStore().setCurrentTabMetas(payload.metas)
+
+    if (!payload.url) {
+      return
+    }
 
     // update (persistent) content in content db if exists
     const existing: ContentItem | undefined = await useContentService().getContentFor(payload.url)

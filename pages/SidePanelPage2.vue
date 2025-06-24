@@ -72,6 +72,7 @@
 import _ from 'lodash'
 import { LocalStorage } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
+import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
 import FirstToolbarHelper2 from 'src/core/pages/sidepanel/helper/FirstToolbarHelper2.vue'
 import SearchToolbarHelper from 'src/core/pages/sidepanel/helper/SearchToolbarHelper.vue'
