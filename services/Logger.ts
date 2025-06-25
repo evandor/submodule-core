@@ -4,7 +4,7 @@ import { EXTENSION_NAME } from 'src/boot/constants'
 import { useErrorHandlingConfig } from 'src/core/config/errorHandlingConfig'
 import { useSettingsStore } from 'src/core/stores/settingsStore'
 
-const version = import.meta.env.PACKAGE_VERSION
+const version = import.meta.env?.PACKAGE_VERSION || '0.0.0'
 
 const { setupErrorHandling } = useErrorHandlingConfig()
 

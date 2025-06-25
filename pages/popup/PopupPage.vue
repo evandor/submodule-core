@@ -146,7 +146,7 @@
 </template>
 
 <script lang="ts" setup>
-import { date, LocalStorage, uid } from 'quasar'
+import { date, LocalStorage, uid, useQuasar } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
@@ -185,6 +185,8 @@ const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
 const text = ref<string | undefined>(undefined)
 const tags = ref<string[]>([])
+
+const $q = useQuasar()
 
 const infoModes = ['saved', 'updated', 'count', 'lastActive']
 const infoMode = ref<string>(infoModes[0]!)
@@ -436,7 +438,11 @@ const addTab = () => {
     newTab.note = pageModel.note
     newTab.description = pageModel.description || ''
     newTab.tags = pageModel.tags
-    useCommandExecutor().executeFromUi(new AddTabToTabsetCommand(newTab, currentTabset.value)) //, props.folder?.id))
+    useCommandExecutor()
+      .executeFromUi(new AddTabToTabsetCommand(newTab, currentTabset.value)) //, props.folder?.id))
+      .then(() => {
+        //BexFunctions.broadcast($q, 'tab-added', { url: newTab.url })
+      })
   }
 }
 

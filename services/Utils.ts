@@ -10,6 +10,7 @@ export type BexEvent =
   | 'close-overlay'
   | 'start-spinner'
   | 'reload-current-tabset'
+  | 'tab-added'
 
 export function useUtils() {
   const formatDate = (timestamp: number | undefined) =>
