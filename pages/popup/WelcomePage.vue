@@ -78,7 +78,6 @@
 
 <script lang="ts" setup>
 import { LocalStorage, openURL } from 'quasar'
-import BrowserApi from 'src/app/BrowserApi'
 import { TITLE_IDENT } from 'src/boot/constants'
 import DialogButton from 'src/core/dialog/buttons/DialogButton.vue'
 import { useCommandExecutor } from 'src/core/services/CommandExecutor'
@@ -110,11 +109,11 @@ onMounted(() => {
 console.log('route1', route.fullPath)
 
 const createGettingStartedTabset = () => {
-  const tab1 = BrowserApi.createChromeTabObject('Getting Started', 'https://docs.tabsets.net/get-started')
-  const tab2 = BrowserApi.createChromeTabObject('Release Notes', 'https://docs.tabsets.net/release-notes')
+  // const tab1 = BrowserApi.createChromeTabObject('Getting Started', 'https://docs.tabsets.net/get-started')
+  // const tab2 = BrowserApi.createChromeTabObject('Release Notes', 'https://docs.tabsets.net/release-notes')
 
   useCommandExecutor()
-    .executeFromUi(new CreateTabsetCommand('My first Tabset', [tab1, tab2]))
+    .executeFromUi(new CreateTabsetCommand('My first Tabset', []))
     .then(() => {
       LocalStorage.setItem('ui.hideWelcomePage', true)
       console.log('route', route.fullPath)

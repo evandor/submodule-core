@@ -84,7 +84,7 @@ watchEffect(() => {
   if (!tabId) {
     article = useContentStore().articleSnapshot
     //article = useContentStore().currentTabArticle
-    console.log('hier', tabId, article)
+    console.log('hier1', tabId, article)
   } else {
     const res = useTabsetsStore().getTabAndTabsetId(tabId)
     if (res && res.tab) {

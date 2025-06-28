@@ -3,6 +3,7 @@
   <div class="col-12">
     <SidePanelFoldersViewExpand
       v-if="props.tabset"
+      :view-context="props.viewContext"
       :key="props.tabset.id + '_' + props.tabset.folderActive + '_' + tabsetsLastUpdate"
       :tabset="props.tabset"
       :filter="filter || ''"
@@ -12,6 +13,7 @@
 
   <SidePanelPageTabList
     :key="tabsetsLastUpdate + '_' + filter"
+    :view-context="props.viewContext"
     :filter="filter || ''"
     :active-folder="props.tabset.id"
     :tabsCount="props.tabset.tabs.length"
@@ -20,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { ViewContext } from 'src/core/models/ViewContext'
 import SidePanelPageTabList from 'src/tabsets/layouts/SidePanelPageTabList.vue'
 import { Tabset } from 'src/tabsets/models/Tabset'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
@@ -30,9 +33,13 @@ import { ref, watchEffect } from 'vue'
 type Props = {
   tabset: Tabset
   filter?: string
+  viewContext?: ViewContext
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  viewContext: 'default',
+})
+
 const emits = defineEmits(['tabs-found', 'folders-found'])
 
 const tabsetsLastUpdate = ref(0)

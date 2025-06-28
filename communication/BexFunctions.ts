@@ -1,13 +1,11 @@
 import { QVueGlobals } from 'quasar'
 import { ContentItem } from 'src/content/models/ContentItem'
-import { TabReference, TabReferenceType } from 'src/content/models/TabReference'
 import { useContentService } from 'src/content/services/ContentService'
 import { useContentStore } from 'src/content/stores/contentStore'
 import { BexEvent } from 'src/core/services/Utils'
 import ContentUtils from 'src/core/utils/ContentUtils'
 import { PageData } from 'src/tabsets/models/PageData'
 import { Tab } from 'src/tabsets/models/Tab'
-import { TabAndTabsetId } from 'src/tabsets/models/TabAndTabsetId'
 import { useTabsetService } from 'src/tabsets/services/TabsetService2'
 import { useTabsetsStore } from 'src/tabsets/stores/tabsetsStore'
 
@@ -63,30 +61,30 @@ class BexFunctions {
     }
 
     // update existing tabs with this url
-    const newTabReferences: TabReference[] = useContentStore().getCurrentTabReferences
-    useTabsetsStore()
-      .tabsForUrl(payload.url)
-      .forEach((tabAndTsId: TabAndTabsetId) => {
-        const ts = useTabsetsStore().getTabset(tabAndTsId.tabsetId)
-        if (ts) {
-          // console.log(
-          //   `setting tabReferences for tab url '${tabAndTsId.tab.url}' to ${JSON.stringify(currentTabReferences.value)}`,
-          // )
-          const originalRefs = tabAndTsId.tab.tabReferences
-
-          newTabReferences
-            .filter((tr: TabReference) => tr.type === TabReferenceType.RSS)
-            .forEach((rssRef: TabReference) => {
-              const existingIndex = originalRefs.findIndex((r: TabReference) => r.href === rssRef.href)
-              if (existingIndex >= 0) {
-                rssRef = originalRefs[existingIndex] as TabReference
-              }
-            })
-
-          tabAndTsId.tab.tabReferences = newTabReferences
-          useTabsetsStore().saveTabset(ts)
-        }
-      })
+    // const newTabReferences: TabReference[] = useContentStore().getCurrentTabReferences
+    // useTabsetsStore()
+    //   .tabsForUrl(payload.url)
+    //   .forEach((tabAndTsId: TabAndTabsetId) => {
+    //     const ts = useTabsetsStore().getTabset(tabAndTsId.tabsetId)
+    //     if (ts) {
+    //       console.log(
+    //         `setting tabReferences for tab url '${tabAndTsId.tab.url}' to ${JSON.stringify(newTabReferences)}`,
+    //       )
+    //       const originalRefs = tabAndTsId.tab.tabReferences
+    //
+    //       newTabReferences
+    //         .filter((tr: TabReference) => tr.type === TabReferenceType.RSS)
+    //         .forEach((rssRef: TabReference) => {
+    //           const existingIndex = originalRefs.findIndex((r: TabReference) => r.href === rssRef.href)
+    //           if (existingIndex >= 0) {
+    //             rssRef = originalRefs[existingIndex] as TabReference
+    //           }
+    //         })
+    //
+    //       tabAndTsId.tab.tabReferences = newTabReferences
+    //       useTabsetsStore().saveTabset(ts)
+    //     }
+    //   })
   }
 
   bexSendWithRetry = ($q: QVueGlobals, eventName: BexEvent, portName: string, payload: object = {}) => {

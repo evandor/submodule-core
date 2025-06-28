@@ -254,14 +254,14 @@ watchEffect(() => {
     tabsetSelectionOptions.value.unshift({ label: 'Switch to', value: '', disable: true, icon: 'switch_horiz' })
   }
 
-  if (tabsetSelectionOptions.value.length > 10) {
-    tabsetSelectionOptions.value = tabsetSelectionOptions.value.slice(0, 10)
-    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
-    tabsetSelectionOptions.value.push({ label: 'show all...', value: '' })
-  } else if (tabsetSelectionOptions.value.length > 4) {
-    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
-    tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
-  }
+  // if (tabsetSelectionOptions.value.length > 10) {
+  //   tabsetSelectionOptions.value = tabsetSelectionOptions.value.slice(0, 10)
+  //   tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+  //   tabsetSelectionOptions.value.push({ label: 'show all...', value: '' })
+  // } else if (tabsetSelectionOptions.value.length > 4) {
+  //   tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+  //   tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
+  // }
 
   if (tabsets.value.length > 1) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -452,6 +452,6 @@ const tabsetColorStyle = () => {
 
 .q-list--dense > .q-item,
 .q-item--dense {
-  min-height: 32px;
+  min-height: 22px;
 }
 </style>

@@ -204,3 +204,10 @@ chrome.runtime.getContexts({}, (ctxs: object[]) => {
   // console.log('sidepanelEnabled', sidepanelEnabled.value)
 })
 </script>
+
+<style scoped>
+.q-list--dense > .q-item,
+.q-item--dense {
+  min-height: 22px;
+}
+</style>

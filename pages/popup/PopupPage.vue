@@ -2,18 +2,17 @@
   <!-- PopupPage -->
   <q-page class="darkInDarkMode brightInBrightMode" :style="paddingTop" style="min-width: 400px; max-height: 700px">
     <offline-info />
-
     <PopupInputLine title="Collection" class="q-mt-md">
       <PopupCollectionSelector
         @tabset-changed="tabsetChanged()"
-        :show-tabs-count="!currentTabsetHasFolders"
+        :show-tabs-count="!currentTabsetHasFolders()"
         :url="pageModel.url" />
     </PopupInputLine>
 
     <PopupInputLine title="Folder" v-if="showFolders()">
       <PopupFolderSelector
         @tabset-changed="tabsetChanged()"
-        :show-tabs-count="currentTabsetHasFolders"
+        :show-tabs-count="currentTabsetHasFolders()"
         :currentTabset="currentTabset!" />
     </PopupInputLine>
 
@@ -74,19 +73,57 @@
         @update:model-value="(val) => updatedTags(val)" />
     </PopupInputLine>
 
+    <!-- collections chips -->
+    <PopupInputLine :title="collectionsTitle()" v-if="showCollectionChips()">
+      <q-chip
+        v-for="chip in collectionChips.filter((c: object) => c['tabsetId' as keyof object] !== currentTabset?.id)"
+        class="cursor-pointer q-ml-xs q-mt-sm"
+        outline
+        dense
+        color="grey-8"
+        size="12px"
+        @click="switchTabset(chip['tabsetId' as keyof object])"
+        clickable>
+        {{ chip['label' as keyof object] }}
+      </q-chip>
+    </PopupInputLine>
+
+    <PopupInputLine title="Snapshots" v-if="mds.length > 0">
+      <div class="row" v-for="snapshot in mds">
+        <div class="col-10 text-caption q-mt-sm text-grey-8">
+          {{ date.formatDate(snapshot.created, 'DD.MM.YYYY HH:MM') }}
+        </div>
+        <div class="col text-right q-mt-sm">
+          <q-icon name="o_open_in_new" color="grey-8" class="q-mr-md cursor-pointer" @click="openMHtml(snapshot.id)" />
+          <q-icon name="o_delete" color="red" class="q-mr-md cursor-pointer" @click="openMHtml(snapshot.id)" />
+        </div>
+      </div>
+    </PopupInputLine>
+
     <!-- Actions -->
     <PopupInputLine title="Actions" class="q-mt-xs" v-if="tab">
-      <q-btn icon="o_article" size="sm" outline @click="openAsArticle()" color="grey-7" class="q-mt-xs" />
+      <q-btn
+        v-if="useFeaturesStore().hasFeature(FeatureIdent.READING_MODE)"
+        icon="o_article"
+        size="sm"
+        outline
+        @click="openAsArticle()"
+        color="grey-7"
+        class="cursor-pointer q-mt-xs">
+        <q-tooltip class="tooltip-small" :delay="500">Open in Reading Mode</q-tooltip>
+      </q-btn>
       <q-btn
         v-if="useFeaturesStore().hasFeature(FeatureIdent.SAVE_MHTML)"
-        icon="save"
-        size="xs"
-        class="cursor-pointer q-px-md q-mr-sm"
-        color="primary">
-        <q-tooltip :delay="1000">Save a snapshot of this page</q-tooltip>
-        <!--          <q-badge v-if="snapshotsSize > 0" floating color="warning" size="xs" text-color="primary">{{-->
-        <!--            snapshotsSize-->
-        <!--          }}</q-badge>-->
+        icon="o_save"
+        size="sm"
+        outline
+        @click="saveSnapshot()"
+        color="grey-7"
+        class="cursor-pointer q-mt-xs q-ml-sm">
+        <q-tooltip class="tooltip-small" :delay="500">Save a snapshot of this page</q-tooltip>
+        <!--        <q-badge v-if="snapshotsSize > 0" floating color="warning" size="xs" text-color="primary"-->
+        <!--          >{{ snapshotsSize }}-->
+        <!--        </q-badge>-->
       </q-btn>
     </PopupInputLine>
 
@@ -146,7 +183,7 @@
 </template>
 
 <script lang="ts" setup>
-import { date, LocalStorage, uid, useQuasar } from 'quasar'
+import { date, LocalStorage, uid } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
@@ -161,6 +198,9 @@ import { useSettingsStore } from 'src/core/stores/settingsStore'
 import ContentUtils from 'src/core/utils/ContentUtils'
 import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
+import { SaveMHtmlCommand } from 'src/snapshots/commands/SaveMHtmlCommand'
+import { BlobMetadata } from 'src/snapshots/models/BlobMetadata'
+import { useSnapshotsStore } from 'src/snapshots/stores/SnapshotsStore'
 import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
 import { DeleteTabCommand } from 'src/tabsets/commands/DeleteTabCommand'
 import { Tab } from 'src/tabsets/models/Tab'
@@ -185,11 +225,12 @@ const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
 const text = ref<string | undefined>(undefined)
 const tags = ref<string[]>([])
-
-const $q = useQuasar()
+const collectionChips = ref<object[]>([])
 
 const infoModes = ['saved', 'updated', 'count', 'lastActive']
 const infoMode = ref<string>(infoModes[0]!)
+
+provide('ui.density', uiDensity)
 
 const pageModel = reactive<{
   url: string
@@ -209,14 +250,24 @@ let initialNote = ''
 
 const language = ref<string | undefined>(undefined)
 const infoLabel = ref('')
-
-provide('ui.density', uiDensity)
+const mds = ref<BlobMetadata[]>([])
+const pageCaptureInProgress = ref(false)
 
 onMounted(() => {
   Analytics.firePageViewEvent('PopupPage', document.location.href)
   //switch early
   if (!LocalStorage.getItem('ui.hideWelcomePage')) {
     useRouter().push('/popup/welcome')
+  }
+})
+
+watchEffect(() => {
+  const loading = useUiStore().pageCaptureLoading
+  console.log('loading', loading)
+  pageCaptureInProgress.value = loading
+  if (!loading) {
+    console.log('hier')
+    updateSnapshotSize()
   }
 })
 
@@ -271,6 +322,26 @@ watchEffect(() => {
         infoLabel.value = 'Saved ' + date.formatDate(tab.value.created, 'DD.MM.YY HH:mm')
         initialNote = tab.value.note
         pageModel.note = tab.value.note
+        useSnapshotsStore()
+          .metadataFor(tab.value.id)
+          .then((res) => {
+            mds.value = res
+            mds.value = mds.value.sort((a: BlobMetadata, b: BlobMetadata) => b.created - a.created)
+            console.log('got', mds.value)
+          })
+      }
+      const url = browserTab.value.url
+      if (url) {
+        collectionChips.value = useTabsetService()
+          .tabsetsFor(url)
+          .map((ts: string) => {
+            return {
+              label: useTabsetService().nameForTabsetId(ts),
+              tabsetId: ts,
+              encodedUrl: btoa(url || ''),
+            }
+          })
+        //console.log('===>', collectionChips.value)
       }
     } else {
       //var t = tabsets.map((ts: Tabset) => ts.tabs)
@@ -281,7 +352,7 @@ watchEffect(() => {
 watchEffect(() => {
   const article = useContentStore().currentTabArticle
   if (article) {
-    console.log('article', article)
+    // console.log('article', article)
     const articleContent = ContentUtils.html2text(article['content' as keyof object])
     //console.log('articleContent', articleContent)
     text.value = articleContent
@@ -321,7 +392,7 @@ watchEffect(() => {
 
 watchEffect(() => {
   const metas = useContentStore().currentTabMetas
-  console.log('metas', metas)
+  //console.log('metas', metas)
   if (metas['description' as keyof object]) {
     pageModel.description = (metas['description' as keyof object] as string | undefined) || ''
     if (
@@ -427,6 +498,8 @@ const openAsArticle = () => {
     useNavigationService().browserTabFor(
       chrome.runtime.getURL(`/www/index.html#/mainpanel/readingmode/${tab.value.id}`),
     )
+  } else {
+    useNavigationService().browserTabFor(chrome.runtime.getURL(`/www/index.html#/mainpanel/readingmode`))
   }
 }
 const addTab = () => {
@@ -458,11 +531,34 @@ const interateThroughInfo = () => {
   infoMode.value = infoModes[nextIndex]!
 }
 
-const currentTabsetHasFolders = () =>
-  currentTabset.value && currentTabset.value.folders && currentTabset.value.folders.length > 0
+const currentTabsetHasFolders = (): boolean =>
+  (currentTabset.value && currentTabset.value.folders && currentTabset.value.folders.length > 0) || false
 
 const showFolders = () =>
   useFeaturesStore().hasFeature(FeatureIdent.FOLDER) && currentTabsetHasFolders() && currentTabset
+
+const collectionsTitle = () => {
+  if (collectionChips.value.find((c: object) => c['tabsetId' as keyof object] === currentTabset.value?.id)) {
+    return 'also in'
+  }
+  return 'already in'
+}
+const showCollectionChips = () =>
+  collectionChips.value.filter((c: object) => c['tabsetId' as keyof object] !== currentTabset.value?.id).length > 0
+
+const switchTabset = (tsId: string) => {
+  console.log('tsId', tsId)
+  useTabsetsStore().selectCurrentTabset(tsId)
+  //tabsetChanged()
+}
+
+const saveSnapshot = () => {
+  console.log('hier', tab.value)
+  if (tab.value && tab.value.url) {
+    useCommandExecutor().executeFromUi(new SaveMHtmlCommand(tab.value.id, tab.value.url))
+  }
+}
+const openMHtml = (id: string) => window.open(chrome.runtime.getURL(`www/index.html#/mainpanel/mhtml/${id}`))
 </script>
 
 <!--<style lang="scss" src="src/pages/css/sidePanelPage2.scss" />-->

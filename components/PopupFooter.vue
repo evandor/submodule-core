@@ -20,10 +20,20 @@
     </template>
 
     <div v-else class="row fit q-ma-none q-pa-none">
-      <div class="col-6"></div>
+      <div class="col-6 q-ml-xs">
+        <q-btn
+          v-if="useFeaturesStore().hasFeature(FeatureIdent.OPEN_TABS)"
+          icon="sym_o_tabs"
+          class="q-my-xs q-px-xs q-mr-none"
+          flat
+          color="grey-7"
+          size="12px"
+          @click="toggleOpenTabsView()">
+          <q-tooltip class="tooltip-small">All your browser's current open tabs</q-tooltip>
+        </q-btn>
+      </div>
       <div class="col text-right">
         <q-btn
-          v-if="!sidepanelEnabled"
           icon="o_settings"
           color="grey"
           flat
@@ -46,8 +56,10 @@
 </template>
 
 <script setup lang="ts">
+import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { ToastType } from 'src/core/models/Toast'
 import { useUtils } from 'src/core/services/Utils'
+import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { useUiStore } from 'src/ui/stores/uiStore'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -56,6 +68,7 @@ const { openSidepanel } = useUtils()
 
 const router = useRouter()
 const sidepanelEnabled = ref(false)
+const opentabsView = ref(false)
 
 if (chrome.sidePanel) {
   // chrome.tabs.query({ active: true, lastFocusedWindow: true }).then((ts: chrome.tabs.Tab[]) => {
@@ -125,4 +138,14 @@ const openBrowserSidepanel = async () => {
 }
 
 const goto = (path: string) => router.push(path)
+
+const toggleOpenTabsView = () => {
+  console.log('clicked')
+  opentabsView.value = !opentabsView.value
+  if (opentabsView.value) {
+    router.push('/popup/opentabs')
+  } else {
+    router.push('/popup')
+  }
+}
 </script>

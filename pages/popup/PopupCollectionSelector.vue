@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useQuasar } from 'quasar'
+import { openURL, useQuasar } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { SidePanelViews } from 'src/app/models/SidePanelViews'
 import { ExecutionResult } from 'src/core/domain/ExecutionResult'
@@ -163,14 +163,14 @@ watchEffect(() => {
     tabsetSelectionOptions.value.unshift({ label: 'Switch to', value: '', disable: true, icon: 'switch_horiz' })
   }
 
-  if (tabsetSelectionOptions.value.length > 10) {
-    tabsetSelectionOptions.value = tabsetSelectionOptions.value.slice(0, 10)
-    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
-    tabsetSelectionOptions.value.push({ label: 'show all...', value: '' })
-  } else if (tabsetSelectionOptions.value.length > 4) {
-    tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
-    tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
-  }
+  // if (tabsetSelectionOptions.value.length > 10) {
+  //   tabsetSelectionOptions.value = tabsetSelectionOptions.value.slice(0, 10)
+  //   tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+  //   tabsetSelectionOptions.value.push({ label: 'show all...', value: '' })
+  // } else if (tabsetSelectionOptions.value.length > 4) {
+  //   tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
+  //   tabsetSelectionOptions.value.push({ label: 'more...', value: '' })
+  // }
 
   if (tabsets.value.length > 1) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -178,7 +178,21 @@ watchEffect(() => {
 
   tabsetSelectionOptions.value.push({ label: 'Show Collection', value: 'show-tabset', icon: 'o_eye' })
   //tabsetSelectionOptions.value.push({ label: 'Add Collection', value: 'add-tabset', icon: 'o_add' })
-  tabsetSelectionOptions.value.push({ label: 'Manage Tabsets', value: 'popup-manage-tabsets', icon: 'o_edit' })
+  tabsetSelectionOptions.value.push({ label: 'Manage Collections', value: 'popup-manage-tabsets', icon: 'o_edit' })
+  if (useFeaturesStore().hasFeature(FeatureIdent.FOLDER)) {
+    tabsetSelectionOptions.value.push({
+      label: 'Add Folder to Collection',
+      value: 'popup-add-folder',
+      icon: 'sym_o_folder',
+    })
+  }
+  if (useFeaturesStore().hasFeature(FeatureIdent.VISUALIZATIONS)) {
+    tabsetSelectionOptions.value.push({
+      label: 'Folder Visualisation',
+      value: 'popup-visualize-folders',
+      icon: 'sym_o_graph_5',
+    })
+  }
 
   if (stashedTabs.value) {
     tabsetSelectionOptions.value.push({ label: '', value: '', disable: true })
@@ -269,6 +283,11 @@ const switchTabset = async (tabset: object) => {
     router.push('/popup/tabsets')
     return
   }
+  if (tsId === 'popup-visualize-folders') {
+    const target = chrome.runtime.getURL('/www/index.html#/mainpanel/visualizations/folders')
+    openURL(target)
+    return
+  }
   if (tsId === 'show-tabset') {
     router.push('/popup/tabset')
     return
@@ -303,13 +322,6 @@ const switchTabset = async (tabset: object) => {
   emits('tabset-changed')
 }
 
-const tabsetSelectLabel = () => {
-  if (useFeaturesStore().hasFeature(FeatureIdent.SPACES)) {
-    return useSpacesStore().space?.label || 'no space selected'
-  }
-  return 'Collection'
-}
-
 const tabsetColorStyle = () => {
   return currentTabset.value && currentTabset.value.color
     ? 'border-left: 3px solid ' +
@@ -326,3 +338,10 @@ chrome.runtime.getContexts({}, (ctxs: object[]) => {
   // console.log('sidepanelEnabled', sidepanelEnabled.value)
 })
 </script>
+
+<style scoped>
+.q-list--dense > .q-item,
+.q-item--dense {
+  min-height: 22px;
+}
+</style>

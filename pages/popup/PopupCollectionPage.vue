@@ -2,7 +2,7 @@
   <!-- PopupCollectionPage -->
   <q-page class="darkInDarkMode brightInBrightMode" :style="paddingTop" style="min-width: 400px; max-height: 700px">
     <div class="q-ma-sm">
-      <SidePanelPageContentExpand v-if="currentTabset" :tabset="currentTabset" />
+      <SidePanelPageContentExpand v-if="currentTabset" :tabset="currentTabset" :view-context="'popup'" />
     </div>
 
     <q-page-sticky expand position="top" class="darkInDarkMode brightInBrightMode q-ma-none q-ml-md">
