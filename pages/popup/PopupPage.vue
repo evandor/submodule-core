@@ -63,14 +63,28 @@
         filled
         dense
         options-dense
-        v-model="pageModel.tags"
+        v-model="pageModel.tagsInfo"
         use-input
         use-chips
         multiple
         hide-dropdown-icon
         input-debounce="0"
         new-value-mode="add-unique"
-        @update:model-value="(val) => updatedTags(val)" />
+        @update:model-value="(val) => updatedTags(val)">
+        <template v-slot:selected>
+          <q-chip
+            v-for="info in pageModel.tagsInfo"
+            @remove="removeTag(info)"
+            dense
+            square
+            removable
+            :color="info.type == 'manual' ? 'white' : 'grey-2'"
+            text-color="primary"
+            class="q-my-none q-ml-xs q-mr-none">
+            {{ info.label }}
+          </q-chip>
+        </template>
+      </q-select>
     </PopupInputLine>
 
     <!-- collections chips -->
@@ -95,7 +109,7 @@
         </div>
         <div class="col text-right q-mt-sm">
           <q-icon name="o_open_in_new" color="grey-8" class="q-mr-md cursor-pointer" @click="openMHtml(snapshot.id)" />
-          <q-icon name="o_delete" color="red" class="q-mr-md cursor-pointer" @click="openMHtml(snapshot.id)" />
+          <q-icon name="o_delete" color="red" class="cursor-pointer" @click="deleteMHtml(snapshot.id)" />
         </div>
       </div>
     </PopupInputLine>
@@ -187,6 +201,7 @@ import { date, LocalStorage, uid } from 'quasar'
 import { FeatureIdent } from 'src/app/models/FeatureIdent'
 import { useContentStore } from 'src/content/stores/contentStore'
 import OfflineInfo from 'src/core/components/helper/offlineInfo.vue'
+import { TagInfo } from 'src/core/models/TagInfo'
 import AutogrowInput from 'src/core/pages/popup/helper/AutogrowInput.vue'
 import PopupCollectionSelector from 'src/core/pages/popup/PopupCollectionSelector.vue'
 import PopupFolderSelector from 'src/core/pages/popup/PopupFolderSelector.vue'
@@ -200,6 +215,7 @@ import Analytics from 'src/core/utils/google-analytics'
 import { useFeaturesStore } from 'src/features/stores/featuresStore'
 import { SaveMHtmlCommand } from 'src/snapshots/commands/SaveMHtmlCommand'
 import { BlobMetadata } from 'src/snapshots/models/BlobMetadata'
+import { useSnapshotsService } from 'src/snapshots/services/SnapshotsService'
 import { useSnapshotsStore } from 'src/snapshots/stores/SnapshotsStore'
 import { AddTabToTabsetCommand } from 'src/tabsets/commands/AddTabToTabsetCommand'
 import { DeleteTabCommand } from 'src/tabsets/commands/DeleteTabCommand'
@@ -224,7 +240,7 @@ const uiDensity = ref<UiDensity>(useUiStore().uiDensity)
 const alreadyInTabset = ref<boolean>(false)
 const containedInTsCount = ref(0)
 const text = ref<string | undefined>(undefined)
-const tags = ref<string[]>([])
+// const tags = ref<string[]>([])
 const collectionChips = ref<object[]>([])
 
 const infoModes = ['saved', 'updated', 'count', 'lastActive']
@@ -235,13 +251,13 @@ provide('ui.density', uiDensity)
 const pageModel = reactive<{
   url: string
   note: string
-  tags: string[]
+  tagsInfo: TagInfo[]
   title: string | undefined
   description: string | undefined
 }>({
   url: '',
   note: '',
-  tags: [],
+  tagsInfo: [],
   title: undefined,
   description: undefined,
 })
@@ -267,7 +283,6 @@ watchEffect(() => {
   pageCaptureInProgress.value = loading
   if (!loading) {
     console.log('hier')
-    updateSnapshotSize()
   }
 })
 
@@ -358,10 +373,11 @@ watchEffect(() => {
     text.value = articleContent
 
     if (useFeaturesStore().hasFeature(FeatureIdent.AI) && text.value && text.value.trim().length > 10) {
-      console.log('::::', text.value)
+      //console.log('::::', text.value)
+      console.log('::::', pageModel.description)
       const data = {
-        text: 'ich bin ein kurzer Text mit Nachrichen',
-        candidates: ['news', 'shopping'],
+        text: pageModel.description,
+        candidates: ['news', 'shopping', 'sport'],
       }
 
       chrome.runtime.sendMessage(
@@ -380,7 +396,8 @@ watchEffect(() => {
             console.log('adding tags for ', labels, scores)
             labels.forEach((label: string, index: number) => {
               if (scores[index]! >= 0.5) {
-                pageModel.tags.push(label)
+                // pageModel.tags.push(label)
+                pageModel.tagsInfo.push({ label: label, type: 'classification', score: scores[index] || 0 })
               }
             })
           }
@@ -423,7 +440,7 @@ watchEffect(() => {
             if (labels && labels.length > 0) {
               labels.forEach((label: string, index: number) => {
                 if (scores[index]! >= 0.5) {
-                  tags.value.push(label)
+                  pageModel.tagsInfo.push({ label: label, type: 'classification', score: scores[index] || 0 })
                 }
               })
             }
@@ -435,12 +452,17 @@ watchEffect(() => {
         // @ts-expect-error xxx
         LanguageDetector.create().then((detector: any) => {
           detector.detect(pageModel.description).then((results: any[]) => {
-            for (const result of results) {
-              console.log(result.detectedLanguage, result.confidence)
-            }
+            // for (const result of results) {
+            //   console.log(result.detectedLanguage, result.confidence)
+            // }
             if (results.length > 0) {
               language.value = results[0].detectedLanguage
-              tags.value.push(results[0].detectedLanguage)
+              // pageModel.aiTags.push(results[0].detectedLanguage)
+              pageModel.tagsInfo.push({
+                label: results[0].detectedLanguage,
+                type: 'langDetection',
+                score: results[0].confidence || 0,
+              })
             }
           })
         })
@@ -476,21 +498,17 @@ watchEffect(() => {
 
 const tabsetChanged = () => (currentTabset.value = useTabsetsStore().getCurrentTabset)
 
-const updatedTags = (val: string[]) => {
-  console.log('updating tag', val, useTabsetsStore().getCurrentTabset)
-  if (tab.value) {
-    // tab.value.tags = val
-    // useTabsetService()
-    //   .saveCurrentTabset()
-    //   .then(() => {
-    //     sendMsg('refresh-store')
-    //     // all those did not work:
-    //     // chrome.runtime.sendMessage(null, { message: 'refresh-store' }, function (response) {...
-    //     // BexFunctions.bexSendWithRetry($q, 'reload-current-tabset', 'background')
-    //     // useTabsetsStore().reloadTabset(currentTabset.value!.id)
-    //   })
-    //   .catch((err) => console.error(err))
-  }
+const updatedTags = (val: (TagInfo | string)[]) => {
+  console.log('updating tag', val)
+  pageModel.tagsInfo = val.map((v: any) => {
+    console.log('type', typeof v)
+    if (typeof v == 'string') {
+      console.log('hier', v)
+      return { label: v, type: 'manual', score: 1 }
+    }
+    return v
+  })
+  console.log('updating tag2', pageModel.tagsInfo)
 }
 
 const openAsArticle = () => {
@@ -510,7 +528,7 @@ const addTab = () => {
     newTab.url = pageModel.url
     newTab.note = pageModel.note
     newTab.description = pageModel.description || ''
-    newTab.tags = pageModel.tags
+    newTab.tagsInfo = pageModel.tagsInfo
     useCommandExecutor()
       .executeFromUi(new AddTabToTabsetCommand(newTab, currentTabset.value)) //, props.folder?.id))
       .then(() => {
@@ -559,6 +577,9 @@ const saveSnapshot = () => {
   }
 }
 const openMHtml = (id: string) => window.open(chrome.runtime.getURL(`www/index.html#/mainpanel/mhtml/${id}`))
+const deleteMHtml = (id: string) => useSnapshotsService().deleteSnapshot(id)
+const removeTag = (toDelete: TagInfo) =>
+  (pageModel.tagsInfo = pageModel.tagsInfo.filter((i: TagInfo) => i.label !== toDelete.label))
 </script>
 
 <!--<style lang="scss" src="src/pages/css/sidePanelPage2.scss" />-->
